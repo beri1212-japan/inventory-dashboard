@@ -1,0 +1,749 @@
+{\rtf1\ansi\ansicpg932\cocoartf2759
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 .SFNSMono-Light_YAXS140B3BC_wght1C20000;\f1\fnil\fcharset0 .AppleSystemUIFontMonospaced-Regular;\f2\fnil\fcharset0 .SFNS-Regular_wdth_opsz110000_GRAD_wght1F40000;
+}
+{\colortbl;\red255\green255\blue255;\red42\green42\blue39;\red4\green57\blue181;\red16\green19\blue24;
+}
+{\*\expandedcolortbl;;\cssrgb\c21569\c21569\c20392;\cssrgb\c0\c31765\c76078;\cssrgb\c7843\c9412\c12157;
+}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\fs16\fsmilli8250 \cf2 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 bash\
+
+\f1\fs18 \cf3 \strokec3 cat\cf4 \strokec4  /home/claude/dashboard.html
+\f2\fs16\fsmilli8250 \cf2 \strokec2 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \
+\uc0\u20986 \u21147 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs18 \cf4 \strokec4 <!DOCTYPE html>\
+<html lang="ja">\
+<head>\
+<meta charset="UTF-8">\
+<meta name="viewport" content="width=device-width, initial-scale=1.0">\
+<title>\uc0\u22312 \u24235 \u12480 \u12483 \u12471 \u12517 \u12508 \u12540 \u12489 </title>\
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">\
+<style>\
+:root\{--bg:#0f1117;--bg2:#171923;--bg3:#1e2130;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--text:#e8eaf0;--text2:#8b90a0;--text3:#4a5068;--accent:#4f8ef7;--green:#22c55e;--red:#ef4444;--amber:#f59e0b;--teal:#14b8a6;--purple:#a855f7;--font:'Noto Sans JP',sans-serif;--mono:'DM Mono',monospace;\}\
+*\{box-sizing:border-box;margin:0;padding:0;\}\
+body\{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;min-height:100vh;\}\
+\
+/* \uc0\u9472 \u9472  Header \u9472 \u9472  */\
+.hdr\{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;\}\
+.hdr-l\{display:flex;align-items:center;gap:14px;\}\
+.logo\{font-size:15px;font-weight:700;letter-spacing:-.02em;\}\
+.logo span\{color:var(--accent);\}\
+.upd\{font-size:11px;color:var(--text3);font-family:var(--mono);\}\
+.rbtn\{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-family:var(--font);display:flex;align-items:center;gap:6px;transition:all .15s;\}\
+.rbtn:hover\{background:var(--border);color:var(--text);\}\
+.spin\{display:none;width:13px;height:13px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;\}\
+@keyframes spin\{to\{transform:rotate(360deg);\}\}\
+\
+/* \uc0\u9472 \u9472  Layout \u9472 \u9472  */\
+.main\{padding:18px 24px;max-width:1700px;margin:0 auto;\}\
+\
+/* \uc0\u9472 \u9472  Summary cards \u9472 \u9472  */\
+.summary\{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:18px;\}\
+.card\{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;transition:border-color .15s;\}\
+.card:hover\{border-color:var(--border2);\}\
+.card-lbl\{font-size:10px;color:var(--text3);margin-bottom:5px;letter-spacing:.05em;\}\
+.card-val\{font-size:26px;font-weight:700;font-family:var(--mono);line-height:1;\}\
+.card-sub\{font-size:10px;color:var(--text3);margin-top:5px;\}\
+.card-ul\{border-color:rgba(239,68,68,.25);\}\
+.card-ul .card-val\{color:var(--red);\}\
+.card-sold .card-val\{color:var(--green);\}\
+\
+/* \uc0\u9472 \u9472  Tabs \u9472 \u9472  */\
+.tabs\{display:flex;gap:2px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:3px;margin-bottom:18px;width:fit-content;flex-wrap:wrap;\}\
+.tab\{padding:6px 16px;border-radius:5px;cursor:pointer;font-size:12px;color:var(--text2);border:none;background:none;font-family:var(--font);transition:all .15s;white-space:nowrap;\}\
+.tab.active\{background:var(--accent);color:#fff;font-weight:500;\}\
+.tab:hover:not(.active)\{background:var(--bg3);color:var(--text);\}\
+\
+/* \uc0\u9472 \u9472  Controls \u9472 \u9472  */\
+.ctrls\{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;\}\
+.sel\{background:var(--bg2);border:1px solid var(--border2);color:var(--text);padding:5px 9px;border-radius:6px;font-size:12px;font-family:var(--font);cursor:pointer;\}\
+.sel:focus\{outline:none;border-color:var(--accent);\}\
+.chklbl\{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:5px;cursor:pointer;\}\
+.chklbl input\{accent-color:var(--accent);\}\
+\
+/* \uc0\u9472 \u9472  Legend \u9472 \u9472  */\
+.legend\{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;\}\
+.leg\{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text3);\}\
+.ld\{width:11px;height:11px;border-radius:2px;\}\
+\
+/* \uc0\u9472 \u9472  Matrix table \u9472 \u9472  */\
+.tbl-wrap\{overflow:auto;max-height:calc(100vh - 290px);border:1px solid var(--border);border-radius:10px;background:var(--bg2);\}\
+table\{border-collapse:collapse;white-space:nowrap;min-width:100%;\}\
+thead th\{position:sticky;top:0;z-index:10;background:var(--bg3);font-size:11px;font-weight:500;padding:7px 9px;border-bottom:1px solid var(--border2);color:var(--text2);text-align:center;font-family:var(--mono);\}\
+thead th:first-child\{position:sticky;left:0;z-index:20;text-align:left;min-width:130px;\}\
+tbody td\{padding:3px 5px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;\}\
+tbody td:first-child\{position:sticky;left:0;background:var(--bg2);border-right:1px solid var(--border);z-index:5;text-align:left;padding:3px 12px;font-size:12px;\}\
+tbody tr:hover td\{background:rgba(79,142,247,.05)!important;\}\
+.cat-row td\{background:var(--bg3)!important;font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.1em;padding:4px 12px;text-transform:uppercase;border-bottom:1px solid var(--border2)!important;\}\
+\
+/* \uc0\u9472 \u9472  Cells \u9472 \u9472  */\
+.cell\{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;min-width:26px;padding:2px 4px;border-radius:4px;cursor:pointer;font-size:13px;font-weight:600;font-family:var(--mono);line-height:1.2;transition:opacity .1s;\}\
+.cell:hover\{opacity:.7;\}\
+.cell .u\{font-size:9px;font-weight:400;opacity:.8;\}\
+.n0\{color:var(--text3);\}\
+.n1\{background:rgba(79,142,247,.15);color:#93c5fd;\}\
+.n2\{background:rgba(79,142,247,.28);color:#60a5fa;\}\
+.n3\{background:rgba(79,142,247,.45);color:#3b82f6;\}\
+.n4\{background:rgba(79,142,247,.65);color:#fff;\}\
+.n5\{background:#4f8ef7;color:#fff;\}\
+.nu\{background:rgba(245,158,11,.2);color:#fbbf24;\}\
+.ab\{display:inline-block;font-size:10px;padding:1px 5px;border-radius:8px;margin-left:4px;font-family:var(--mono);\}\
+.abr\{background:rgba(239,68,68,.15);color:#f87171;\}\
+.aby\{background:rgba(245,158,11,.15);color:#fbbf24;\}\
+.abg\{background:rgba(34,197,94,.15);color:#4ade80;\}\
+.tcol\{font-weight:600;font-family:var(--mono);\}\
+.dcol\{color:var(--text3);font-family:var(--mono);\}\
+\
+/* \uc0\u9472 \u9472  Alert / Long / Unlisted panels \u9472 \u9472  */\
+.two-col\{display:grid;grid-template-columns:1fr 1fr;gap:16px;\}\
+.sec-title\{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;\}\
+.alist\{display:flex;flex-direction:column;gap:6px;\}\
+.aitem\{display:flex;justify-content:space-between;align-items:center;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;transition:border-color .15s;\}\
+.aitem:hover\{border-color:var(--border2);\}\
+.aname\{font-size:13px;font-weight:500;\}\
+.adet\{font-size:11px;color:var(--text3);margin-top:2px;font-family:var(--mono);\}\
+.pill\{font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;font-family:var(--mono);white-space:nowrap;\}\
+.pill-r\{background:rgba(239,68,68,.15);color:#f87171;\}\
+.pill-y\{background:rgba(245,158,11,.15);color:#fbbf24;\}\
+.pill-g\{background:rgba(34,197,94,.15);color:#4ade80;\}\
+.pill-b\{background:rgba(79,142,247,.15);color:#93c5fd;\}\
+.pill-p\{background:rgba(168,85,247,.15);color:#c084fc;\}\
+\
+/* \uc0\u9472 \u9472  Panel \u9472 \u9472  */\
+.panel\{display:none;\}\
+.panel.active\{display:block;\}\
+\
+/* \uc0\u9472 \u9472  Bar chart \u9472 \u9472  */\
+.charts-row\{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;\}\
+.ccrd\{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;\}\
+.ccrd h4\{font-size:10px;color:var(--text3);margin-bottom:12px;text-transform:uppercase;letter-spacing:.07em;\}\
+.barchart\{display:flex;flex-direction:column;gap:5px;\}\
+.brow\{display:flex;align-items:center;gap:8px;\}\
+.blbl\{font-size:11px;color:var(--text2);width:120px;text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;\}\
+.btrack\{flex:1;height:18px;background:var(--bg3);border-radius:3px;overflow:hidden;\}\
+.bfill\{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:6px;font-size:10px;font-family:var(--mono);font-weight:500;color:#fff;min-width:24px;transition:width .5s ease;\}\
+\
+/* \uc0\u9472 \u9472  Sold analysis \u9472 \u9472  */\
+.sold-kpi\{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;\}\
+.kpi\{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;\}\
+.kpi-lbl\{font-size:10px;color:var(--text3);margin-bottom:5px;letter-spacing:.05em;\}\
+.kpi-val\{font-size:24px;font-weight:700;font-family:var(--mono);\}\
+.kpi-sub\{font-size:10px;color:var(--text3);margin-top:4px;\}\
+.monthly-chart\{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;\}\
+.monthly-chart h4\{font-size:10px;color:var(--text3);margin-bottom:14px;text-transform:uppercase;letter-spacing:.07em;\}\
+.mbars\{display:flex;align-items:flex-end;gap:4px;height:120px;\}\
+.mbar-wrap\{display:flex;flex-direction:column;align-items:center;flex:1;gap:4px;\}\
+.mbar\{width:100%;border-radius:3px 3px 0 0;min-height:2px;transition:height .5s ease;cursor:pointer;position:relative;\}\
+.mbar:hover\{opacity:.8;\}\
+.mbar-lbl\{font-size:9px;color:var(--text3);font-family:var(--mono);text-align:center;\}\
+.mbar-val\{font-size:9px;color:var(--text2);font-family:var(--mono);text-align:center;\}\
+\
+/* \uc0\u9472 \u9472  Detail panel \u9472 \u9472  */\
+.ov\{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:90;backdrop-filter:blur(4px);\}\
+.dp\{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:20px;min-width:320px;max-width:460px;max-height:72vh;overflow-y:auto;z-index:100;\}\
+.dp h3\{font-size:14px;font-weight:700;margin-bottom:12px;\}\
+.dpx\{float:right;cursor:pointer;color:var(--text3);font-size:20px;line-height:1;margin-top:-2px;\}\
+.drow\{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid var(--border);\}\
+.drow:last-child\{border:none;\}\
+.dlbl\{color:var(--text3);\}\
+.dwarn\{color:var(--red);font-weight:600;\}\
+\
+/* \uc0\u9472 \u9472  Loading/Error \u9472 \u9472  */\
+.ldbox\{display:flex;flex-direction:column;align-items:center;justify-content:center;height:260px;gap:14px;color:var(--text3);\}\
+.ldspin\{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;\}\
+.errbox\{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:20px;color:#f87171;margin:20px 0;\}\
+.errbox h3\{margin-bottom:8px;\}\
+.errbox p\{font-size:12px;color:var(--text2);margin-top:6px;\}\
+</style>\
+</head>\
+<body>\
+\
+<div class="hdr">\
+  <div class="hdr-l">\
+    <div class="logo">\uc0\u22312 \u24235 <span>\u12480 \u12483 \u12471 \u12517 \u12508 \u12540 \u12489 </span></div>\
+    <div class="upd" id="upd">\'97</div>\
+  </div>\
+  <button class="rbtn" onclick="loadAll()">\
+    <div class="spin" id="spin"></div>\
+    <span id="btntxt">\uc0\u55357 \u56580  \u12487 \u12540 \u12479 \u26356 \u26032 </span>\
+  </button>\
+</div>\
+\
+<div class="main">\
+\
+  <!-- \uc0\u12469 \u12510 \u12522 \u12540  -->\
+  <div class="summary">\
+    <div class="card"><div class="card-lbl">\uc0\u12511 \u12491 \u12496 \u12531 </div><div class="card-val" id="sm">\'97</div><div class="card-sub" id="sm2"></div></div>\
+    <div class="card"><div class="card-lbl">SUV</div><div class="card-val" id="ss">\'97</div><div class="card-sub" id="ss2"></div></div>\
+    <div class="card"><div class="card-lbl">HVCP</div><div class="card-val" id="sh">\'97</div><div class="card-sub" id="sh2"></div></div>\
+    <div class="card"><div class="card-lbl">\uc0\u36605 </div><div class="card-val" id="sk">\'97</div><div class="card-sub" id="sk2"></div></div>\
+    <div class="card card-ul"><div class="card-lbl">\uc0\u26410 \u25522 \u36617 </div><div class="card-val" id="su">\'97</div><div class="card-sub" id="su2"></div></div>\
+    <div class="card card-sold"><div class="card-lbl">\uc0\u22770 \u32004 \u65288 \u30452 \u36817 1\u24180 \u65289 </div><div class="card-val" id="sld">\'97</div><div class="card-sub" id="sld2"></div></div>\
+    <div class="card"><div class="card-lbl">\uc0\u22770 \u32004 \u65288 \u20840 \u26399 \u38291 \u65289 </div><div class="card-val" id="slda">\'97</div><div class="card-sub" id="slda2"></div></div>\
+  </div>\
+\
+  <!-- \uc0\u12479 \u12502  -->\
+  <div class="tabs">\
+    <button class="tab active" onclick="sw('matrix')">\uc0\u36554 \u31278 \'d7\u24180 \u24335 </button>\
+    <button class="tab" onclick="sw('alert')">\uc0\u36942 \u19981 \u36275 \u12450 \u12521 \u12540 \u12488 </button>\
+    <button class="tab" onclick="sw('longstock')">\uc0\u38263 \u26399 \u22312 \u24235 </button>\
+    <button class="tab" onclick="sw('unlisted')">\uc0\u26410 \u25522 \u36617 \u19968 \u35239 </button>\
+    <button class="tab" onclick="sw('sold')">\uc0\u22770 \u32004 \u20998 \u26512 </button>\
+    <button class="tab" onclick="sw('charts')">\uc0\u12464 \u12521 \u12501 </button>\
+  </div>\
+\
+  <!-- \uc0\u36554 \u31278 \'d7\u24180 \u24335  -->\
+  <div class="panel active" id="panel-matrix">\
+    <div class="ctrls">\
+      <select class="sel" id="catSel" onchange="renderMatrix()"><option value="">\uc0\u20840 \u12459 \u12486 \u12468 \u12522 </option><option>\u12511 \u12491 \u12496 \u12531 </option><option>SUV</option><option>HVCP</option><option>\u36605 </option></select>\
+      <select class="sel" id="viewSel" onchange="renderMatrix()"><option value="count">\uc0\u21488 \u25968 </option><option value="price">\u24179 \u22343 \u20385 \u26684 \u65288 \u19975 \u20870 \u65289 </option><option value="km">\u24179 \u22343 \u36208 \u34892 \u65288 \u19975 km\u65289 </option></select>\
+      <label class="chklbl"><input type="checkbox" id="showU" onchange="renderMatrix()"> \uc0\u26410 \u25522 \u36617 \u12434 \u21547 \u12416 </label>\
+      <label class="chklbl"><input type="checkbox" id="alertOnly" onchange="renderMatrix()"> \uc0\u12450 \u12521 \u12540 \u12488 \u12398 \u12415 </label>\
+    </div>\
+    <div class="legend">\
+      <div class="leg"><div class="ld" style="background:rgba(79,142,247,.15);border:1px solid rgba(79,142,247,.3)"></div>1\uc0\u21488 </div>\
+      <div class="leg"><div class="ld" style="background:rgba(79,142,247,.28)"></div>2\uc0\u21488 </div>\
+      <div class="leg"><div class="ld" style="background:rgba(79,142,247,.45)"></div>3\uc0\u12316 4\u21488 </div>\
+      <div class="leg"><div class="ld" style="background:rgba(79,142,247,.65)"></div>5\uc0\u12316 7\u21488 </div>\
+      <div class="leg"><div class="ld" style="background:#4f8ef7"></div>8\uc0\u21488 \u20197 \u19978 </div>\
+      <div class="leg"><div class="ld" style="background:rgba(245,158,11,.2)"></div>\uc0\u26410 \u25522 \u36617 \u21547 \u12416 </div>\
+    </div>\
+    <div class="tbl-wrap"><table id="MT"></table></div>\
+  </div>\
+\
+  <!-- \uc0\u36942 \u19981 \u36275 \u12450 \u12521 \u12540 \u12488  -->\
+  <div class="panel" id="panel-alert">\
+    <div class="two-col">\
+      <div><div class="sec-title" style="color:var(--red)">\uc0\u11015  \u19981 \u36275 \u12450 \u12521 \u12540 \u12488 </div><div class="alist" id="shortL"></div></div>\
+      <div><div class="sec-title" style="color:var(--green)">\uc0\u11014  \u36942 \u21104 \u12450 \u12521 \u12540 \u12488 </div><div class="alist" id="excessL"></div></div>\
+    </div>\
+  </div>\
+\
+  <!-- \uc0\u38263 \u26399 \u22312 \u24235  -->\
+  <div class="panel" id="panel-longstock">\
+    <div class="ctrls">\
+      <select class="sel" id="longThresh" onchange="renderLong()">\
+        <option value="60">60\uc0\u26085 \u20197 \u19978 </option>\
+        <option value="100" selected>100\uc0\u26085 \u20197 \u19978 </option>\
+        <option value="150">150\uc0\u26085 \u20197 \u19978 </option>\
+        <option value="200">200\uc0\u26085 \u20197 \u19978 </option>\
+      </select>\
+    </div>\
+    <div class="alist" id="longL"></div>\
+  </div>\
+\
+  <!-- \uc0\u26410 \u25522 \u36617 \u19968 \u35239  -->\
+  <div class="panel" id="panel-unlisted">\
+    <div class="two-col">\
+      <div><div class="sec-title" style="color:var(--amber)">\uc0\u9203  \u20837 \u24235 \u24453 \u12385 \u12539 \u20181 \u19978 \u12370 \u24453 \u12385 </div><div class="alist" id="unreadyL"></div></div>\
+      <div><div class="sec-title" style="color:var(--teal)">\uc0\u10003  \u25522 \u36617 \u21487 \u33021 \u65288 \u20837 \u24235 \u28168 \u12415 \u65289 </div><div class="alist" id="readyL"></div></div>\
+    </div>\
+  </div>\
+\
+  <!-- \uc0\u22770 \u32004 \u20998 \u26512  -->\
+  <div class="panel" id="panel-sold">\
+    <div class="sold-kpi">\
+      <div class="kpi"><div class="kpi-lbl">\uc0\u32207 \u22770 \u32004 \u21488 \u25968 </div><div class="kpi-val" id="kpi-total" style="color:var(--green)">\'97</div><div class="kpi-sub">\u20840 \u26399 \u38291 </div></div>\
+      <div class="kpi"><div class="kpi-lbl">\uc0\u24179 \u22343 \u25522 \u36617 \u26085 \u25968 </div><div class="kpi-val" id="kpi-days">\'97</div><div class="kpi-sub">\u22770 \u12428 \u12427 \u12414 \u12391 \u12398 \u26085 \u25968 </div></div>\
+      <div class="kpi"><div class="kpi-lbl">\uc0\u24179 \u22343 \u21033 \u30410 </div><div class="kpi-val" id="kpi-profit" style="color:var(--amber)">\'97</div><div class="kpi-sub">\u19975 \u20870  / \u21488 </div></div>\
+      <div class="kpi"><div class="kpi-lbl">\uc0\u30452 \u36817 12\u12534 \u26376 </div><div class="kpi-val" id="kpi-recent" style="color:var(--accent)">\'97</div><div class="kpi-sub">\u21488  \u22770 \u32004 </div></div>\
+    </div>\
+    <div class="monthly-chart">\
+      <h4>\uc0\u26376 \u21029 \u22770 \u32004 \u21488 \u25968 \u65288 \u30452 \u36817 18\u12534 \u26376 \u65289 </h4>\
+      <div class="mbars" id="monthlyBars"></div>\
+    </div>\
+    <div class="charts-row">\
+      <div class="ccrd"><h4>\uc0\u36554 \u31278 \u21029  \u22770 \u32004 \u25968 \u12521 \u12531 \u12461 \u12531 \u12464 \u65288 \u19978 \u20301 20\u65289 </h4><div class="barchart" id="soldRank"></div></div>\
+      <div class="ccrd"><h4>\uc0\u33394 \u21029  \u22770 \u32004 \u25968 \u65288 \u19978 \u20301 12\u33394 \u65289 </h4><div class="barchart" id="soldColor"></div></div>\
+    </div>\
+    <div class="charts-row">\
+      <div class="ccrd"><h4>\uc0\u24180 \u24335 \u21029  \u22770 \u32004 \u25968 </h4><div class="barchart" id="soldYear"></div></div>\
+      <div class="ccrd"><h4>\uc0\u36208 \u34892 \u36317 \u38626 \u24111  \u22770 \u32004 \u25968 </h4><div class="barchart" id="soldKm"></div></div>\
+    </div>\
+  </div>\
+\
+  <!-- \uc0\u12464 \u12521 \u12501  -->\
+  <div class="panel" id="panel-charts">\
+    <div class="charts-row">\
+      <div class="ccrd"><h4>\uc0\u36554 \u31278 \u21029  \u22312 \u24235 \u25968 \u12521 \u12531 \u12461 \u12531 \u12464 \u65288 \u19978 \u20301 15\u65289 </h4><div class="barchart" id="stockRank"></div></div>\
+      <div class="ccrd"><h4>\uc0\u12459 \u12486 \u12468 \u12522 \u21029  \u33394 \u27083 \u25104 \u65288 \u19978 \u20301 6\u33394 \u65289 </h4><div class="barchart" id="colorDist"></div></div>\
+    </div>\
+    <div class="charts-row">\
+      <div class="ccrd"><h4>\uc0\u36208 \u34892 \u36317 \u38626 \u24111  \u22312 \u24235 \u20998 \u24067 </h4><div class="barchart" id="kmDist"></div></div>\
+      <div class="ccrd"><h4>\uc0\u24180 \u24335 \u21029  \u22312 \u24235 \u25968 </h4><div class="barchart" id="yearDist"></div></div>\
+    </div>\
+  </div>\
+\
+</div><!-- /main -->\
+\
+<!-- Detail overlay -->\
+<div class="ov" id="ov" onclick="cx()"></div>\
+<div class="dp" id="dp">\
+  <span class="dpx" onclick="cx()">\'d7</span>\
+  <h3 id="dph"></h3>\
+  <div id="dpb"></div>\
+</div>\
+\
+<script>\
+// \uc0\u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \
+//  CONFIG\
+// \uc0\u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \
+const SID = '1688vaYsy-Ibhp9SaM875OzOrykJlfahVMIGteVclN3o';\
+const GIDS = \{\
+  minivan:  2047431649,\
+  suv:      1044635441,\
+  hvcp:     64189686,\
+  kei:      1834933994,\
+  unlisted: 1695712956,\
+  sold:     857233948,\
+  sold2025: 1127181298,\
+\};\
+\
+const NAME_MAP = \{'\uc0\u65395 \u65438 \u65387 \u65400 \u65404 \u65392 80\u31995 ':'\u12532 \u12457 \u12463 \u12471 \u12540 80\u31995 ','\u65395 \u65438 \u65387 \u65400 \u65404 \u65392 90\u31995 ':'\u12532 \u12457 \u12463 \u12471 \u12540 90\u31995 ','\u65395 \u65438 \u65386 \u65433 \u65420 \u65383 \u65394 \u65393  30\u31995 ':'\u12532 \u12455 \u12523 \u12501 \u12449 \u12452 \u12450 30\u31995 ','\u65417 \u65393 80\u31995 ':'\u12494 \u12450 80\u31995 ','\u65417 \u65393 90\u31995 ':'\u12494 \u12450 90\u31995 ','\u65396 \u65405 \u65400 \u65383 \u65394 \u65393 ':'\u12456 \u12473 \u12463 \u12449 \u12452 \u12450 ','\u65404 \u65396 \u65437 \u65408 ':'\u12471 \u12456 \u12531 \u12479 ','\u65405 \u65411 \u65391 \u65420 \u65439 \u65436 \u65402 \u65438 \u65437 ':'\u12473 \u12486 \u12483 \u12503 \u12527 \u12468 \u12531 ','\u65406 \u65434 \u65413  27\u21069 \u26399 ':'\u12475 \u12524 \u12490 27\u21069 \u26399 ','\u65406 \u65434 \u65413  27\u24460 \u26399 ':'\u12475 \u12524 \u12490 27\u24460 \u26399 ','\u65406 \u65434 \u65413  28\u29694 \u34892 ':'\u12475 \u12524 \u12490 28\u29694 \u34892 ','\u65420 \u65432 \u65392 \u65412 \u65438 ':'\u12501 \u12522 \u12540 \u12489 ','\u65418 \u65432 \u65393 \u65392 80':'\u12495 \u12522 \u12450 \u12540 80','\u65418 \u65432 \u65393 \u65392 80HV':'\u12495 \u12522 \u12450 \u12540 80HV','\u65395 \u65438 \u65386 \u65406 \u65438 \u65433 \u65288 \u29694 \u34892 \u65289 ':'\u12532 \u12455 \u12476 \u12523 \u29694 \u34892 ','\u65395 \u65438 \u65386 \u65406 \u65438 \u65433 HV\u65288 \u29694 \u34892 \u65289 ':'\u12532 \u12455 \u12476 \u12523 HV\u29694 \u34892 ','\u65395 \u65438 \u65386 \u65406 \u65438 \u65433 HV\u65288 \u21069 \u22411 \u65289 ':'\u12532 \u12455 \u12476 \u12523 HV\u21069 \u22411 ','\u65396 \u65400 \u65405 \u65412 \u65434 \u65394 \u65433 32\u65288 \u21069 \u26399 \u65289 ':'\u12456 \u12463 \u12473 \u12488 \u12524 \u12452 \u12523 32\u21069 \u26399 ','\u65396 \u65400 \u65405 \u65412 \u65434 \u65394 \u65433 32\u65288 \u24460 \u26399 \u65289 ':'\u12456 \u12463 \u12473 \u12488 \u12524 \u12452 \u12523 32\u24460 \u26399 ','\u65398 \u65435 \u65392 \u65431 \u65400 \u65435 \u65405 ':'\u12459 \u12525 \u12540 \u12521 \u12463 \u12525 \u12473 ','\u65420 \u65387 \u65434 \u65405 \u65408 \u65392 ':'\u12501 \u12457 \u12524 \u12473 \u12479 \u12540 ','\u65428 \u65432 \u65405 \u65400 \u65435 \u65405 ':'\u12516 \u12522 \u12473 \u12463 \u12525 \u12473 ','\u65431 \u65394 \u65405 \u65438 ':'\u12521 \u12452 \u12474 ','\u65404 \u65438 \u65425 \u12491 \u12540 \u65417 \u65423 \u65412 \u65438 ':'\u12472 \u12512 \u12491 \u12540 \u12494 \u12510 \u12489 ','\u65393 \u65400 \u65393 \u21069 \u26399 ':'\u12450 \u12463 \u12450 \u21069 \u26399 ','\u65393 \u65400 \u65393 \u20013 \u26399 ':'\u12450 \u12463 \u12450 \u20013 \u26399 ','\u65393 \u65400 \u65393 \u24460 \u26399 ':'\u12450 \u12463 \u12450 \u24460 \u26399 ','\u65393 \u65400 \u65393 \u29694 \u34892 ':'\u12450 \u12463 \u12450 \u29694 \u34892 ','\u65417 \u65392 \u65412 \u21069 \u26399 ':'\u12494 \u12540 \u12488 \u21069 \u26399 ','\u65417 \u65392 \u65412 \u20013 \u26399 ':'\u12494 \u12540 \u12488 \u20013 \u26399 ','\u65417 \u65392 \u65412 Epower':'\u12494 \u12540 \u12488 Epower','\u65417 \u65392 \u65412 Epower\u65288 \u29694 \u34892 \u65289 ':'\u12494 \u12540 \u12488 Epower\u29694 \u34892 ','\u65420 \u65439 \u65432 \u65395 \u65405 30\u31995 ':'\u12503 \u12522 \u12454 \u12473 30\u31995 ','\u65420 \u65439 \u65432 \u65395 \u65405  50\u21069 \u26399 ':'\u12503 \u12522 \u12454 \u12473 50\u21069 \u26399 ','\u65420 \u65439 \u65432 \u65395 \u65405  50\u24460 \u26399 ':'\u12503 \u12522 \u12454 \u12473 50\u24460 \u26399 ','\u65420 \u65439 \u65432 \u65395 \u65405  50PHV':'\u12503 \u12522 \u12454 \u12473 50PHV','\u65420 \u65439 \u65432 \u65395 \u65405  60':'\u12503 \u12522 \u12454 \u12473 60','\u65433 \u65392 \u65424 \u65392 ':'\u12523 \u12540 \u12511 \u12540 ','\u65408 \u65437 \u65400 ':'\u12479 \u12531 \u12463 ','\u65412 \u65392 \u65433 ':'\u12488 \u12540 \u12523 ','\u65407 \u65432 \u65397 ':'\u12477 \u12522 \u12458 ','\u65405 \u65421 \u65439 \u65394 \u65412 \u65438 ':'\u12473 \u12506 \u12452 \u12489 ','\u65395 \u65438 \u65384 \u65391 \u65410 ':'\u12532 \u12451 \u12483 \u12484 ','\u65398 \u65435 \u65392 \u65431 \u65405 \u65422 \u65439 \u65392 \u65410 ':'\u12459 \u12525 \u12540 \u12521 \u12473 \u12509 \u12540 \u12484 ','\u65398 \u65435 \u65392 \u65431 \u65410 \u65392 \u65432 \u65437 \u65400 \u65438 ':'\u12459 \u12525 \u12540 \u12521 \u12484 \u12540 \u12522 \u12531 \u12464 ','\u65423 \u65392 \u65409 ':'\u12510 \u12540 \u12481 ','\u65424 \u65431 \u65392 \u65404 \u65438 \u65389 ':'\u12511 \u12521 \u12540 \u12472 \u12517 ','N-BOX\u65398 \u65405 \u65408 \u65425 ':'N-BOX\u12459 \u12473 \u12479 \u12512 ','N\u65436 \u65402 \u65438 \u65437 ':'N\u12527 \u12468 \u12531 ','\u65393 \u65433 \u65412 ':'\u12450 \u12523 \u12488 ','\u65393 \u65433 \u65412 \u65431 \u65418 \u65439 \u65437 ':'\u12450 \u12523 \u12488 \u12521 \u12497 \u12531 ','\u65396 \u65420 \u65438 \u65432 \u65392 ':'\u12456 \u12502 \u12522 \u12540 ','\u65399 \u65388 \u65405 \u65412 ':'\u12461 \u12515 \u12473 \u12488 ','\u65399 \u65388 \u65435 \u65433 ':'\u12461 \u12515 \u12525 \u12523 ','\u65404 \u65438 \u65425 \u65414 \u65392 ':'\u12472 \u12512 \u12491 \u12540 ','\u65405 \u65421 \u65439 \u65392 \u65404 \u65393 ':'\u12473 \u12506 \u12540 \u12471 \u12450 ','\u65405 \u65421 \u65439 \u65392 \u65404 \u65393 \u65398 \u65405 \u65408 \u65425 ':'\u12473 \u12506 \u12540 \u12471 \u12450 \u12459 \u12473 \u12479 \u12512 ','\u65408 \u65437 \u65412 ':'\u12479 \u12531 \u12488 ','\u65408 \u65437 \u65412 \u65398 \u65405 \u65408 \u65425 ':'\u12479 \u12531 \u12488 \u12459 \u12473 \u12479 \u12512 ','\u65411 \u65438 \u65394 \u65405 \u65438 ':'\u12487 \u12452 \u12474 ','\u65411 \u65438 \u65394 \u65405 \u65438 \u65433 \u65392 \u65400 \u65405 ':'\u12487 \u12452 \u12474 \u12523 \u12540 \u12463 \u12473 ','\u65418 \u65405 \u65431 \u65392 ':'\u12495 \u12473 \u12521 \u12540 ','\u65424 \u65431 \u65394 \u65392 \u65405 ':'\u12511 \u12521 \u12452 \u12540 \u12473 ','\u65424 \u65431 \u65404 \u65438 \u65392 \u65417 ':'\u12511 \u12521 \u12472 \u12540 \u12494 ','\u65425 \u65392 \u65395 \u65438 \u65402 \u65437 \u65411 ':'\u12512 \u12540 \u12532 \u12467 \u12531 \u12486 ','\u65427 \u65402 ':'\u12514 \u12467 ','\u65433 \u65392 \u65400 \u65405 ':'\u12523 \u12540 \u12463 \u12473 ','\u65433 \u65392 \u65400 \u65405 \\u3000\u65418 \u65394 \u65395 \u65386 \u65394 \u65405 \u65408 \u65392 ':'\u12523 \u12540 \u12463 \u12473 HW','\u65436 \u65402 \u65438 \u65437 \u65330 ':'\u12527 \u12468 \u12531 R','AZ\u65436 \u65402 \u65438 \u65437 ':'AZ\u12527 \u12468 \u12531 ','EK\u65436 \u65402 \u65438 \u65437 ':'EK\u12527 \u12468 \u12531 ','\u65400 \u65432 \u65391 \u65418 \u65439 \u65392 \u65432 \u65397 ':'\u12463 \u12522 \u12483 \u12497 \u12540 \u12522 \u12458 ','\u65397 \u65392 \u65431 ':'\u12458 \u12540 \u12521 '\};\
+\
+const TEISU = \{"\uc0\u12511 \u12491 \u12496 \u12531 _\u12532 \u12457 \u12463 \u12471 \u12540 80\u31995 ":10,"\u12511 \u12491 \u12496 \u12531 _\u12532 \u12457 \u12463 \u12471 \u12540 90\u31995 ":4,"\u12511 \u12491 \u12496 \u12531 _\u12494 \u12450 80\u31995 ":3,"\u12511 \u12491 \u12496 \u12531 _\u12494 \u12450 90\u31995 ":2,"\u12511 \u12491 \u12496 \u12531 _\u12456 \u12473 \u12463 \u12449 \u12452 \u12450 ":4,"\u12511 \u12491 \u12496 \u12531 _\u12475 \u12524 \u12490 27\u21069 \u26399 ":6,"\u12511 \u12491 \u12496 \u12531 _\u12475 \u12524 \u12490 27\u24460 \u26399 ":6,"\u12511 \u12491 \u12496 \u12531 _\u12475 \u12524 \u12490 28\u29694 \u34892 ":5,"\u12511 \u12491 \u12496 \u12531 _\u12471 \u12456 \u12531 \u12479 ":8,"\u12511 \u12491 \u12496 \u12531 _\u12501 \u12522 \u12540 \u12489 ":8,"\u12511 \u12491 \u12496 \u12531 _\u12473 \u12486 \u12483 \u12503 \u12527 \u12468 \u12531 ":3,"\u12511 \u12491 \u12496 \u12531 _\u12532 \u12455 \u12523 \u12501 \u12449 \u12452 \u12450 30\u31995 ":1,"SUV_\u12495 \u12522 \u12450 \u12540 80":6,"SUV_\u12495 \u12522 \u12450 \u12540 80HV":5,"SUV_RAV4":4,"SUV_\u12532 \u12455 \u12476 \u12523 HV\u21069 \u22411 ":4,"SUV_\u12532 \u12455 \u12476 \u12523 \u29694 \u34892 ":3,"SUV_\u12532 \u12455 \u12476 \u12523 HV\u29694 \u34892 ":3,"SUV_\u12456 \u12463 \u12473 \u12488 \u12524 \u12452 \u12523 32\u21069 \u26399 ":3,"SUV_\u12456 \u12463 \u12473 \u12488 \u12524 \u12452 \u12523 32\u24460 \u26399 ":5,"SUV_\u12521 \u12452 \u12474 ":4,"SUV_\u12516 \u12522 \u12473 \u12463 \u12525 \u12473 ":4,"SUV_\u12459 \u12525 \u12540 \u12521 \u12463 \u12525 \u12473 ":4,"SUV_\u12501 \u12457 \u12524 \u12473 \u12479 \u12540 ":5,"SUV_CX-5":7,"SUV_CX30":1,"HVCP_\u12450 \u12463 \u12450 \u21069 \u26399 ":6,"HVCP_\u12450 \u12463 \u12450 \u20013 \u26399 ":6,"HVCP_\u12450 \u12463 \u12450 \u24460 \u26399 ":7,"HVCP_\u12450 \u12463 \u12450 \u29694 \u34892 ":3,"HVCP_\u12494 \u12540 \u12488 \u21069 \u26399 ":3,"HVCP_\u12494 \u12540 \u12488 \u20013 \u26399 ":3,"HVCP_\u12494 \u12540 \u12488 Epower":10,"HVCP_\u12494 \u12540 \u12488 Epower\u29694 \u34892 ":4,"HVCP_\u12503 \u12522 \u12454 \u12473 30\u31995 ":4,"HVCP_\u12503 \u12522 \u12454 \u12473 50\u21069 \u26399 ":7,"HVCP_\u12503 \u12522 \u12454 \u12473 50\u24460 \u26399 ":6,"HVCP_\u12503 \u12522 \u12454 \u12473 50PHV":2,"HVCP_\u12503 \u12522 \u12454 \u12473 60":3,"HVCP_\u12523 \u12540 \u12511 \u12540 ":4,"HVCP_\u12479 \u12531 \u12463 ":4,"HVCP_\u12477 \u12522 \u12458 ":4,"\u36605 _N-BOX":15,"\u36605 _N-BOX\u12459 \u12473 \u12479 \u12512 ":8,"\u36605 _\u12479 \u12531 \u12488 ":8,"\u36605 _\u12479 \u12531 \u12488 \u12459 \u12473 \u12479 \u12512 ":5,"\u36605 _\u12523 \u12540 \u12463 \u12473 ":3,"\u36605 _\u12523 \u12540 \u12463 \u12473 HW":5,"\u36605 _\u12487 \u12452 \u12474 \u12523 \u12540 \u12463 \u12473 ":3,"\u36605 _\u12473 \u12506 \u12540 \u12471 \u12450 ":6,"\u36605 _\u12473 \u12506 \u12540 \u12471 \u12450 \u12459 \u12473 \u12479 \u12512 ":4,"\u36605 _\u12495 \u12473 \u12521 \u12540 ":8,"\u36605 _\u12472 \u12512 \u12491 \u12540 ":3,"\u36605 _\u12487 \u12452 \u12474 ":15,"\u36605 _\u12527 \u12468 \u12531 R":10,"\u36605 _N\u12527 \u12468 \u12531 ":5,"\u36605 _\u12511 \u12521 \u12452 \u12540 \u12473 ":8,"\u36605 _\u12450 \u12523 \u12488 ":5,"\u36605 _\u12450 \u12523 \u12488 \u12521 \u12497 \u12531 ":5,"\u36605 _N-ONE":3,"\u36605 _\u12461 \u12515 \u12473 \u12488 ":5,"\u36605 _\u12514 \u12467 ":2,"\u36605 _EK\u12527 \u12468 \u12531 ":2\};\
+\
+const YEAR_ORDER = ["H15","H19","H21","H22","H23","H24","H25","H26","H27","H28","H29","H30","H31/R1","R1","R2","R3","R4","R5","R6","R7","R8","\uc0\u19981 \u26126 "];\
+const CAT_ORDER  = ["\uc0\u12511 \u12491 \u12496 \u12531 ","SUV","HVCP","\u36605 "];\
+\
+let STOCK = [], UNLISTED = [], SOLD = [];\
+\
+// \uc0\u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \
+//  CSV fetch & parse\
+// \uc0\u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \
+const csvUrl = gid => `https://docs.google.com/spreadsheets/d/$\{SID\}/export?format=csv&gid=$\{gid\}`;\
+\
+function parseCsv(text) \{\
+  return text.split('\\n').map(line => \{\
+    const cols = []; let cur = '', inQ = false;\
+    for (const c of line) \{\
+      if (c === '"') inQ = !inQ;\
+      else if (c === ',' && !inQ) \{ cols.push(cur.trim()); cur = ''; \}\
+      else cur += c;\
+    \}\
+    cols.push(cur.trim());\
+    return cols;\
+  \});\
+\}\
+\
+async function fetchCsv(gid) \{\
+  const r = await fetch(csvUrl(gid));\
+  if (!r.ok) throw new Error(`HTTP $\{r.status\} (gid=$\{gid\})`);\
+  return parseCsv(await r.text());\
+\}\
+\
+const nn = v => \{ const n = parseFloat(v); return isNaN(n) ? null : n; \};\
+const nm = s => \{ s = String(s).trim(); return NAME_MAP[s] || s; \};\
+\
+function parseYear(v) \{\
+  const s = String(v).trim();\
+  // \uc0\u22770 \u32004 \u12471 \u12540 \u12488 \u24418 \u24335  "30/8"\
+  if (s.includes('/')) \{\
+    try \{ const y = parseInt(s); if(y<=8) return `R$\{y\}`; if(y===31) return 'H31/R1'; return `H$\{y\}`; \} catch(e)\{\}\
+  \}\
+  const n = parseInt(s);\
+  if (isNaN(n)) return '\uc0\u19981 \u26126 ';\
+  if (n <= 8)  return `R$\{n\}`;\
+  if (n === 31) return 'H31/R1';\
+  return `H$\{n\}`;\
+\}\
+\
+function parseExcelDate(v) \{\
+  if (!v || v === '') return null;\
+  // ISO string\
+  if (String(v).includes('-') && String(v).length >= 7) \{\
+    const d = new Date(v); return isNaN(d) ? null : d;\
+  \}\
+  // Excel serial\
+  const n = parseFloat(v);\
+  if (!isNaN(n) && n > 40000 && n < 55000) \{\
+    return new Date((n - 25569) * 86400 * 1000);\
+  \}\
+  return null;\
+\}\
+\
+// \uc0\u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \
+//  Sheet loaders\
+// \uc0\u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \
+// \uc0\u22312 \u24235 \u12471 \u12540 \u12488 : col indices based on actual sheet structure\
+// \uc0\u65424 \u65414 \u65418 \u65438 \u65437 /HVCP: [0]=\u25285 \u24403 , [12]=\u36554 \u31278 , [16]=\u24180 , [19]=\u36208 \u34892 , [23]=\u12503 \u12521 \u12452 \u12473 , [18]=\u33394 , [30]=\u25522 \u36617 \u26085 \u25968 \
+// SUV:         [0]=\uc0\u25285 \u24403 , [12]=\u36554 \u31278 , [16]=\u24180 , [19]=\u36208 \u34892 , [22]=\u12503 \u12521 \u12452 \u12473 , [18]=\u33394 , [30]=\u25522 \u36617 \u26085 \u25968 \
+// \uc0\u36605 :          [0]=\u25285 \u24403 , [13]=\u36554 \u21517 , [16]=\u24180 , [19]=\u36208 \u34892 , [23]=\u12503 \u12521 \u12452 \u12473 , [18]=\u33394 , [30]=\u25522 \u36617 \u26085 \u25968 \
+\
+async function loadStock() \{\
+  const configs = [\
+    \{ key:'minivan', cat:'\uc0\u12511 \u12491 \u12496 \u12531 ', carC:12, priceC:23 \},\
+    \{ key:'suv',     cat:'SUV',     carC:12, priceC:22 \},\
+    \{ key:'hvcp',    cat:'HVCP',    carC:12, priceC:22 \},\
+    \{ key:'kei',     cat:'\uc0\u36605 ',      carC:13, priceC:23 \},\
+  ];\
+  const results = [];\
+  for (const c of configs) \{\
+    const rows = await fetchCsv(GIDS[c.key]);\
+    for (let i = 1; i < rows.length; i++) \{\
+      const r = rows[i];\
+      if (!r || r.length < 5) continue;\
+      const name = nm(r[c.carC]);\
+      if (!name || name.length <= 1) continue;\
+      const km = nn(r[19]);\
+      results.push(\{\
+        cat: c.cat, name,\
+        year:  parseYear(r[16]),\
+        km:    (km && km < 500000) ? km : null,\
+        price: nn(r[c.priceC]),\
+        color: String(r[18]||'').trim(),\
+        days:  nn(r[30]),\
+        unlisted: false,\
+      \});\
+    \}\
+  \}\
+  return results;\
+\}\
+\
+async function loadUnlisted() \{\
+  const rows = await fetchCsv(GIDS.unlisted);\
+  const result = [];\
+  for (let i = 1; i < rows.length; i++) \{\
+    const r = rows[i];\
+    if (!r || r.length < 5) continue;\
+    const name = nm(r[13]);\
+    if (!name || name.length <= 1) continue;\
+    const km = nn(r[19]);\
+    result.push(\{\
+      cat:    String(r[0]||'').trim().replace('\uc0\u65424 \u65414 \u65418 \u65438 \u65437 ','\u12511 \u12491 \u12496 \u12531 '),\
+      name,\
+      year:   parseYear(r[16]),\
+      km:     (km && km < 500000) ? km : null,\
+      price:  nn(r[23]),\
+      color:  String(r[18]||'').trim(),\
+      status: String(r[5]||'').trim(),\
+      unlisted: true,\
+    \});\
+  \}\
+  return result;\
+\}\
+\
+// \uc0\u22770 \u32004 \u12471 \u12540 \u12488 : [3]=\u25522 \u36617 \u26085 , [7]=\u36554 \u31278 , [9]=\u24180 \u24335 , [10]=\u33394 , [11]=\u36208 \u34892 , [15]=\u12503 \u12521 \u12452 \u12473 , [17]=\u21033 \u30410 , [23]=\u25522 \u36617 \u26085 \u25968 \
+async function loadSold() \{\
+  const result = [];\
+  for (const key of ['sold','sold2025']) \{\
+    const rows = await fetchCsv(GIDS[key]);\
+    for (let i = 1; i < rows.length; i++) \{\
+      const r = rows[i];\
+      if (!r || r.length < 10) continue;\
+      const name = nm(r[7]);\
+      if (!name || name.length <= 1) continue;\
+      // \uc0\u19981 \u27491 \u34892 \u12473 \u12461 \u12483 \u12503 \u65288 AA/\u36023 \u21462 /\u19979 \u21462 \u12394 \u12393 \u65289 \
+      if (['AA','\uc0\u36023 \u21462 ','\u19979 \u21462 ','B','S','A','C'].includes(name)) continue;\
+\
+      const km    = nn(r[11]);\
+      const price = nn(r[15]);\
+      const profit= nn(r[17]);\
+      const listedDate = parseExcelDate(r[3]);\
+      let days = null;\
+      if (key === 'sold2025') \{ const d = nn(r[23]); if (d && d > 0 && d < 3000) days = d; \}\
+\
+      result.push(\{\
+        name,\
+        year:   parseYear(r[9]),\
+        km:     (km && km < 500000) ? km : null,\
+        price:  (price && Math.abs(price) < 5000) ? price : null,\
+        profit: (profit && Math.abs(profit) < 5000) ? profit : null,\
+        color:  String(r[10]||'').trim(),\
+        days,\
+        month:  listedDate ? `$\{listedDate.getFullYear()\}-$\{String(listedDate.getMonth()+1).padStart(2,'0')\}` : null,\
+      \});\
+    \}\
+  \}\
+  return result;\
+\}\
+\
+// \uc0\u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \
+//  Main load\
+// \uc0\u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \
+async function loadAll() \{\
+  const btn = document.getElementById('btntxt');\
+  const sp  = document.getElementById('spin');\
+  btn.textContent = '\uc0\u35501 \u12415 \u36796 \u12415 \u20013 ...'; sp.style.display = 'block';\
+  try \{\
+    [STOCK, UNLISTED, SOLD] = await Promise.all([loadStock(), loadUnlisted(), loadSold()]);\
+    updateSummary();\
+    renderMatrix();\
+    renderAlerts();\
+    renderLong();\
+    renderUnlisted();\
+    renderSold();\
+    renderCharts();\
+    document.getElementById('upd').textContent =\
+      '\uc0\u26368 \u32066 \u26356 \u26032 : ' + new Date().toLocaleString('ja-JP',\{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'\});\
+  \} catch(e) \{\
+    document.getElementById('MT').innerHTML =\
+      `<tr><td colspan="30"><div class="errbox" style="margin:20px"><h3>\uc0\u9888  \u12487 \u12540 \u12479 \u21462 \u24471 \u12456 \u12521 \u12540 </h3><p>Google Sheets\u12408 \u12398 \u12450 \u12463 \u12475 \u12473 \u12395 \u22833 \u25943 \u12375 \u12414 \u12375 \u12383 \u12290 \u20844 \u38283 \u35373 \u23450 \u12434 \u30906 \u35469 \u12375 \u12390 \u12367 \u12384 \u12373 \u12356 \u12290 </p><p style="margin-top:8px;font-size:11px;color:var(--red);font-family:var(--mono)">$\{e.message\}</p></div></td></tr>`;\
+  \} finally \{ btn.textContent = '\uc0\u55357 \u56580  \u12487 \u12540 \u12479 \u26356 \u26032 '; sp.style.display = 'none'; \}\
+\}\
+\
+// \uc0\u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \
+//  Summary\
+// \uc0\u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \
+function updateSummary() \{\
+  const ids = \{ '\uc0\u12511 \u12491 \u12496 \u12531 ':'sm','SUV':'ss','HVCP':'sh','\u36605 ':'sk' \};\
+  CAT_ORDER.forEach(c => \{\
+    document.getElementById(ids[c]).textContent = STOCK.filter(d=>d.cat===c).length;\
+  \});\
+  document.getElementById('su').textContent = UNLISTED.length;\
+  const byG = \{\};\
+  UNLISTED.forEach(d=>\{ byG[d.cat]=(byG[d.cat]||0)+1; \});\
+  document.getElementById('su2').textContent = Object.entries(byG).map(([k,v])=>`$\{k\}:$\{v\}`).join(' / ');\
+\
+  const now = new Date();\
+  const y1ago = `$\{now.getFullYear()-1\}-$\{String(now.getMonth()+1).padStart(2,'0')\}`;\
+  const recent = SOLD.filter(d=>d.month && d.month >= y1ago).length;\
+  document.getElementById('sld').textContent  = recent;\
+  document.getElementById('slda').textContent = SOLD.length;\
+  document.getElementById('slda2').textContent = '\uc0\u36554 \u31278 \u25968 : ' + new Set(SOLD.map(d=>d.name)).size;\
+\}\
+\
+// \uc0\u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \
+//  Matrix\
+// \uc0\u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \
+function cc(n,hasU) \{\
+  if(hasU) return 'nu';\
+  if(!n) return 'n0';\
+  return ['','n1','n2','n3','n3','n4','n4','n4','n5'][Math.min(n,8)];\
+\}\
+\
+function renderMatrix() \{\
+  const cf = document.getElementById('catSel').value;\
+  const vf = document.getElementById('viewSel').value;\
+  const su = document.getElementById('showU').checked;\
+  const ao = document.getElementById('alertOnly').checked;\
+\
+  let data = su ? [...STOCK, ...UNLISTED.map(d=>(\{...d\}))] : [...STOCK];\
+  if (cf) data = data.filter(d=>d.cat===cf);\
+\
+  const yrs  = YEAR_ORDER.filter(y=>data.some(d=>d.year===y));\
+  const cats = cf ? [cf] : CAT_ORDER;\
+\
+  const g = \{\};\
+  data.forEach(d=>\{\
+    if(!g[d.cat])g[d.cat]=\{\};\
+    if(!g[d.cat][d.name])g[d.cat][d.name]=\{\};\
+    if(!g[d.cat][d.name][d.year])g[d.cat][d.name][d.year]=[];\
+    g[d.cat][d.name][d.year].push(d);\
+  \});\
+\
+  let h = `<thead><tr><th>\uc0\u36554 \u31278 </th>$\{yrs.map(y=>`<th>$\{y\}</th>`).join('')\}<th>\u35336 </th><th>\u26082 \u23450 </th></tr></thead><tbody>`;\
+\
+  cats.forEach(cat=>\{\
+    if(!g[cat])return;\
+    let names = Object.keys(g[cat]).sort();\
+    if(ao) names = names.filter(n=>\{\
+      const t=TEISU[`$\{cat\}_$\{n\}`];\
+      const tot=Object.values(g[cat][n]).flat().length;\
+      return t!=null && Math.abs(tot-t)>=2;\
+    \});\
+    if(!names.length)return;\
+    h += `<tr class="cat-row"><td colspan="$\{yrs.length+3\}">$\{cat\}</td></tr>`;\
+    names.forEach(name=>\{\
+      const ym=g[cat][name];\
+      const k=`$\{cat\}_$\{name\}`;\
+      const t=TEISU[k];\
+      const tot=Object.values(ym).flat().length;\
+      const diff=t!=null?tot-t:null;\
+      let bdg='';\
+      if(diff!=null)\{\
+        if(diff<=-3)bdg=`<span class="ab abr">$\{diff\}</span>`;\
+        else if(diff<0)bdg=`<span class="ab aby">$\{diff\}</span>`;\
+        else if(diff>=3)bdg=`<span class="ab abg">+$\{diff\}</span>`;\
+      \}\
+      h+=`<tr><td>$\{name\}$\{bdg\}</td>`;\
+      yrs.forEach(y=>\{\
+        const its=ym[y]||[];\
+        const li=its.filter(i=>!i.unlisted);\
+        const ul=its.filter(i=>i.unlisted);\
+        if(!its.length)\{h+='<td></td>';return;\}\
+        let val='',cls='';\
+        if(vf==='count')\{val=its.length;cls=cc(li.length||its.length,ul.length>0&&li.length===0);\}\
+        else if(vf==='price')\{const ps=its.filter(i=>i.price!=null).map(i=>i.price);val=ps.length?Math.round(ps.reduce((a,b)=>a+b)/ps.length):'\'97';cls='n2';\}\
+        else\{const ks=its.filter(i=>i.km!=null).map(i=>i.km);val=ks.length?(ks.reduce((a,b)=>a+b)/ks.length/10000).toFixed(1):'\'97';cls='n2';\}\
+        const uLbl=ul.length?`<div class="u">\uc0\u26410 $\{ul.length\}</div>`:'';\
+        h+=`<td><div class="cell $\{cls\}" onclick="sd('$\{encodeURIComponent(cat)\}','$\{encodeURIComponent(name)\}','$\{y\}',$\{su\})">$\{val\}$\{uLbl\}</div></td>`;\
+      \});\
+      h+=`<td class="tcol">$\{tot\}</td><td class="dcol">$\{t!=null?t:'\'97'\}</td></tr>`;\
+    \});\
+  \});\
+  h+='</tbody>';\
+  document.getElementById('MT').innerHTML=h;\
+\}\
+\
+function sd(cat,name,year,su)\{\
+  cat=decodeURIComponent(cat);name=decodeURIComponent(name);\
+  let its=STOCK.filter(d=>d.cat===cat&&d.name===name&&d.year===year);\
+  if(su)its=[...its,...UNLISTED.filter(d=>d.cat===cat&&d.name===name&&d.year===year)];\
+  if(!its.length)return;\
+  document.getElementById('dph').textContent=`$\{name\} / $\{year\}\uc0\u65288 $\{its.length\}\u21488 \u65289 `;\
+  document.getElementById('dpb').innerHTML=its.map((d,i)=>\{\
+    const km=d.km!=null?(d.km/10000).toFixed(1)+'\uc0\u19975 km':'\'97';\
+    const pr=d.price!=null?d.price+'\uc0\u19975 \u20870 ':'\'97';\
+    const dy=d.days!=null?d.days+'\uc0\u26085 ':(d.unlisted?'\u26410 \u25522 \u36617 ':'\'97');\
+    const dw=d.days!=null&&d.days>=100?'dwarn':'';\
+    return `<div class="drow"><span class="dlbl">#$\{i+1\} $\{d.color||'\'97'\}</span><span>$\{km\} / $\{pr\} / <span class="$\{dw\}">$\{dy\}</span></span></div>`;\
+  \}).join('');\
+  document.getElementById('dp').style.display='block';\
+  document.getElementById('ov').style.display='block';\
+\}\
+function cx()\{document.getElementById('dp').style.display='none';document.getElementById('ov').style.display='none';\}\
+\
+// \uc0\u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \
+//  Alerts\
+// \uc0\u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \
+function renderAlerts()\{\
+  const map=\{\};\
+  STOCK.forEach(d=>\{const k=`$\{d.cat\}_$\{d.name\}`;if(!map[k])map[k]=\{cat:d.cat,name:d.name,cnt:0\};map[k].cnt++;\});\
+  const short=[],excess=[];\
+  Object.entries(map).forEach(([k,v])=>\{\
+    const t=TEISU[k]; if(t==null)return;\
+    const diff=v.cnt-t;\
+    if(diff<=-2)short.push(\{...v,diff,t\});\
+    else if(diff>=2)excess.push(\{...v,diff,t\});\
+  \});\
+  short.sort((a,b)=>a.diff-b.diff);\
+  excess.sort((a,b)=>b.diff-a.diff);\
+  document.getElementById('shortL').innerHTML=short.map(d=>`<div class="aitem"><div><div class="aname">$\{d.name\}</div><div class="adet">$\{d.cat\} / \uc0\u35215 \u23450 $\{d.t\}\u21488  \u8594  \u23455 $\{d.cnt\}\u21488 </div></div><span class="pill $\{d.diff<=-4?'pill-r':'pill-y'\}">$\{d.diff\}</span></div>`).join('');\
+  document.getElementById('excessL').innerHTML=excess.map(d=>`<div class="aitem"><div><div class="aname">$\{d.name\}</div><div class="adet">$\{d.cat\} / \uc0\u35215 \u23450 $\{d.t\}\u21488  \u8594  \u23455 $\{d.cnt\}\u21488 </div></div><span class="pill $\{d.diff>=5?'pill-y':'pill-g'\}">+$\{d.diff\}</span></div>`).join('');\
+\}\
+\
+// \uc0\u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \
+//  Long stock\
+// \uc0\u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \
+function renderLong()\{\
+  const th=parseInt(document.getElementById('longThresh').value);\
+  const items=STOCK.filter(d=>d.days!=null&&d.days>=th&&d.days<10000).sort((a,b)=>b.days-a.days).slice(0,50);\
+  document.getElementById('longL').innerHTML=items.map(d=>\{\
+    const km=d.km?(d.km/10000).toFixed(1)+'\uc0\u19975 km':'\'97';\
+    const cls=d.days>=300?'pill-r':d.days>=150?'pill-y':'pill-b';\
+    return `<div class="aitem"><div><div class="aname">$\{d.name\}</div><div class="adet">$\{d.cat\} / $\{d.year\} / $\{km\} / $\{d.price!=null?d.price+'\uc0\u19975 \u20870 ':'\'97'\} / $\{d.color||'\'97'\}</div></div><span class="pill $\{cls\}">$\{d.days\}\u26085 </span></div>`;\
+  \}).join('');\
+\}\
+\
+// \uc0\u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \
+//  Unlisted\
+// \uc0\u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \
+function renderUnlisted()\{\
+  const noSt=['\uc0\u26410 \u20837 \u24235 ','\u37393 \u37329 ','\u26410 \u20181 \u19978 ','\u19981 \u26126 ','\u37393 \u37329 \u20837 \u24235 \u20013 '];\
+  const unready=UNLISTED.filter(d=>noSt.includes(d.status));\
+  const ready=UNLISTED.filter(d=>!noSt.includes(d.status));\
+  document.getElementById('unreadyL').innerHTML=unready.map(d=>`<div class="aitem"><div><div class="aname">$\{d.name\}</div><div class="adet">$\{d.cat\} / $\{d.year\} / $\{d.price!=null?d.price+'\uc0\u19975 \u20870 ':'\'97'\} / $\{d.color||'\'97'\}</div></div><span class="pill pill-y">$\{d.status||'\'97'\}</span></div>`).join('');\
+  document.getElementById('readyL').innerHTML=ready.map(d=>`<div class="aitem"><div><div class="aname">$\{d.name\}</div><div class="adet">$\{d.cat\} / $\{d.year\} / $\{d.price!=null?d.price+'\uc0\u19975 \u20870 ':'\'97'\} / $\{d.color||'\'97'\}</div></div><span class="pill pill-g">\u25522 \u36617 \u21487 </span></div>`).join('');\
+\}\
+\
+// \uc0\u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \
+//  Sold analysis\
+// \uc0\u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \
+function renderSold()\{\
+  const sd=SOLD;\
+  // KPIs\
+  document.getElementById('kpi-total').textContent=sd.length.toLocaleString();\
+  const dArr=sd.filter(d=>d.days!=null).map(d=>d.days);\
+  document.getElementById('kpi-days').textContent=dArr.length?Math.round(dArr.reduce((a,b)=>a+b)/dArr.length)+'\uc0\u26085 ':'\'97';\
+  const pArr=sd.filter(d=>d.profit!=null&&d.profit>-1000&&d.profit<10000).map(d=>d.profit);\
+  document.getElementById('kpi-profit').textContent=pArr.length?(pArr.reduce((a,b)=>a+b)/pArr.length).toFixed(1):'\'97';\
+  const now=new Date();\
+  const y1ago=`$\{now.getFullYear()-1\}-$\{String(now.getMonth()+1).padStart(2,'0')\}`;\
+  document.getElementById('kpi-recent').textContent=sd.filter(d=>d.month&&d.month>=y1ago).length;\
+\
+  // Monthly bars\uc0\u65288 \u30452 \u36817 18\u12534 \u26376 \u65289 \
+  const months=\{\};\
+  sd.forEach(d=>\{if(d.month)months[d.month]=(months[d.month]||0)+1;\});\
+  const sortedM=Object.keys(months).sort().slice(-18);\
+  const maxM=Math.max(...sortedM.map(m=>months[m]),1);\
+  document.getElementById('monthlyBars').innerHTML=sortedM.map(m=>\{\
+    const v=months[m];\
+    const h=Math.round(v/maxM*100);\
+    const lbl=m.replace(/^\\d\{4\}-/,'');\
+    return `<div class="mbar-wrap"><div class="mbar" style="height:$\{h\}%;background:var(--accent);opacity:.8" title="$\{m\}: $\{v\}\uc0\u21488 "></div><div class="mbar-lbl">$\{lbl\}</div><div class="mbar-val">$\{v\}</div></div>`;\
+  \}).join('');\
+\
+  // Rank\
+  const nc=\{\};\
+  sd.forEach(d=>\{nc[d.name]=(nc[d.name]||0)+1;\});\
+  barChart('soldRank',Object.entries(nc).sort((a,b)=>b[1]-a[1]).slice(0,20).map(([k,v])=>(\{l:k,v\})),'#4f8ef7');\
+\
+  // Color\
+  const cc2=\{\};\
+  sd.forEach(d=>\{if(d.color&&d.color.length>0&&d.color!='nan')cc2[d.color]=(cc2[d.color]||0)+1;\});\
+  barChart('soldColor',Object.entries(cc2).sort((a,b)=>b[1]-a[1]).slice(0,12).map(([k,v])=>(\{l:k,v\})),'#14b8a6');\
+\
+  // Year\
+  const yc=\{\};\
+  sd.forEach(d=>\{yc[d.year]=(yc[d.year]||0)+1;\});\
+  const ySorted=YEAR_ORDER.filter(y=>yc[y]).map(y=>(\{l:y,v:yc[y]\}));\
+  barChart('soldYear',ySorted,'#a855f7');\
+\
+  // KM bands\
+  const bands=[['\uc0\u12316 2\u19975 km',0,20000],['\u12316 4\u19975 km',20000,40000],['\u12316 6\u19975 km',40000,60000],['\u12316 8\u19975 km',60000,80000],['8\u19975 km\u36229 ',80000,Infinity]];\
+  barChart('soldKm',bands.map(([l,lo,hi])=>(\{l,v:sd.filter(d=>d.km!=null&&d.km>=lo&&d.km<hi).length\})),'#f59e0b');\
+\}\
+\
+// \uc0\u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \
+//  Charts (stock)\
+// \uc0\u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \
+function renderCharts()\{\
+  // Stock rank\
+  const nc=\{\};\
+  STOCK.forEach(d=>\{nc[d.name]=(nc[d.name]||0)+1;\});\
+  barChart('stockRank',Object.entries(nc).sort((a,b)=>b[1]-a[1]).slice(0,15).map(([k,v])=>(\{l:k,v\})),'#4f8ef7');\
+\
+  // Color dist\
+  const cd=\{\};\
+  STOCK.forEach(d=>\{if(d.color&&d.color!='nan')cd[d.color]=(cd[d.color]||0)+1;\});\
+  barChart('colorDist',Object.entries(cd).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([k,v])=>(\{l:k,v\})),'#14b8a6');\
+\
+  // KM dist\
+  const bands=[['\uc0\u12316 2\u19975 km',0,20000],['\u12316 4\u19975 km',20000,40000],['\u12316 6\u19975 km',40000,60000],['\u12316 8\u19975 km',60000,80000],['8\u19975 km\u36229 ',80000,Infinity]];\
+  barChart('kmDist',bands.map(([l,lo,hi])=>(\{l,v:STOCK.filter(d=>d.km!=null&&d.km>=lo&&d.km<hi).length\})),'#f59e0b');\
+\
+  // Year dist\
+  const yc=\{\};\
+  STOCK.forEach(d=>\{yc[d.year]=(yc[d.year]||0)+1;\});\
+  barChart('yearDist',YEAR_ORDER.filter(y=>yc[y]).map(y=>(\{l:y,v:yc[y]\})),'#a855f7');\
+\}\
+\
+// \uc0\u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \
+//  Bar chart helper\
+// \uc0\u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \
+function barChart(id, items, color) \{\
+  const max = Math.max(...items.map(i=>i.v), 1);\
+  document.getElementById(id).innerHTML = items.map((\{l,v\})=>\{\
+    const pct = Math.round(v/max*100);\
+    return `<div class="brow"><div class="blbl" title="$\{l\}">$\{l\}</div><div class="btrack"><div class="bfill" style="width:$\{pct\}%;background:$\{color\}">$\{v\}</div></div></div>`;\
+  \}).join('');\
+\}\
+\
+// \uc0\u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \
+//  Tab switch\
+// \uc0\u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \
+function sw(name)\{\
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));\
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));\
+  document.querySelector(`[onclick="sw('$\{name\}')"]`).classList.add('active');\
+  document.getElementById(`panel-$\{name\}`).classList.add('active');\
+\}\
+\
+// \uc0\u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \
+//  Init\
+// \uc0\u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \
+loadAll();\
+</script>\
+</body>\
+</html>
+\fs21 \
+}
