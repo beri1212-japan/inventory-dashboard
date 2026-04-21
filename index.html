@@ -1,6 +1,6 @@
 bash
 
-cat /home/claude/dashboard.html
+cat /home/claude/dashboard_v2.html
 出力
 
 <!DOCTYPE html>
@@ -16,62 +16,70 @@ cat /home/claude/dashboard.html
 body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;min-height:100vh;}
 
 /* ── Header ── */
-.hdr{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
-.hdr-l{display:flex;align-items:center;gap:14px;}
-.logo{font-size:15px;font-weight:700;letter-spacing:-.02em;}
+.hdr{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 16px;height:48px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.hdr-l{display:flex;align-items:center;gap:16px;}
+.logo{font-size:14px;font-weight:700;letter-spacing:-.02em;white-space:nowrap;}
 .logo span{color:var(--accent);}
-.upd{font-size:11px;color:var(--text3);font-family:var(--mono);}
-.rbtn{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-family:var(--font);display:flex;align-items:center;gap:6px;transition:all .15s;}
+.upd{font-size:10px;color:var(--text3);font-family:var(--mono);}
+
+/* ── Page tabs ── */
+.pages{display:flex;gap:2px;}
+.ptab{padding:5px 14px;border-radius:5px;cursor:pointer;font-size:12px;color:var(--text2);border:none;background:none;font-family:var(--font);transition:all .15s;white-space:nowrap;}
+.ptab.active{background:var(--accent);color:#fff;font-weight:500;}
+.ptab:hover:not(.active){background:var(--bg3);color:var(--text);}
+
+.rbtn{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-family:var(--font);display:flex;align-items:center;gap:5px;transition:all .15s;white-space:nowrap;}
 .rbtn:hover{background:var(--border);color:var(--text);}
-.spin{display:none;width:13px;height:13px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+.spin{display:none;width:12px;height:12px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
 /* ── Layout ── */
-.main{padding:18px 24px;max-width:1700px;margin:0 auto;}
+.main{padding:12px 16px;max-width:1800px;margin:0 auto;}
+.page{display:none;}
+.page.active{display:block;}
 
 /* ── Summary cards ── */
-.summary{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:18px;}
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;transition:border-color .15s;}
-.card:hover{border-color:var(--border2);}
-.card-lbl{font-size:10px;color:var(--text3);margin-bottom:5px;letter-spacing:.05em;}
-.card-val{font-size:26px;font-weight:700;font-family:var(--mono);line-height:1;}
-.card-sub{font-size:10px;color:var(--text3);margin-top:5px;}
+.summary{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:12px;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;}
+.card-lbl{font-size:10px;color:var(--text3);margin-bottom:4px;letter-spacing:.04em;}
+.card-val{font-size:22px;font-weight:700;font-family:var(--mono);line-height:1;}
+.card-sub{font-size:10px;color:var(--text3);margin-top:4px;line-height:1.4;}
 .card-ul{border-color:rgba(239,68,68,.25);}
 .card-ul .card-val{color:var(--red);}
 .card-sold .card-val{color:var(--green);}
 
-/* ── Tabs ── */
-.tabs{display:flex;gap:2px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:3px;margin-bottom:18px;width:fit-content;flex-wrap:wrap;}
-.tab{padding:6px 16px;border-radius:5px;cursor:pointer;font-size:12px;color:var(--text2);border:none;background:none;font-family:var(--font);transition:all .15s;white-space:nowrap;}
-.tab.active{background:var(--accent);color:#fff;font-weight:500;}
-.tab:hover:not(.active){background:var(--bg3);color:var(--text);}
+/* ── Section ── */
+.sec{background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:10px;}
+.sec-hdr{padding:8px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+.sec-title{font-size:12px;font-weight:500;color:var(--text);}
+.sec-body{padding:10px 12px;}
 
 /* ── Controls ── */
-.ctrls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;}
-.sel{background:var(--bg2);border:1px solid var(--border2);color:var(--text);padding:5px 9px;border-radius:6px;font-size:12px;font-family:var(--font);cursor:pointer;}
+.ctrls{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.sel{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:4px 8px;border-radius:5px;font-size:11px;font-family:var(--font);cursor:pointer;}
 .sel:focus{outline:none;border-color:var(--accent);}
-.chklbl{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:5px;cursor:pointer;}
+.chklbl{font-size:11px;color:var(--text2);display:flex;align-items:center;gap:4px;cursor:pointer;}
 .chklbl input{accent-color:var(--accent);}
 
 /* ── Legend ── */
-.legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;}
-.leg{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text3);}
-.ld{width:11px;height:11px;border-radius:2px;}
+.legend{display:flex;gap:10px;flex-wrap:wrap;}
+.leg{display:flex;align-items:center;gap:3px;font-size:10px;color:var(--text3);}
+.ld{width:10px;height:10px;border-radius:2px;}
 
 /* ── Matrix table ── */
-.tbl-wrap{overflow:auto;max-height:calc(100vh - 290px);border:1px solid var(--border);border-radius:10px;background:var(--bg2);}
+.tbl-wrap{overflow:auto;max-height:calc(100vh - 340px);border-radius:6px;border:1px solid var(--border);}
 table{border-collapse:collapse;white-space:nowrap;min-width:100%;}
-thead th{position:sticky;top:0;z-index:10;background:var(--bg3);font-size:11px;font-weight:500;padding:7px 9px;border-bottom:1px solid var(--border2);color:var(--text2);text-align:center;font-family:var(--mono);}
-thead th:first-child{position:sticky;left:0;z-index:20;text-align:left;min-width:130px;}
-tbody td{padding:3px 5px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;}
-tbody td:first-child{position:sticky;left:0;background:var(--bg2);border-right:1px solid var(--border);z-index:5;text-align:left;padding:3px 12px;font-size:12px;}
+thead th{position:sticky;top:0;z-index:10;background:var(--bg3);font-size:10px;font-weight:500;padding:5px 7px;border-bottom:1px solid var(--border2);color:var(--text2);text-align:center;font-family:var(--mono);}
+thead th:first-child{position:sticky;left:0;z-index:20;text-align:left;min-width:120px;}
+tbody td{padding:2px 4px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;}
+tbody td:first-child{position:sticky;left:0;background:var(--bg2);border-right:1px solid var(--border);z-index:5;text-align:left;padding:2px 10px;font-size:11px;}
 tbody tr:hover td{background:rgba(79,142,247,.05)!important;}
-.cat-row td{background:var(--bg3)!important;font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.1em;padding:4px 12px;text-transform:uppercase;border-bottom:1px solid var(--border2)!important;}
+.cat-row td{background:var(--bg3)!important;font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.08em;padding:3px 10px;border-bottom:1px solid var(--border2)!important;}
 
 /* ── Cells ── */
-.cell{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;min-width:26px;padding:2px 4px;border-radius:4px;cursor:pointer;font-size:13px;font-weight:600;font-family:var(--mono);line-height:1.2;transition:opacity .1s;}
+.cell{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;min-width:24px;padding:2px 3px;border-radius:3px;cursor:pointer;font-size:12px;font-weight:600;font-family:var(--mono);line-height:1.2;transition:opacity .1s;}
 .cell:hover{opacity:.7;}
-.cell .u{font-size:9px;font-weight:400;opacity:.8;}
+.cell .u{font-size:8px;font-weight:400;opacity:.8;}
 .n0{color:var(--text3);}
 .n1{background:rgba(79,142,247,.15);color:#93c5fd;}
 .n2{background:rgba(79,142,247,.28);color:#60a5fa;}
@@ -79,73 +87,76 @@ tbody tr:hover td{background:rgba(79,142,247,.05)!important;}
 .n4{background:rgba(79,142,247,.65);color:#fff;}
 .n5{background:#4f8ef7;color:#fff;}
 .nu{background:rgba(245,158,11,.2);color:#fbbf24;}
-.ab{display:inline-block;font-size:10px;padding:1px 5px;border-radius:8px;margin-left:4px;font-family:var(--mono);}
+.ab{display:inline-block;font-size:10px;padding:0 4px;border-radius:6px;margin-left:3px;font-family:var(--mono);}
 .abr{background:rgba(239,68,68,.15);color:#f87171;}
 .aby{background:rgba(245,158,11,.15);color:#fbbf24;}
 .abg{background:rgba(34,197,94,.15);color:#4ade80;}
-.tcol{font-weight:600;font-family:var(--mono);}
-.dcol{color:var(--text3);font-family:var(--mono);}
+.tcol{font-weight:600;font-family:var(--mono);font-size:11px;}
+.dcol{color:var(--text3);font-family:var(--mono);font-size:11px;}
 
-/* ── Alert / Long / Unlisted panels ── */
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-.sec-title{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;}
-.alist{display:flex;flex-direction:column;gap:6px;}
-.aitem{display:flex;justify-content:space-between;align-items:center;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;transition:border-color .15s;}
+/* ── Cards grid ── */
+.cards-grid{display:flex;flex-direction:column;gap:6px;}
+.aitem{display:flex;justify-content:space-between;align-items:center;background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:8px 12px;transition:border-color .15s;}
 .aitem:hover{border-color:var(--border2);}
-.aname{font-size:13px;font-weight:500;}
-.adet{font-size:11px;color:var(--text3);margin-top:2px;font-family:var(--mono);}
-.pill{font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;font-family:var(--mono);white-space:nowrap;}
+.aname{font-size:12px;font-weight:500;}
+.adet{font-size:10px;color:var(--text3);margin-top:2px;font-family:var(--mono);}
+.pill{font-size:11px;font-weight:600;padding:2px 8px;border-radius:16px;font-family:var(--mono);white-space:nowrap;}
 .pill-r{background:rgba(239,68,68,.15);color:#f87171;}
 .pill-y{background:rgba(245,158,11,.15);color:#fbbf24;}
 .pill-g{background:rgba(34,197,94,.15);color:#4ade80;}
 .pill-b{background:rgba(79,142,247,.15);color:#93c5fd;}
 .pill-p{background:rgba(168,85,247,.15);color:#c084fc;}
+.pill-t{background:rgba(20,184,166,.15);color:#2dd4bf;}
 
-/* ── Panel ── */
-.panel{display:none;}
-.panel.active{display:block;}
+/* ── Two col ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.four-col{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;}
+
+/* ── KPI ── */
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;}
+.kpi-lbl{font-size:10px;color:var(--text3);margin-bottom:4px;letter-spacing:.04em;}
+.kpi-val{font-size:22px;font-weight:700;font-family:var(--mono);}
+.kpi-sub{font-size:10px;color:var(--text3);margin-top:3px;}
 
 /* ── Bar chart ── */
-.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
-.ccrd{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;}
-.ccrd h4{font-size:10px;color:var(--text3);margin-bottom:12px;text-transform:uppercase;letter-spacing:.07em;}
-.barchart{display:flex;flex-direction:column;gap:5px;}
-.brow{display:flex;align-items:center;gap:8px;}
-.blbl{font-size:11px;color:var(--text2);width:120px;text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.btrack{flex:1;height:18px;background:var(--bg3);border-radius:3px;overflow:hidden;}
-.bfill{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:6px;font-size:10px;font-family:var(--mono);font-weight:500;color:#fff;min-width:24px;transition:width .5s ease;}
+.barchart{display:flex;flex-direction:column;gap:4px;}
+.brow{display:flex;align-items:center;gap:6px;}
+.blbl{font-size:10px;color:var(--text2);width:110px;text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.btrack{flex:1;height:16px;background:var(--bg3);border-radius:3px;overflow:hidden;}
+.bfill{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:5px;font-size:9px;font-family:var(--mono);font-weight:500;color:#fff;min-width:20px;}
 
-/* ── Sold analysis ── */
-.sold-kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
-.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
-.kpi-lbl{font-size:10px;color:var(--text3);margin-bottom:5px;letter-spacing:.05em;}
-.kpi-val{font-size:24px;font-weight:700;font-family:var(--mono);}
-.kpi-sub{font-size:10px;color:var(--text3);margin-top:4px;}
-.monthly-chart{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;}
-.monthly-chart h4{font-size:10px;color:var(--text3);margin-bottom:14px;text-transform:uppercase;letter-spacing:.07em;}
-.mbars{display:flex;align-items:flex-end;gap:4px;height:120px;}
-.mbar-wrap{display:flex;flex-direction:column;align-items:center;flex:1;gap:4px;}
-.mbar{width:100%;border-radius:3px 3px 0 0;min-height:2px;transition:height .5s ease;cursor:pointer;position:relative;}
+/* ── Monthly bars ── */
+.mbars{display:flex;align-items:flex-end;gap:3px;height:100px;}
+.mbar-wrap{display:flex;flex-direction:column;align-items:center;flex:1;gap:2px;}
+.mbar{width:100%;border-radius:2px 2px 0 0;min-height:2px;cursor:pointer;}
 .mbar:hover{opacity:.8;}
-.mbar-lbl{font-size:9px;color:var(--text3);font-family:var(--mono);text-align:center;}
-.mbar-val{font-size:9px;color:var(--text2);font-family:var(--mono);text-align:center;}
+.mbar-lbl{font-size:8px;color:var(--text3);font-family:var(--mono);}
+.mbar-val{font-size:8px;color:var(--text2);font-family:var(--mono);}
+
+/* ── Priority badge ── */
+.pri{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;}
+.pri-s{background:rgba(239,68,68,.15);color:#f87171;}
+.pri-a{background:rgba(245,158,11,.15);color:#fbbf24;}
+.pri-b{background:rgba(79,142,247,.15);color:#93c5fd;}
 
 /* ── Detail panel ── */
 .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:90;backdrop-filter:blur(4px);}
-.dp{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:20px;min-width:320px;max-width:460px;max-height:72vh;overflow-y:auto;z-index:100;}
-.dp h3{font-size:14px;font-weight:700;margin-bottom:12px;}
-.dpx{float:right;cursor:pointer;color:var(--text3);font-size:20px;line-height:1;margin-top:-2px;}
-.drow{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid var(--border);}
+.dp{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:16px;min-width:300px;max-width:440px;max-height:70vh;overflow-y:auto;z-index:100;}
+.dp h3{font-size:13px;font-weight:700;margin-bottom:10px;}
+.dpx{float:right;cursor:pointer;color:var(--text3);font-size:18px;line-height:1;}
+.drow{display:flex;justify-content:space-between;font-size:11px;padding:5px 0;border-bottom:1px solid var(--border);}
 .drow:last-child{border:none;}
 .dlbl{color:var(--text3);}
 .dwarn{color:var(--red);font-weight:600;}
 
-/* ── Loading/Error ── */
-.ldbox{display:flex;flex-direction:column;align-items:center;justify-content:center;height:260px;gap:14px;color:var(--text3);}
-.ldspin{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
-.errbox{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:20px;color:#f87171;margin:20px 0;}
-.errbox h3{margin-bottom:8px;}
-.errbox p{font-size:12px;color:var(--text2);margin-top:6px;}
+.errbox{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:16px;color:#f87171;margin:12px 0;}
+.errbox h3{margin-bottom:6px;}
+.errbox p{font-size:11px;color:var(--text2);margin-top:4px;}
+
+/* ── Score bar ── */
+.score-bar{height:4px;border-radius:2px;background:var(--bg3);margin-top:4px;overflow:hidden;}
+.score-fill{height:100%;border-radius:2px;}
 </style>
 </head>
 <body>
@@ -153,122 +164,208 @@ tbody tr:hover td{background:rgba(79,142,247,.05)!important;}
 <div class="hdr">
   <div class="hdr-l">
     <div class="logo">在庫<span>ダッシュボード</span></div>
+    <div class="pages">
+      <button class="ptab active" onclick="showPage('stock')">📦 在庫現状</button>
+      <button class="ptab" onclick="showPage('action')">⚡ 在庫対策</button>
+      <button class="ptab" onclick="showPage('sold')">📈 売約分析</button>
+    </div>
     <div class="upd" id="upd">—</div>
   </div>
   <button class="rbtn" onclick="loadAll()">
     <div class="spin" id="spin"></div>
-    <span id="btntxt">🔄 データ更新</span>
+    <span id="btntxt">🔄 更新</span>
   </button>
 </div>
 
 <div class="main">
 
-  <!-- サマリー -->
+<!-- ═══════════════════════════════════════════
+     PAGE 1: 在庫現状
+═══════════════════════════════════════════ -->
+<div class="page active" id="page-stock">
+
   <div class="summary">
     <div class="card"><div class="card-lbl">ミニバン</div><div class="card-val" id="sm">—</div><div class="card-sub" id="sm2"></div></div>
     <div class="card"><div class="card-lbl">SUV</div><div class="card-val" id="ss">—</div><div class="card-sub" id="ss2"></div></div>
     <div class="card"><div class="card-lbl">HVCP</div><div class="card-val" id="sh">—</div><div class="card-sub" id="sh2"></div></div>
     <div class="card"><div class="card-lbl">軽</div><div class="card-val" id="sk">—</div><div class="card-sub" id="sk2"></div></div>
     <div class="card card-ul"><div class="card-lbl">未掲載</div><div class="card-val" id="su">—</div><div class="card-sub" id="su2"></div></div>
-    <div class="card card-sold"><div class="card-lbl">売約（直近1年）</div><div class="card-val" id="sld">—</div><div class="card-sub" id="sld2"></div></div>
-    <div class="card"><div class="card-lbl">売約（全期間）</div><div class="card-val" id="slda">—</div><div class="card-sub" id="slda2"></div></div>
-  </div>
-
-  <!-- タブ -->
-  <div class="tabs">
-    <button class="tab active" onclick="sw('matrix')">車種×年式</button>
-    <button class="tab" onclick="sw('alert')">過不足アラート</button>
-    <button class="tab" onclick="sw('longstock')">長期在庫</button>
-    <button class="tab" onclick="sw('unlisted')">未掲載一覧</button>
-    <button class="tab" onclick="sw('sold')">売約分析</button>
-    <button class="tab" onclick="sw('charts')">グラフ</button>
+    <div class="card"><div class="card-lbl">在庫合計</div><div class="card-val" id="stotal" style="color:var(--accent)">—</div><div class="card-sub">掲載中</div></div>
+    <div class="card"><div class="card-lbl">長期在庫</div><div class="card-val" id="slong" style="color:var(--amber)">—</div><div class="card-sub">100日超</div></div>
   </div>
 
   <!-- 車種×年式 -->
-  <div class="panel active" id="panel-matrix">
-    <div class="ctrls">
-      <select class="sel" id="catSel" onchange="renderMatrix()"><option value="">全カテゴリ</option><option>ミニバン</option><option>SUV</option><option>HVCP</option><option>軽</option></select>
-      <select class="sel" id="viewSel" onchange="renderMatrix()"><option value="count">台数</option><option value="price">平均価格（万円）</option><option value="km">平均走行（万km）</option></select>
-      <label class="chklbl"><input type="checkbox" id="showU" onchange="renderMatrix()"> 未掲載を含む</label>
-      <label class="chklbl"><input type="checkbox" id="alertOnly" onchange="renderMatrix()"> アラートのみ</label>
+  <div class="sec">
+    <div class="sec-hdr">
+      <span class="sec-title">車種 × 年式 マトリックス</span>
+      <div class="ctrls">
+        <select class="sel" id="catSel" onchange="renderMatrix()"><option value="">全カテゴリ</option><option>ミニバン</option><option>SUV</option><option>HVCP</option><option>軽</option></select>
+        <select class="sel" id="viewSel" onchange="renderMatrix()"><option value="count">台数</option><option value="price">平均価格（万）</option><option value="km">平均走行（万km）</option></select>
+        <label class="chklbl"><input type="checkbox" id="showU" onchange="renderMatrix()"> 未掲載含む</label>
+        <label class="chklbl"><input type="checkbox" id="alertOnly" onchange="renderMatrix()"> アラートのみ</label>
+      </div>
+      <div class="legend">
+        <div class="leg"><div class="ld" style="background:rgba(79,142,247,.15);border:1px solid rgba(79,142,247,.3)"></div>1</div>
+        <div class="leg"><div class="ld" style="background:rgba(79,142,247,.28)"></div>2</div>
+        <div class="leg"><div class="ld" style="background:rgba(79,142,247,.45)"></div>3〜4</div>
+        <div class="leg"><div class="ld" style="background:rgba(79,142,247,.65)"></div>5〜7</div>
+        <div class="leg"><div class="ld" style="background:#4f8ef7"></div>8+</div>
+        <div class="leg"><div class="ld" style="background:rgba(245,158,11,.2)"></div>未掲載</div>
+      </div>
     </div>
-    <div class="legend">
-      <div class="leg"><div class="ld" style="background:rgba(79,142,247,.15);border:1px solid rgba(79,142,247,.3)"></div>1台</div>
-      <div class="leg"><div class="ld" style="background:rgba(79,142,247,.28)"></div>2台</div>
-      <div class="leg"><div class="ld" style="background:rgba(79,142,247,.45)"></div>3〜4台</div>
-      <div class="leg"><div class="ld" style="background:rgba(79,142,247,.65)"></div>5〜7台</div>
-      <div class="leg"><div class="ld" style="background:#4f8ef7"></div>8台以上</div>
-      <div class="leg"><div class="ld" style="background:rgba(245,158,11,.2)"></div>未掲載含む</div>
-    </div>
-    <div class="tbl-wrap"><table id="MT"></table></div>
-  </div>
-
-  <!-- 過不足アラート -->
-  <div class="panel" id="panel-alert">
-    <div class="two-col">
-      <div><div class="sec-title" style="color:var(--red)">⬇ 不足アラート</div><div class="alist" id="shortL"></div></div>
-      <div><div class="sec-title" style="color:var(--green)">⬆ 過剰アラート</div><div class="alist" id="excessL"></div></div>
+    <div class="sec-body" style="padding:8px;">
+      <div class="tbl-wrap"><table id="MT"></table></div>
     </div>
   </div>
 
-  <!-- 長期在庫 -->
-  <div class="panel" id="panel-longstock">
-    <div class="ctrls">
-      <select class="sel" id="longThresh" onchange="renderLong()">
-        <option value="60">60日以上</option>
-        <option value="100" selected>100日以上</option>
-        <option value="150">150日以上</option>
-        <option value="200">200日以上</option>
-      </select>
+  <!-- 未掲載 + 長期在庫 -->
+  <div class="two-col">
+    <div class="sec">
+      <div class="sec-hdr">
+        <span class="sec-title">⏳ 未掲載一覧</span>
+        <div class="ctrls">
+          <select class="sel" id="unlistedFilter" onchange="renderUnlisted()"><option value="">全て</option><option value="ready">掲載可</option><option value="wait">待ち</option></select>
+        </div>
+      </div>
+      <div class="sec-body" style="max-height:280px;overflow-y:auto;">
+        <div class="cards-grid" id="unlistedL"></div>
+      </div>
     </div>
-    <div class="alist" id="longL"></div>
+    <div class="sec">
+      <div class="sec-hdr">
+        <span class="sec-title">🕐 長期在庫</span>
+        <div class="ctrls">
+          <select class="sel" id="longThresh" onchange="renderLong()">
+            <option value="60">60日以上</option>
+            <option value="100" selected>100日以上</option>
+            <option value="150">150日以上</option>
+            <option value="200">200日以上</option>
+          </select>
+        </div>
+      </div>
+      <div class="sec-body" style="max-height:280px;overflow-y:auto;">
+        <div class="cards-grid" id="longL"></div>
+      </div>
+    </div>
   </div>
 
-  <!-- 未掲載一覧 -->
-  <div class="panel" id="panel-unlisted">
-    <div class="two-col">
-      <div><div class="sec-title" style="color:var(--amber)">⏳ 入庫待ち・仕上げ待ち</div><div class="alist" id="unreadyL"></div></div>
-      <div><div class="sec-title" style="color:var(--teal)">✓ 掲載可能（入庫済み）</div><div class="alist" id="readyL"></div></div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     PAGE 2: 在庫対策
+═══════════════════════════════════════════ -->
+<div class="page" id="page-action">
+
+  <!-- 対策サマリー -->
+  <div class="four-col">
+    <div class="kpi"><div class="kpi-lbl">不足車種数</div><div class="kpi-val" id="k-short" style="color:var(--red)">—</div><div class="kpi-sub">即仕入れ必要</div></div>
+    <div class="kpi"><div class="kpi-lbl">過剰車種数</div><div class="kpi-val" id="k-excess" style="color:var(--amber)">—</div><div class="kpi-sub">販売促進が必要</div></div>
+    <div class="kpi"><div class="kpi-lbl">掲載可能台数</div><div class="kpi-val" id="k-ready" style="color:var(--teal)">—</div><div class="kpi-sub">今すぐ掲載できる</div></div>
+    <div class="kpi"><div class="kpi-lbl">長期在庫台数</div><div class="kpi-val" id="k-long" style="color:var(--purple)">—</div><div class="kpi-sub">100日超・要是正</div></div>
+  </div>
+
+  <div class="two-col">
+    <!-- 仕入れ優先リスト -->
+    <div class="sec">
+      <div class="sec-hdr">
+        <span class="sec-title">🛒 仕入れ優先リスト</span>
+        <span style="font-size:10px;color:var(--text3)">不足台数 × 売約実績で自動計算</span>
+      </div>
+      <div class="sec-body" style="max-height:340px;overflow-y:auto;">
+        <div class="cards-grid" id="buyListL"></div>
+      </div>
+    </div>
+
+    <!-- 過剰在庫是正 -->
+    <div class="sec">
+      <div class="sec-hdr">
+        <span class="sec-title">📉 過剰在庫 是正リスト</span>
+        <span style="font-size:10px;color:var(--text3)">価格見直し・販促推奨</span>
+      </div>
+      <div class="sec-body" style="max-height:340px;overflow-y:auto;">
+        <div class="cards-grid" id="excessListL"></div>
+      </div>
     </div>
   </div>
 
-  <!-- 売約分析 -->
-  <div class="panel" id="panel-sold">
-    <div class="sold-kpi">
-      <div class="kpi"><div class="kpi-lbl">総売約台数</div><div class="kpi-val" id="kpi-total" style="color:var(--green)">—</div><div class="kpi-sub">全期間</div></div>
-      <div class="kpi"><div class="kpi-lbl">平均掲載日数</div><div class="kpi-val" id="kpi-days">—</div><div class="kpi-sub">売れるまでの日数</div></div>
-      <div class="kpi"><div class="kpi-lbl">平均利益</div><div class="kpi-val" id="kpi-profit" style="color:var(--amber)">—</div><div class="kpi-sub">万円 / 台</div></div>
-      <div class="kpi"><div class="kpi-lbl">直近12ヶ月</div><div class="kpi-val" id="kpi-recent" style="color:var(--accent)">—</div><div class="kpi-sub">台 売約</div></div>
+  <div class="two-col">
+    <!-- 長期在庫是正 -->
+    <div class="sec">
+      <div class="sec-hdr">
+        <span class="sec-title">⚠ 長期在庫 是正リスト</span>
+        <span style="font-size:10px;color:var(--text3)">掲載から100日超・価格見直し推奨</span>
+      </div>
+      <div class="sec-body" style="max-height:280px;overflow-y:auto;">
+        <div class="cards-grid" id="longActionL"></div>
+      </div>
     </div>
-    <div class="monthly-chart">
-      <h4>月別売約台数（直近18ヶ月）</h4>
+
+    <!-- 今すぐ掲載できる未掲載 -->
+    <div class="sec">
+      <div class="sec-hdr">
+        <span class="sec-title">✅ 今すぐ掲載できる車両</span>
+        <span style="font-size:10px;color:var(--teal)">未掲載のうち入庫済み</span>
+      </div>
+      <div class="sec-body" style="max-height:280px;overflow-y:auto;">
+        <div class="cards-grid" id="readyListL"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════
+     PAGE 3: 売約分析
+═══════════════════════════════════════════ -->
+<div class="page" id="page-sold">
+
+  <!-- KPI -->
+  <div class="four-col">
+    <div class="kpi"><div class="kpi-lbl">総売約台数</div><div class="kpi-val" id="kpi-total" style="color:var(--green)">—</div><div class="kpi-sub">全期間</div></div>
+    <div class="kpi"><div class="kpi-lbl">平均回転日数</div><div class="kpi-val" id="kpi-days">—</div><div class="kpi-sub">日で売れる</div></div>
+    <div class="kpi"><div class="kpi-lbl">平均利益</div><div class="kpi-val" id="kpi-profit" style="color:var(--amber)">—</div><div class="kpi-sub">万円 / 台</div></div>
+    <div class="kpi"><div class="kpi-lbl">直近12ヶ月</div><div class="kpi-val" id="kpi-recent" style="color:var(--accent)">—</div><div class="kpi-sub">台 売約</div></div>
+  </div>
+
+  <!-- 月別推移 -->
+  <div class="sec" style="margin-bottom:10px;">
+    <div class="sec-hdr"><span class="sec-title">📅 月別売約台数（直近18ヶ月）</span></div>
+    <div class="sec-body">
       <div class="mbars" id="monthlyBars"></div>
     </div>
-    <div class="charts-row">
-      <div class="ccrd"><h4>車種別 売約数ランキング（上位20）</h4><div class="barchart" id="soldRank"></div></div>
-      <div class="ccrd"><h4>色別 売約数（上位12色）</h4><div class="barchart" id="soldColor"></div></div>
+  </div>
+
+  <!-- 各種ランキング -->
+  <div class="two-col" style="margin-bottom:10px;">
+    <div class="sec">
+      <div class="sec-hdr"><span class="sec-title">🏆 車種別 売約数ランキング（上位20）</span></div>
+      <div class="sec-body"><div class="barchart" id="soldRank"></div></div>
     </div>
-    <div class="charts-row">
-      <div class="ccrd"><h4>年式別 売約数</h4><div class="barchart" id="soldYear"></div></div>
-      <div class="ccrd"><h4>走行距離帯 売約数</h4><div class="barchart" id="soldKm"></div></div>
+    <div class="sec">
+      <div class="sec-hdr"><span class="sec-title">⚡ 回転率ランキング（平均掲載日数が短い順）</span></div>
+      <div class="sec-body"><div class="barchart" id="rotationRank"></div></div>
     </div>
   </div>
 
-  <!-- グラフ -->
-  <div class="panel" id="panel-charts">
-    <div class="charts-row">
-      <div class="ccrd"><h4>車種別 在庫数ランキング（上位15）</h4><div class="barchart" id="stockRank"></div></div>
-      <div class="ccrd"><h4>カテゴリ別 色構成（上位6色）</h4><div class="barchart" id="colorDist"></div></div>
+  <div class="three-col">
+    <div class="sec">
+      <div class="sec-hdr"><span class="sec-title">🎨 色別 売約数</span></div>
+      <div class="sec-body"><div class="barchart" id="soldColor"></div></div>
     </div>
-    <div class="charts-row">
-      <div class="ccrd"><h4>走行距離帯 在庫分布</h4><div class="barchart" id="kmDist"></div></div>
-      <div class="ccrd"><h4>年式別 在庫数</h4><div class="barchart" id="yearDist"></div></div>
+    <div class="sec">
+      <div class="sec-hdr"><span class="sec-title">📅 年式別 売約数</span></div>
+      <div class="sec-body"><div class="barchart" id="soldYear"></div></div>
+    </div>
+    <div class="sec">
+      <div class="sec-hdr"><span class="sec-title">🛣 走行距離帯 売約数</span></div>
+      <div class="sec-body"><div class="barchart" id="soldKm"></div></div>
     </div>
   </div>
+
+</div>
 
 </div><!-- /main -->
 
-<!-- Detail overlay -->
 <div class="ov" id="ov" onclick="cx()"></div>
 <div class="dp" id="dp">
   <span class="dpx" onclick="cx()">×</span>
@@ -277,9 +374,6 @@ tbody tr:hover td{background:rgba(79,142,247,.05)!important;}
 </div>
 
 <script>
-// ═══════════════════════════════════════════
-//  CONFIG
-// ═══════════════════════════════════════════
 const SID = '1688vaYsy-Ibhp9SaM875OzOrykJlfahVMIGteVclN3o';
 const GIDS = {
   minivan:  2047431649,
@@ -298,264 +392,137 @@ const TEISU = {"ミニバン_ヴォクシー80系":10,"ミニバン_ヴォクシ
 const YEAR_ORDER = ["H15","H19","H21","H22","H23","H24","H25","H26","H27","H28","H29","H30","H31/R1","R1","R2","R3","R4","R5","R6","R7","R8","不明"];
 const CAT_ORDER  = ["ミニバン","SUV","HVCP","軽"];
 
-let STOCK = [], UNLISTED = [], SOLD = [];
+let STOCK=[], UNLISTED=[], SOLD=[];
 
-// ═══════════════════════════════════════════
-//  CSV fetch & parse
-// ═══════════════════════════════════════════
+// ── CSV ──
 const csvUrl = gid => `https://docs.google.com/spreadsheets/d/${SID}/export?format=csv&gid=${gid}`;
-
-function parseCsv(text) {
-  return text.split('\n').map(line => {
-    const cols = []; let cur = '', inQ = false;
-    for (const c of line) {
-      if (c === '"') inQ = !inQ;
-      else if (c === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
-      else cur += c;
-    }
-    cols.push(cur.trim());
-    return cols;
+function parseCsv(text){
+  return text.split('\n').map(line=>{
+    const cols=[];let cur='',inQ=false;
+    for(const c of line){if(c==='"')inQ=!inQ;else if(c===','&&!inQ){cols.push(cur.trim());cur='';}else cur+=c;}
+    cols.push(cur.trim());return cols;
   });
 }
-
-async function fetchCsv(gid) {
-  const r = await fetch(csvUrl(gid));
-  if (!r.ok) throw new Error(`HTTP ${r.status} (gid=${gid})`);
-  return parseCsv(await r.text());
+async function fetchCsv(gid){const r=await fetch(csvUrl(gid));if(!r.ok)throw new Error(`HTTP ${r.status}`);return parseCsv(await r.text());}
+const nn=v=>{const n=parseFloat(v);return isNaN(n)?null:n;};
+const nm=s=>{s=String(s).trim();return NAME_MAP[s]||s;};
+function parseYear(v){
+  const s=String(v).trim();
+  if(s.includes('/')){try{const y=parseInt(s);if(y<=8)return`R${y}`;if(y===31)return'H31/R1';return`H${y}`;}catch(e){}}
+  const n=parseInt(s);if(isNaN(n))return'不明';if(n<=8)return`R${n}`;if(n===31)return'H31/R1';return`H${n}`;
 }
-
-const nn = v => { const n = parseFloat(v); return isNaN(n) ? null : n; };
-const nm = s => { s = String(s).trim(); return NAME_MAP[s] || s; };
-
-function parseYear(v) {
-  const s = String(v).trim();
-  // 売約シート形式 "30/8"
-  if (s.includes('/')) {
-    try { const y = parseInt(s); if(y<=8) return `R${y}`; if(y===31) return 'H31/R1'; return `H${y}`; } catch(e){}
-  }
-  const n = parseInt(s);
-  if (isNaN(n)) return '不明';
-  if (n <= 8)  return `R${n}`;
-  if (n === 31) return 'H31/R1';
-  return `H${n}`;
-}
-
-function parseExcelDate(v) {
-  if (!v || v === '') return null;
-  // ISO string
-  if (String(v).includes('-') && String(v).length >= 7) {
-    const d = new Date(v); return isNaN(d) ? null : d;
-  }
-  // Excel serial
-  const n = parseFloat(v);
-  if (!isNaN(n) && n > 40000 && n < 55000) {
-    return new Date((n - 25569) * 86400 * 1000);
-  }
+function parseExcelDate(v){
+  if(!v||v==='')return null;
+  if(String(v).includes('-')&&String(v).length>=7){const d=new Date(v);return isNaN(d)?null:d;}
+  const n=parseFloat(v);if(!isNaN(n)&&n>40000&&n<55000)return new Date((n-25569)*86400*1000);
   return null;
 }
 
-// ═══════════════════════════════════════════
-//  Sheet loaders
-// ═══════════════════════════════════════════
-// 在庫シート: col indices based on actual sheet structure
-// ﾐﾆﾊﾞﾝ/HVCP: [0]=担当, [12]=車種, [16]=年, [19]=走行, [23]=プライス, [18]=色, [30]=掲載日数
-// SUV:         [0]=担当, [12]=車種, [16]=年, [19]=走行, [22]=プライス, [18]=色, [30]=掲載日数
-// 軽:          [0]=担当, [13]=車名, [16]=年, [19]=走行, [23]=プライス, [18]=色, [30]=掲載日数
-
-async function loadStock() {
-  const configs = [
-    { key:'minivan', cat:'ミニバン', carC:12, priceC:23 },
-    { key:'suv',     cat:'SUV',     carC:12, priceC:22 },
-    { key:'hvcp',    cat:'HVCP',    carC:12, priceC:22 },
-    { key:'kei',     cat:'軽',      carC:13, priceC:23 },
+// ── Loaders ──
+async function loadStock(){
+  const configs=[
+    {key:'minivan',cat:'ミニバン',carC:12,priceC:23},
+    {key:'suv',cat:'SUV',carC:12,priceC:22},
+    {key:'hvcp',cat:'HVCP',carC:12,priceC:22},
+    {key:'kei',cat:'軽',carC:13,priceC:23},
   ];
-  const results = [];
-  for (const c of configs) {
-    const rows = await fetchCsv(GIDS[c.key]);
-    for (let i = 1; i < rows.length; i++) {
-      const r = rows[i];
-      if (!r || r.length < 5) continue;
-      const name = nm(r[c.carC]);
-      if (!name || name.length <= 1) continue;
-      const km = nn(r[19]);
-      results.push({
-        cat: c.cat, name,
-        year:  parseYear(r[16]),
-        km:    (km && km < 500000) ? km : null,
-        price: nn(r[c.priceC]),
-        color: String(r[18]||'').trim(),
-        days:  nn(r[30]),
-        unlisted: false,
-      });
+  const results=[];
+  for(const c of configs){
+    const rows=await fetchCsv(GIDS[c.key]);
+    for(let i=1;i<rows.length;i++){
+      const r=rows[i];if(!r||r.length<5)continue;
+      const name=nm(r[c.carC]);if(!name||name.length<=1)continue;
+      const km=nn(r[19]);
+      results.push({cat:c.cat,name,year:parseYear(r[16]),km:(km&&km<500000)?km:null,price:nn(r[c.priceC]),color:String(r[18]||'').trim(),days:nn(r[30]),unlisted:false});
     }
   }
   return results;
 }
-
-async function loadUnlisted() {
-  const rows = await fetchCsv(GIDS.unlisted);
-  const result = [];
-  for (let i = 1; i < rows.length; i++) {
-    const r = rows[i];
-    if (!r || r.length < 5) continue;
-    const name = nm(r[13]);
-    if (!name || name.length <= 1) continue;
-    const km = nn(r[19]);
-    result.push({
-      cat:    String(r[0]||'').trim().replace('ﾐﾆﾊﾞﾝ','ミニバン'),
-      name,
-      year:   parseYear(r[16]),
-      km:     (km && km < 500000) ? km : null,
-      price:  nn(r[23]),
-      color:  String(r[18]||'').trim(),
-      status: String(r[5]||'').trim(),
-      unlisted: true,
-    });
+async function loadUnlisted(){
+  const rows=await fetchCsv(GIDS.unlisted);const result=[];
+  for(let i=1;i<rows.length;i++){
+    const r=rows[i];if(!r||r.length<5)continue;
+    const name=nm(r[13]);if(!name||name.length<=1)continue;
+    const km=nn(r[19]);
+    result.push({cat:String(r[0]||'').trim().replace('ﾐﾆﾊﾞﾝ','ミニバン'),name,year:parseYear(r[16]),km:(km&&km<500000)?km:null,price:nn(r[23]),color:String(r[18]||'').trim(),status:String(r[5]||'').trim(),unlisted:true});
   }
   return result;
 }
-
-// 売約シート: [3]=掲載日, [7]=車種, [9]=年式, [10]=色, [11]=走行, [15]=プライス, [17]=利益, [23]=掲載日数
-async function loadSold() {
-  const result = [];
-  for (const key of ['sold','sold2025']) {
-    const rows = await fetchCsv(GIDS[key]);
-    for (let i = 1; i < rows.length; i++) {
-      const r = rows[i];
-      if (!r || r.length < 10) continue;
-      const name = nm(r[7]);
-      if (!name || name.length <= 1) continue;
-      // 不正行スキップ（AA/買取/下取など）
-      if (['AA','買取','下取','B','S','A','C'].includes(name)) continue;
-
-      const km    = nn(r[11]);
-      const price = nn(r[15]);
-      const profit= nn(r[17]);
-      const listedDate = parseExcelDate(r[3]);
-      let days = null;
-      if (key === 'sold2025') { const d = nn(r[23]); if (d && d > 0 && d < 3000) days = d; }
-
-      result.push({
-        name,
-        year:   parseYear(r[9]),
-        km:     (km && km < 500000) ? km : null,
-        price:  (price && Math.abs(price) < 5000) ? price : null,
-        profit: (profit && Math.abs(profit) < 5000) ? profit : null,
-        color:  String(r[10]||'').trim(),
-        days,
-        month:  listedDate ? `${listedDate.getFullYear()}-${String(listedDate.getMonth()+1).padStart(2,'0')}` : null,
-      });
+async function loadSold(){
+  const result=[];
+  for(const key of['sold','sold2025']){
+    const rows=await fetchCsv(GIDS[key]);
+    for(let i=1;i<rows.length;i++){
+      const r=rows[i];if(!r||r.length<10)continue;
+      const name=nm(r[7]);if(!name||name.length<=1)continue;
+      if(['AA','買取','下取','B','S','A','C'].includes(name))continue;
+      const km=nn(r[11]);const price=nn(r[15]);const profit=nn(r[17]);
+      const listedDate=parseExcelDate(r[3]);
+      let days=null;
+      if(key==='sold2025'){const d=nn(r[23]);if(d&&d>0&&d<3000)days=d;}
+      result.push({name,year:parseYear(r[9]),km:(km&&km<500000)?km:null,price:(price&&Math.abs(price)<5000)?price:null,profit:(profit&&Math.abs(profit)<5000)?profit:null,color:String(r[10]||'').trim(),days,month:listedDate?`${listedDate.getFullYear()}-${String(listedDate.getMonth()+1).padStart(2,'0')}`:null});
     }
   }
   return result;
 }
 
-// ═══════════════════════════════════════════
-//  Main load
-// ═══════════════════════════════════════════
-async function loadAll() {
-  const btn = document.getElementById('btntxt');
-  const sp  = document.getElementById('spin');
-  btn.textContent = '読み込み中...'; sp.style.display = 'block';
-  try {
-    [STOCK, UNLISTED, SOLD] = await Promise.all([loadStock(), loadUnlisted(), loadSold()]);
-    updateSummary();
-    renderMatrix();
-    renderAlerts();
-    renderLong();
-    renderUnlisted();
-    renderSold();
-    renderCharts();
-    document.getElementById('upd').textContent =
-      '最終更新: ' + new Date().toLocaleString('ja-JP',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
-  } catch(e) {
-    document.getElementById('MT').innerHTML =
-      `<tr><td colspan="30"><div class="errbox" style="margin:20px"><h3>⚠ データ取得エラー</h3><p>Google Sheetsへのアクセスに失敗しました。公開設定を確認してください。</p><p style="margin-top:8px;font-size:11px;color:var(--red);font-family:var(--mono)">${e.message}</p></div></td></tr>`;
-  } finally { btn.textContent = '🔄 データ更新'; sp.style.display = 'none'; }
+// ── Main load ──
+async function loadAll(){
+  const btn=document.getElementById('btntxt');const sp=document.getElementById('spin');
+  btn.textContent='読込中...';sp.style.display='block';
+  try{
+    [STOCK,UNLISTED,SOLD]=await Promise.all([loadStock(),loadUnlisted(),loadSold()]);
+    updateSummary();renderMatrix();renderUnlisted();renderLong();
+    renderAction();renderSold();
+    document.getElementById('upd').textContent='更新: '+new Date().toLocaleString('ja-JP',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+  }catch(e){
+    document.getElementById('MT').innerHTML=`<tr><td colspan="30"><div class="errbox" style="margin:12px"><h3>⚠ データ取得エラー</h3><p>${e.message}</p></div></td></tr>`;
+  }finally{btn.textContent='🔄 更新';sp.style.display='none';}
 }
 
-// ═══════════════════════════════════════════
-//  Summary
-// ═══════════════════════════════════════════
-function updateSummary() {
-  const ids = { 'ミニバン':'sm','SUV':'ss','HVCP':'sh','軽':'sk' };
-  CAT_ORDER.forEach(c => {
-    document.getElementById(ids[c]).textContent = STOCK.filter(d=>d.cat===c).length;
-  });
-  document.getElementById('su').textContent = UNLISTED.length;
-  const byG = {};
-  UNLISTED.forEach(d=>{ byG[d.cat]=(byG[d.cat]||0)+1; });
-  document.getElementById('su2').textContent = Object.entries(byG).map(([k,v])=>`${k}:${v}`).join(' / ');
-
-  const now = new Date();
-  const y1ago = `${now.getFullYear()-1}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  const recent = SOLD.filter(d=>d.month && d.month >= y1ago).length;
-  document.getElementById('sld').textContent  = recent;
-  document.getElementById('slda').textContent = SOLD.length;
-  document.getElementById('slda2').textContent = '車種数: ' + new Set(SOLD.map(d=>d.name)).size;
+// ── Summary ──
+function updateSummary(){
+  const ids={'ミニバン':'sm','SUV':'ss','HVCP':'sh','軽':'sk'};
+  CAT_ORDER.forEach(c=>document.getElementById(ids[c]).textContent=STOCK.filter(d=>d.cat===c).length);
+  document.getElementById('stotal').textContent=STOCK.length;
+  document.getElementById('su').textContent=UNLISTED.length;
+  const byG={};UNLISTED.forEach(d=>{byG[d.cat]=(byG[d.cat]||0)+1;});
+  document.getElementById('su2').textContent=Object.entries(byG).map(([k,v])=>`${k}:${v}`).join(' / ');
+  const longCnt=STOCK.filter(d=>d.days!=null&&d.days>=100&&d.days<10000).length;
+  document.getElementById('slong').textContent=longCnt;
 }
 
-// ═══════════════════════════════════════════
-//  Matrix
-// ═══════════════════════════════════════════
-function cc(n,hasU) {
-  if(hasU) return 'nu';
-  if(!n) return 'n0';
-  return ['','n1','n2','n3','n3','n4','n4','n4','n5'][Math.min(n,8)];
-}
-
-function renderMatrix() {
-  const cf = document.getElementById('catSel').value;
-  const vf = document.getElementById('viewSel').value;
-  const su = document.getElementById('showU').checked;
-  const ao = document.getElementById('alertOnly').checked;
-
-  let data = su ? [...STOCK, ...UNLISTED.map(d=>({...d}))] : [...STOCK];
-  if (cf) data = data.filter(d=>d.cat===cf);
-
-  const yrs  = YEAR_ORDER.filter(y=>data.some(d=>d.year===y));
-  const cats = cf ? [cf] : CAT_ORDER;
-
-  const g = {};
-  data.forEach(d=>{
-    if(!g[d.cat])g[d.cat]={};
-    if(!g[d.cat][d.name])g[d.cat][d.name]={};
-    if(!g[d.cat][d.name][d.year])g[d.cat][d.name][d.year]=[];
-    g[d.cat][d.name][d.year].push(d);
-  });
-
-  let h = `<thead><tr><th>車種</th>${yrs.map(y=>`<th>${y}</th>`).join('')}<th>計</th><th>既定</th></tr></thead><tbody>`;
-
+// ── Matrix ──
+function cellCls(n,hasU){if(hasU)return'nu';if(!n)return'n0';return['','n1','n2','n3','n3','n4','n4','n4','n5'][Math.min(n,8)];}
+function renderMatrix(){
+  const cf=document.getElementById('catSel').value;
+  const vf=document.getElementById('viewSel').value;
+  const su=document.getElementById('showU').checked;
+  const ao=document.getElementById('alertOnly').checked;
+  let data=su?[...STOCK,...UNLISTED.map(d=>({...d}))]:[...STOCK];
+  if(cf)data=data.filter(d=>d.cat===cf);
+  const yrs=YEAR_ORDER.filter(y=>data.some(d=>d.year===y));
+  const cats=cf?[cf]:CAT_ORDER;
+  const g={};
+  data.forEach(d=>{if(!g[d.cat])g[d.cat]={};if(!g[d.cat][d.name])g[d.cat][d.name]={};if(!g[d.cat][d.name][d.year])g[d.cat][d.name][d.year]=[];g[d.cat][d.name][d.year].push(d);});
+  let h=`<thead><tr><th>車種</th>${yrs.map(y=>`<th>${y}</th>`).join('')}<th>計</th><th>既定</th></tr></thead><tbody>`;
   cats.forEach(cat=>{
     if(!g[cat])return;
-    let names = Object.keys(g[cat]).sort();
-    if(ao) names = names.filter(n=>{
-      const t=TEISU[`${cat}_${n}`];
-      const tot=Object.values(g[cat][n]).flat().length;
-      return t!=null && Math.abs(tot-t)>=2;
-    });
+    let names=Object.keys(g[cat]).sort();
+    if(ao)names=names.filter(n=>{const t=TEISU[`${cat}_${n}`];const tot=Object.values(g[cat][n]).flat().length;return t!=null&&Math.abs(tot-t)>=2;});
     if(!names.length)return;
-    h += `<tr class="cat-row"><td colspan="${yrs.length+3}">${cat}</td></tr>`;
+    h+=`<tr class="cat-row"><td colspan="${yrs.length+3}">${cat}</td></tr>`;
     names.forEach(name=>{
-      const ym=g[cat][name];
-      const k=`${cat}_${name}`;
-      const t=TEISU[k];
-      const tot=Object.values(ym).flat().length;
-      const diff=t!=null?tot-t:null;
+      const ym=g[cat][name];const k=`${cat}_${name}`;const t=TEISU[k];
+      const tot=Object.values(ym).flat().length;const diff=t!=null?tot-t:null;
       let bdg='';
-      if(diff!=null){
-        if(diff<=-3)bdg=`<span class="ab abr">${diff}</span>`;
-        else if(diff<0)bdg=`<span class="ab aby">${diff}</span>`;
-        else if(diff>=3)bdg=`<span class="ab abg">+${diff}</span>`;
-      }
+      if(diff!=null){if(diff<=-3)bdg=`<span class="ab abr">${diff}</span>`;else if(diff<0)bdg=`<span class="ab aby">${diff}</span>`;else if(diff>=3)bdg=`<span class="ab abg">+${diff}</span>`;}
       h+=`<tr><td>${name}${bdg}</td>`;
       yrs.forEach(y=>{
-        const its=ym[y]||[];
-        const li=its.filter(i=>!i.unlisted);
-        const ul=its.filter(i=>i.unlisted);
+        const its=ym[y]||[];const li=its.filter(i=>!i.unlisted);const ul=its.filter(i=>i.unlisted);
         if(!its.length){h+='<td></td>';return;}
         let val='',cls='';
-        if(vf==='count'){val=its.length;cls=cc(li.length||its.length,ul.length>0&&li.length===0);}
+        if(vf==='count'){val=its.length;cls=cellCls(li.length||its.length,ul.length>0&&li.length===0);}
         else if(vf==='price'){const ps=its.filter(i=>i.price!=null).map(i=>i.price);val=ps.length?Math.round(ps.reduce((a,b)=>a+b)/ps.length):'—';cls='n2';}
         else{const ks=its.filter(i=>i.km!=null).map(i=>i.km);val=ks.length?(ks.reduce((a,b)=>a+b)/ks.length/10000).toFixed(1):'—';cls='n2';}
         const uLbl=ul.length?`<div class="u">未${ul.length}</div>`:'';
@@ -568,6 +535,7 @@ function renderMatrix() {
   document.getElementById('MT').innerHTML=h;
 }
 
+// ── Detail ──
 function sd(cat,name,year,su){
   cat=decodeURIComponent(cat);name=decodeURIComponent(name);
   let its=STOCK.filter(d=>d.cat===cat&&d.name===name&&d.year===year);
@@ -581,150 +549,188 @@ function sd(cat,name,year,su){
     const dw=d.days!=null&&d.days>=100?'dwarn':'';
     return `<div class="drow"><span class="dlbl">#${i+1} ${d.color||'—'}</span><span>${km} / ${pr} / <span class="${dw}">${dy}</span></span></div>`;
   }).join('');
-  document.getElementById('dp').style.display='block';
-  document.getElementById('ov').style.display='block';
+  document.getElementById('dp').style.display='block';document.getElementById('ov').style.display='block';
 }
 function cx(){document.getElementById('dp').style.display='none';document.getElementById('ov').style.display='none';}
 
-// ═══════════════════════════════════════════
-//  Alerts
-// ═══════════════════════════════════════════
-function renderAlerts(){
-  const map={};
-  STOCK.forEach(d=>{const k=`${d.cat}_${d.name}`;if(!map[k])map[k]={cat:d.cat,name:d.name,cnt:0};map[k].cnt++;});
-  const short=[],excess=[];
-  Object.entries(map).forEach(([k,v])=>{
-    const t=TEISU[k]; if(t==null)return;
-    const diff=v.cnt-t;
-    if(diff<=-2)short.push({...v,diff,t});
-    else if(diff>=2)excess.push({...v,diff,t});
-  });
-  short.sort((a,b)=>a.diff-b.diff);
-  excess.sort((a,b)=>b.diff-a.diff);
-  document.getElementById('shortL').innerHTML=short.map(d=>`<div class="aitem"><div><div class="aname">${d.name}</div><div class="adet">${d.cat} / 規定${d.t}台 → 実${d.cnt}台</div></div><span class="pill ${d.diff<=-4?'pill-r':'pill-y'}">${d.diff}</span></div>`).join('');
-  document.getElementById('excessL').innerHTML=excess.map(d=>`<div class="aitem"><div><div class="aname">${d.name}</div><div class="adet">${d.cat} / 規定${d.t}台 → 実${d.cnt}台</div></div><span class="pill ${d.diff>=5?'pill-y':'pill-g'}">+${d.diff}</span></div>`).join('');
+// ── Unlisted ──
+function renderUnlisted(){
+  const f=document.getElementById('unlistedFilter').value;
+  const noSt=['未入庫','鈑金','未仕上','不明','鈑金入庫中'];
+  let items=UNLISTED;
+  if(f==='ready')items=UNLISTED.filter(d=>!noSt.includes(d.status));
+  else if(f==='wait')items=UNLISTED.filter(d=>noSt.includes(d.status));
+  document.getElementById('unlistedL').innerHTML=items.map(d=>{
+    const isReady=!noSt.includes(d.status);
+    const cls=isReady?'pill-g':'pill-y';
+    const lbl=isReady?'掲載可':(d.status||'—');
+    return `<div class="aitem"><div><div class="aname">${d.name}</div><div class="adet">${d.cat} / ${d.year} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'}</div></div><span class="pill ${cls}">${lbl}</span></div>`;
+  }).join('');
 }
 
-// ═══════════════════════════════════════════
-//  Long stock
-// ═══════════════════════════════════════════
+// ── Long stock ──
 function renderLong(){
   const th=parseInt(document.getElementById('longThresh').value);
   const items=STOCK.filter(d=>d.days!=null&&d.days>=th&&d.days<10000).sort((a,b)=>b.days-a.days).slice(0,50);
   document.getElementById('longL').innerHTML=items.map(d=>{
     const km=d.km?(d.km/10000).toFixed(1)+'万km':'—';
     const cls=d.days>=300?'pill-r':d.days>=150?'pill-y':'pill-b';
-    return `<div class="aitem"><div><div class="aname">${d.name}</div><div class="adet">${d.cat} / ${d.year} / ${km} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'}</div></div><span class="pill ${cls}">${d.days}日</span></div>`;
+    return `<div class="aitem"><div><div class="aname">${d.name}</div><div class="adet">${d.cat} / ${d.year} / ${km} / ${d.color||'—'}</div></div><span class="pill ${cls}">${d.days}日</span></div>`;
   }).join('');
 }
 
-// ═══════════════════════════════════════════
-//  Unlisted
-// ═══════════════════════════════════════════
-function renderUnlisted(){
+// ── Action page ──
+function renderAction(){
+  // 売約実績を集計
+  const soldCnt={};
+  SOLD.forEach(d=>{soldCnt[d.name]=(soldCnt[d.name]||0)+1;});
+
+  // 過不足
+  const shortage=[],excess=[];
+  const stockMap={};
+  STOCK.forEach(d=>{const k=`${d.cat}_${d.name}`;if(!stockMap[k])stockMap[k]={cat:d.cat,name:d.name,cnt:0};stockMap[k].cnt++;});
+  Object.entries(stockMap).forEach(([k,v])=>{
+    const t=TEISU[k];if(t==null)return;
+    const diff=v.cnt-t;
+    if(diff<=-1)shortage.push({...v,diff,t,soldCnt:soldCnt[v.name]||0});
+    else if(diff>=2)excess.push({...v,diff,t});
+  });
+
+  // KPIs
+  document.getElementById('k-short').textContent=shortage.length;
+  document.getElementById('k-excess').textContent=excess.length;
   const noSt=['未入庫','鈑金','未仕上','不明','鈑金入庫中'];
-  const unready=UNLISTED.filter(d=>noSt.includes(d.status));
-  const ready=UNLISTED.filter(d=>!noSt.includes(d.status));
-  document.getElementById('unreadyL').innerHTML=unready.map(d=>`<div class="aitem"><div><div class="aname">${d.name}</div><div class="adet">${d.cat} / ${d.year} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'}</div></div><span class="pill pill-y">${d.status||'—'}</span></div>`).join('');
-  document.getElementById('readyL').innerHTML=ready.map(d=>`<div class="aitem"><div><div class="aname">${d.name}</div><div class="adet">${d.cat} / ${d.year} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'}</div></div><span class="pill pill-g">掲載可</span></div>`).join('');
+  const readyCnt=UNLISTED.filter(d=>!noSt.includes(d.status)).length;
+  document.getElementById('k-ready').textContent=readyCnt;
+  document.getElementById('k-long').textContent=STOCK.filter(d=>d.days!=null&&d.days>=100&&d.days<10000).length;
+
+  // 仕入れ優先リスト（不足台数 × 売約実績でスコア算出）
+  const buyList=shortage.map(d=>{
+    const score=Math.abs(d.diff)*2+(d.soldCnt||0);
+    const pri=score>=20?'S':score>=10?'A':'B';
+    return{...d,score,pri};
+  }).sort((a,b)=>b.score-a.score);
+
+  document.getElementById('buyListL').innerHTML=buyList.map(d=>{
+    const priCls=d.pri==='S'?'pri-s':d.pri==='A'?'pri-a':'pri-b';
+    return `<div class="aitem">
+      <div>
+        <div class="aname"><span class="pri ${priCls}">${d.pri}級</span> ${d.name}</div>
+        <div class="adet">${d.cat} / 規定${d.t}台 → 実${d.cnt}台（${d.diff}） / 売約実績${d.soldCnt}台</div>
+        <div class="score-bar" style="width:120px"><div class="score-fill" style="width:${Math.min(d.score/30*100,100)}%;background:${d.pri==='S'?'var(--red)':d.pri==='A'?'var(--amber)':'var(--accent)'}"></div></div>
+      </div>
+      <span class="pill pill-r">${d.diff}</span>
+    </div>`;
+  }).join('');
+
+  // 過剰在庫是正
+  excess.sort((a,b)=>b.diff-a.diff);
+  document.getElementById('excessListL').innerHTML=excess.map(d=>{
+    const avgDays=STOCK.filter(s=>s.name===d.name&&s.days!=null&&s.days<10000).reduce((a,b,_,arr)=>a+b.days/arr.length,0);
+    return `<div class="aitem">
+      <div>
+        <div class="aname">${d.name}</div>
+        <div class="adet">${d.cat} / 規定${d.t}台 → 実${d.cnt}台 / 平均${Math.round(avgDays)}日在庫</div>
+      </div>
+      <span class="pill pill-y">+${d.diff}</span>
+    </div>`;
+  }).join('');
+
+  // 長期在庫是正
+  const longItems=STOCK.filter(d=>d.days!=null&&d.days>=100&&d.days<10000).sort((a,b)=>b.days-a.days).slice(0,30);
+  document.getElementById('longActionL').innerHTML=longItems.map(d=>{
+    const cls=d.days>=300?'pill-r':d.days>=150?'pill-y':'pill-b';
+    const msg=d.days>=300?'早急に値下げ推奨':d.days>=150?'価格見直し推奨':'掲載継続';
+    return `<div class="aitem">
+      <div>
+        <div class="aname">${d.name}</div>
+        <div class="adet">${d.year} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'} → ${msg}</div>
+      </div>
+      <span class="pill ${cls}">${d.days}日</span>
+    </div>`;
+  }).join('');
+
+  // 今すぐ掲載できる
+  const readyItems=UNLISTED.filter(d=>!noSt.includes(d.status));
+  document.getElementById('readyListL').innerHTML=readyItems.map(d=>{
+    // この車種の不足状況確認
+    const k=`${d.cat}_${d.name}`;
+    const stk=stockMap[k];const t=TEISU[k];
+    const isNeeded=t!=null&&stk&&stk.cnt<t;
+    const urgency=isNeeded?'pill-r':'pill-g';
+    const lbl=isNeeded?'不足中・急ぎ':'掲載推奨';
+    return `<div class="aitem">
+      <div>
+        <div class="aname">${d.name}</div>
+        <div class="adet">${d.cat} / ${d.year} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'}</div>
+      </div>
+      <span class="pill ${urgency}">${lbl}</span>
+    </div>`;
+  }).join('');
 }
 
-// ═══════════════════════════════════════════
-//  Sold analysis
-// ═══════════════════════════════════════════
+// ── Sold analysis ──
 function renderSold(){
   const sd=SOLD;
-  // KPIs
   document.getElementById('kpi-total').textContent=sd.length.toLocaleString();
   const dArr=sd.filter(d=>d.days!=null).map(d=>d.days);
-  document.getElementById('kpi-days').textContent=dArr.length?Math.round(dArr.reduce((a,b)=>a+b)/dArr.length)+'日':'—';
+  document.getElementById('kpi-days').textContent=dArr.length?Math.round(dArr.reduce((a,b)=>a+b)/dArr.length):'—';
   const pArr=sd.filter(d=>d.profit!=null&&d.profit>-1000&&d.profit<10000).map(d=>d.profit);
   document.getElementById('kpi-profit').textContent=pArr.length?(pArr.reduce((a,b)=>a+b)/pArr.length).toFixed(1):'—';
   const now=new Date();
   const y1ago=`${now.getFullYear()-1}-${String(now.getMonth()+1).padStart(2,'0')}`;
   document.getElementById('kpi-recent').textContent=sd.filter(d=>d.month&&d.month>=y1ago).length;
 
-  // Monthly bars（直近18ヶ月）
-  const months={};
-  sd.forEach(d=>{if(d.month)months[d.month]=(months[d.month]||0)+1;});
+  // Monthly
+  const months={};sd.forEach(d=>{if(d.month)months[d.month]=(months[d.month]||0)+1;});
   const sortedM=Object.keys(months).sort().slice(-18);
   const maxM=Math.max(...sortedM.map(m=>months[m]),1);
   document.getElementById('monthlyBars').innerHTML=sortedM.map(m=>{
-    const v=months[m];
-    const h=Math.round(v/maxM*100);
-    const lbl=m.replace(/^\d{4}-/,'');
+    const v=months[m];const h=Math.round(v/maxM*100);const lbl=m.replace(/^\d{4}-/,'');
     return `<div class="mbar-wrap"><div class="mbar" style="height:${h}%;background:var(--accent);opacity:.8" title="${m}: ${v}台"></div><div class="mbar-lbl">${lbl}</div><div class="mbar-val">${v}</div></div>`;
   }).join('');
 
-  // Rank
-  const nc={};
-  sd.forEach(d=>{nc[d.name]=(nc[d.name]||0)+1;});
+  // 売約ランキング
+  const nc={};sd.forEach(d=>{nc[d.name]=(nc[d.name]||0)+1;});
   barChart('soldRank',Object.entries(nc).sort((a,b)=>b[1]-a[1]).slice(0,20).map(([k,v])=>({l:k,v})),'#4f8ef7');
 
-  // Color
-  const cc2={};
-  sd.forEach(d=>{if(d.color&&d.color.length>0&&d.color!='nan')cc2[d.color]=(cc2[d.color]||0)+1;});
-  barChart('soldColor',Object.entries(cc2).sort((a,b)=>b[1]-a[1]).slice(0,12).map(([k,v])=>({l:k,v})),'#14b8a6');
+  // 回転率ランキング（平均掲載日数が短い順・最低5件以上売れた車種）
+  const daysByName={};
+  sd.filter(d=>d.days!=null).forEach(d=>{if(!daysByName[d.name])daysByName[d.name]=[];daysByName[d.name].push(d.days);});
+  const rotation=Object.entries(daysByName)
+    .filter(([,arr])=>arr.length>=5)
+    .map(([name,arr])=>({l:name,v:Math.round(arr.reduce((a,b)=>a+b)/arr.length)}))
+    .sort((a,b)=>a.v-b.v).slice(0,15);
+  barChart('rotationRank',rotation,'#22c55e');
 
-  // Year
-  const yc={};
-  sd.forEach(d=>{yc[d.year]=(yc[d.year]||0)+1;});
-  const ySorted=YEAR_ORDER.filter(y=>yc[y]).map(y=>({l:y,v:yc[y]}));
-  barChart('soldYear',ySorted,'#a855f7');
+  // 色
+  const cc={};sd.forEach(d=>{if(d.color&&d.color.length>0&&d.color!='nan')cc[d.color]=(cc[d.color]||0)+1;});
+  barChart('soldColor',Object.entries(cc).sort((a,b)=>b[1]-a[1]).slice(0,12).map(([k,v])=>({l:k,v})),'#14b8a6');
 
-  // KM bands
-  const bands=[['〜2万km',0,20000],['〜4万km',20000,40000],['〜6万km',40000,60000],['〜8万km',60000,80000],['8万km超',80000,Infinity]];
+  // 年式
+  const yc={};sd.forEach(d=>{yc[d.year]=(yc[d.year]||0)+1;});
+  barChart('soldYear',YEAR_ORDER.filter(y=>yc[y]).map(y=>({l:y,v:yc[y]})),'#a855f7');
+
+  // 走行
+  const bands=[['〜2万',0,20000],['〜4万',20000,40000],['〜6万',40000,60000],['〜8万',60000,80000],['8万超',80000,Infinity]];
   barChart('soldKm',bands.map(([l,lo,hi])=>({l,v:sd.filter(d=>d.km!=null&&d.km>=lo&&d.km<hi).length})),'#f59e0b');
 }
 
-// ═══════════════════════════════════════════
-//  Charts (stock)
-// ═══════════════════════════════════════════
-function renderCharts(){
-  // Stock rank
-  const nc={};
-  STOCK.forEach(d=>{nc[d.name]=(nc[d.name]||0)+1;});
-  barChart('stockRank',Object.entries(nc).sort((a,b)=>b[1]-a[1]).slice(0,15).map(([k,v])=>({l:k,v})),'#4f8ef7');
-
-  // Color dist
-  const cd={};
-  STOCK.forEach(d=>{if(d.color&&d.color!='nan')cd[d.color]=(cd[d.color]||0)+1;});
-  barChart('colorDist',Object.entries(cd).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([k,v])=>({l:k,v})),'#14b8a6');
-
-  // KM dist
-  const bands=[['〜2万km',0,20000],['〜4万km',20000,40000],['〜6万km',40000,60000],['〜8万km',60000,80000],['8万km超',80000,Infinity]];
-  barChart('kmDist',bands.map(([l,lo,hi])=>({l,v:STOCK.filter(d=>d.km!=null&&d.km>=lo&&d.km<hi).length})),'#f59e0b');
-
-  // Year dist
-  const yc={};
-  STOCK.forEach(d=>{yc[d.year]=(yc[d.year]||0)+1;});
-  barChart('yearDist',YEAR_ORDER.filter(y=>yc[y]).map(y=>({l:y,v:yc[y]})),'#a855f7');
-}
-
-// ═══════════════════════════════════════════
-//  Bar chart helper
-// ═══════════════════════════════════════════
-function barChart(id, items, color) {
-  const max = Math.max(...items.map(i=>i.v), 1);
-  document.getElementById(id).innerHTML = items.map(({l,v})=>{
-    const pct = Math.round(v/max*100);
+function barChart(id,items,color){
+  const max=Math.max(...items.map(i=>i.v),1);
+  document.getElementById(id).innerHTML=items.map(({l,v})=>{
+    const pct=Math.round(v/max*100);
     return `<div class="brow"><div class="blbl" title="${l}">${l}</div><div class="btrack"><div class="bfill" style="width:${pct}%;background:${color}">${v}</div></div></div>`;
   }).join('');
 }
 
-// ═══════════════════════════════════════════
-//  Tab switch
-// ═══════════════════════════════════════════
-function sw(name){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  document.querySelector(`[onclick="sw('${name}')"]`).classList.add('active');
-  document.getElementById(`panel-${name}`).classList.add('active');
+function showPage(name){
+  document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelector(`[onclick="showPage('${name}')"]`).classList.add('active');
+  document.getElementById(`page-${name}`).classList.add('active');
 }
 
-// ═══════════════════════════════════════════
-//  Init
-// ═══════════════════════════════════════════
 loadAll();
 </script>
 </body>
