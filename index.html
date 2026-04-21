@@ -1,6 +1,4 @@
-bash
-
-cat /home/claude/dashboard_v2.html
+cat /home/claude/dashboard_v3.html
 出力
 
 <!DOCTYPE html>
@@ -11,163 +9,136 @@ cat /home/claude/dashboard_v2.html
 <title>在庫ダッシュボード</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0f1117;--bg2:#171923;--bg3:#1e2130;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--text:#e8eaf0;--text2:#8b90a0;--text3:#4a5068;--accent:#4f8ef7;--green:#22c55e;--red:#ef4444;--amber:#f59e0b;--teal:#14b8a6;--purple:#a855f7;--font:'Noto Sans JP',sans-serif;--mono:'DM Mono',monospace;}
+:root{
+  --bg:#f0f4f8;--bg2:#ffffff;--bg3:#f7f9fc;--bg4:#e8eef5;
+  --border:#d8e2ec;--border2:#b8ccd8;
+  --text:#1a2332;--text2:#4a6070;--text3:#8a9aaa;
+  --accent:#2979d4;--accent-bg:#e8f0fb;
+  --green:#16a34a;--green-bg:#dcfce7;
+  --red:#dc2626;--red-bg:#fee2e2;
+  --amber:#d97706;--amber-bg:#fef3c7;
+  --teal:#0891b2;--teal-bg:#cffafe;
+  --purple:#7c3aed;--purple-bg:#ede9fe;
+  --font:'Noto Sans JP',sans-serif;--mono:'DM Mono',monospace;
+}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;min-height:100vh;}
-
-/* ── Header ── */
-.hdr{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 16px;height:48px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.hdr{background:var(--bg2);border-bottom:1.5px solid var(--border);padding:0 16px;height:50px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 1px 4px rgba(0,0,0,.06);}
 .hdr-l{display:flex;align-items:center;gap:16px;}
-.logo{font-size:14px;font-weight:700;letter-spacing:-.02em;white-space:nowrap;}
-.logo span{color:var(--accent);}
+.logo{font-size:15px;font-weight:700;color:var(--accent);}
+.pages{display:flex;gap:2px;background:var(--bg4);border-radius:7px;padding:3px;}
+.ptab{padding:5px 13px;border-radius:5px;cursor:pointer;font-size:12px;color:var(--text2);border:none;background:none;font-family:var(--font);transition:all .15s;white-space:nowrap;font-weight:500;}
+.ptab.active{background:var(--bg2);color:var(--accent);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.1);}
+.ptab:hover:not(.active){background:rgba(255,255,255,.6);color:var(--text);}
 .upd{font-size:10px;color:var(--text3);font-family:var(--mono);}
-
-/* ── Page tabs ── */
-.pages{display:flex;gap:2px;}
-.ptab{padding:5px 14px;border-radius:5px;cursor:pointer;font-size:12px;color:var(--text2);border:none;background:none;font-family:var(--font);transition:all .15s;white-space:nowrap;}
-.ptab.active{background:var(--accent);color:#fff;font-weight:500;}
-.ptab:hover:not(.active){background:var(--bg3);color:var(--text);}
-
-.rbtn{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-family:var(--font);display:flex;align-items:center;gap:5px;transition:all .15s;white-space:nowrap;}
-.rbtn:hover{background:var(--border);color:var(--text);}
-.spin{display:none;width:12px;height:12px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+.rbtn{background:var(--accent);border:none;color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-family:var(--font);display:flex;align-items:center;gap:5px;font-weight:500;}
+.rbtn:hover{opacity:.88;}
+.spin{display:none;width:12px;height:12px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
-
-/* ── Layout ── */
 .main{padding:12px 16px;max-width:1800px;margin:0 auto;}
-.page{display:none;}
-.page.active{display:block;}
-
-/* ── Summary cards ── */
-.summary{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:12px;}
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;}
-.card-lbl{font-size:10px;color:var(--text3);margin-bottom:4px;letter-spacing:.04em;}
-.card-val{font-size:22px;font-weight:700;font-family:var(--mono);line-height:1;}
+.page{display:none;}.page.active{display:block;}
+.summary{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;cursor:pointer;transition:box-shadow .15s,border-color .15s;}
+.card:hover{box-shadow:0 2px 8px rgba(41,121,212,.15);border-color:var(--accent);}
+.card-lbl{font-size:10px;color:var(--text3);margin-bottom:4px;letter-spacing:.04em;font-weight:500;}
+.card-val{font-size:24px;font-weight:700;font-family:var(--mono);line-height:1;color:var(--accent);}
 .card-sub{font-size:10px;color:var(--text3);margin-top:4px;line-height:1.4;}
-.card-ul{border-color:rgba(239,68,68,.25);}
 .card-ul .card-val{color:var(--red);}
-.card-sold .card-val{color:var(--green);}
-
-/* ── Section ── */
-.sec{background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:10px;}
-.sec-hdr{padding:8px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
-.sec-title{font-size:12px;font-weight:500;color:var(--text);}
+.sec{background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden;}
+.sec-hdr{padding:9px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;background:var(--bg3);}
+.sec-title{font-size:12px;font-weight:700;color:var(--text);}
 .sec-body{padding:10px 12px;}
-
-/* ── Controls ── */
 .ctrls{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
-.sel{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:4px 8px;border-radius:5px;font-size:11px;font-family:var(--font);cursor:pointer;}
+.sel{background:var(--bg2);border:1px solid var(--border2);color:var(--text);padding:4px 8px;border-radius:5px;font-size:11px;font-family:var(--font);cursor:pointer;}
 .sel:focus{outline:none;border-color:var(--accent);}
 .chklbl{font-size:11px;color:var(--text2);display:flex;align-items:center;gap:4px;cursor:pointer;}
 .chklbl input{accent-color:var(--accent);}
-
-/* ── Legend ── */
 .legend{display:flex;gap:10px;flex-wrap:wrap;}
 .leg{display:flex;align-items:center;gap:3px;font-size:10px;color:var(--text3);}
 .ld{width:10px;height:10px;border-radius:2px;}
-
-/* ── Matrix table ── */
-.tbl-wrap{overflow:auto;max-height:calc(100vh - 340px);border-radius:6px;border:1px solid var(--border);}
+.tbl-wrap{overflow:auto;max-height:calc(100vh - 320px);border-radius:6px;border:1px solid var(--border);}
 table{border-collapse:collapse;white-space:nowrap;min-width:100%;}
-thead th{position:sticky;top:0;z-index:10;background:var(--bg3);font-size:10px;font-weight:500;padding:5px 7px;border-bottom:1px solid var(--border2);color:var(--text2);text-align:center;font-family:var(--mono);}
-thead th:first-child{position:sticky;left:0;z-index:20;text-align:left;min-width:120px;}
+thead th{position:sticky;top:0;z-index:10;background:#e8eef5;font-size:10px;font-weight:600;padding:6px 7px;border-bottom:1.5px solid var(--border2);color:var(--text2);text-align:center;font-family:var(--mono);}
+thead th:first-child{position:sticky;left:0;z-index:20;text-align:left;min-width:130px;background:#dde5ef;}
 tbody td{padding:2px 4px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;}
-tbody td:first-child{position:sticky;left:0;background:var(--bg2);border-right:1px solid var(--border);z-index:5;text-align:left;padding:2px 10px;font-size:11px;}
-tbody tr:hover td{background:rgba(79,142,247,.05)!important;}
-.cat-row td{background:var(--bg3)!important;font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.08em;padding:3px 10px;border-bottom:1px solid var(--border2)!important;}
-
-/* ── Cells ── */
-.cell{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;min-width:24px;padding:2px 3px;border-radius:3px;cursor:pointer;font-size:12px;font-weight:600;font-family:var(--mono);line-height:1.2;transition:opacity .1s;}
-.cell:hover{opacity:.7;}
+tbody td:first-child{position:sticky;left:0;background:var(--bg2);border-right:1.5px solid var(--border);z-index:5;text-align:left;padding:3px 10px;font-size:11px;font-weight:500;}
+tbody tr:hover td{background:var(--accent-bg)!important;}
+.cat-row td{background:#dde8f5!important;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:.08em;padding:4px 10px;border-bottom:1.5px solid var(--border2)!important;}
+.cell{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;min-width:24px;padding:2px 4px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:700;font-family:var(--mono);line-height:1.2;transition:opacity .1s;}
+.cell:hover{opacity:.75;}
 .cell .u{font-size:8px;font-weight:400;opacity:.8;}
 .n0{color:var(--text3);}
-.n1{background:rgba(79,142,247,.15);color:#93c5fd;}
-.n2{background:rgba(79,142,247,.28);color:#60a5fa;}
-.n3{background:rgba(79,142,247,.45);color:#3b82f6;}
-.n4{background:rgba(79,142,247,.65);color:#fff;}
-.n5{background:#4f8ef7;color:#fff;}
-.nu{background:rgba(245,158,11,.2);color:#fbbf24;}
-.ab{display:inline-block;font-size:10px;padding:0 4px;border-radius:6px;margin-left:3px;font-family:var(--mono);}
-.abr{background:rgba(239,68,68,.15);color:#f87171;}
-.aby{background:rgba(245,158,11,.15);color:#fbbf24;}
-.abg{background:rgba(34,197,94,.15);color:#4ade80;}
-.tcol{font-weight:600;font-family:var(--mono);font-size:11px;}
+.n1{background:#dbeafe;color:#1d4ed8;}
+.n2{background:#bfdbfe;color:#1d4ed8;}
+.n3{background:#3b82f6;color:#fff;}
+.n4{background:#2563eb;color:#fff;}
+.n5{background:#1d4ed8;color:#fff;}
+.nu{background:#fef3c7;color:#92400e;}
+.ab{display:inline-block;font-size:10px;padding:0 4px;border-radius:5px;margin-left:3px;font-family:var(--mono);font-weight:600;}
+.abr{background:var(--red-bg);color:var(--red);}
+.aby{background:var(--amber-bg);color:var(--amber);}
+.abg{background:var(--green-bg);color:var(--green);}
+.tcol{font-weight:700;font-family:var(--mono);font-size:11px;color:var(--accent);}
 .dcol{color:var(--text3);font-family:var(--mono);font-size:11px;}
-
-/* ── Cards grid ── */
-.cards-grid{display:flex;flex-direction:column;gap:6px;}
+.cards-grid{display:flex;flex-direction:column;gap:5px;}
 .aitem{display:flex;justify-content:space-between;align-items:center;background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:8px 12px;transition:border-color .15s;}
-.aitem:hover{border-color:var(--border2);}
-.aname{font-size:12px;font-weight:500;}
+.aitem:hover{border-color:var(--accent);background:var(--accent-bg);}
+.aname{font-size:12px;font-weight:600;color:var(--text);}
 .adet{font-size:10px;color:var(--text3);margin-top:2px;font-family:var(--mono);}
-.pill{font-size:11px;font-weight:600;padding:2px 8px;border-radius:16px;font-family:var(--mono);white-space:nowrap;}
-.pill-r{background:rgba(239,68,68,.15);color:#f87171;}
-.pill-y{background:rgba(245,158,11,.15);color:#fbbf24;}
-.pill-g{background:rgba(34,197,94,.15);color:#4ade80;}
-.pill-b{background:rgba(79,142,247,.15);color:#93c5fd;}
-.pill-p{background:rgba(168,85,247,.15);color:#c084fc;}
-.pill-t{background:rgba(20,184,166,.15);color:#2dd4bf;}
-
-/* ── Two col ── */
+.pill{font-size:11px;font-weight:700;padding:2px 9px;border-radius:14px;font-family:var(--mono);white-space:nowrap;}
+.pill-r{background:var(--red-bg);color:var(--red);}
+.pill-y{background:var(--amber-bg);color:var(--amber);}
+.pill-g{background:var(--green-bg);color:var(--green);}
+.pill-b{background:var(--accent-bg);color:var(--accent);}
+.pill-p{background:var(--purple-bg);color:var(--purple);}
+.pill-t{background:var(--teal-bg);color:var(--teal);}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
 .four-col{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;}
-
-/* ── KPI ── */
-.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;}
-.kpi-lbl{font-size:10px;color:var(--text3);margin-bottom:4px;letter-spacing:.04em;}
+.five-col{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px;}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;}
+.kpi-lbl{font-size:10px;color:var(--text3);margin-bottom:4px;letter-spacing:.04em;font-weight:500;}
 .kpi-val{font-size:22px;font-weight:700;font-family:var(--mono);}
 .kpi-sub{font-size:10px;color:var(--text3);margin-top:3px;}
-
-/* ── Bar chart ── */
 .barchart{display:flex;flex-direction:column;gap:4px;}
 .brow{display:flex;align-items:center;gap:6px;}
 .blbl{font-size:10px;color:var(--text2);width:110px;text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.btrack{flex:1;height:16px;background:var(--bg3);border-radius:3px;overflow:hidden;}
-.bfill{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:5px;font-size:9px;font-family:var(--mono);font-weight:500;color:#fff;min-width:20px;}
-
-/* ── Monthly bars ── */
-.mbars{display:flex;align-items:flex-end;gap:3px;height:100px;}
+.btrack{flex:1;height:16px;background:var(--bg4);border-radius:3px;overflow:hidden;border:1px solid var(--border);}
+.bfill{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:5px;font-size:9px;font-family:var(--mono);font-weight:600;color:#fff;min-width:20px;}
+.mbars{display:flex;align-items:flex-end;gap:3px;height:110px;}
 .mbar-wrap{display:flex;flex-direction:column;align-items:center;flex:1;gap:2px;}
-.mbar{width:100%;border-radius:2px 2px 0 0;min-height:2px;cursor:pointer;}
-.mbar:hover{opacity:.8;}
+.mbar{width:100%;border-radius:3px 3px 0 0;min-height:2px;cursor:pointer;}
+.mbar:hover{opacity:.75;}
 .mbar-lbl{font-size:8px;color:var(--text3);font-family:var(--mono);}
 .mbar-val{font-size:8px;color:var(--text2);font-family:var(--mono);}
-
-/* ── Priority badge ── */
-.pri{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;}
-.pri-s{background:rgba(239,68,68,.15);color:#f87171;}
-.pri-a{background:rgba(245,158,11,.15);color:#fbbf24;}
-.pri-b{background:rgba(79,142,247,.15);color:#93c5fd;}
-
-/* ── Detail panel ── */
-.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:90;backdrop-filter:blur(4px);}
-.dp{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:16px;min-width:300px;max-width:440px;max-height:70vh;overflow-y:auto;z-index:100;}
-.dp h3{font-size:13px;font-weight:700;margin-bottom:10px;}
-.dpx{float:right;cursor:pointer;color:var(--text3);font-size:18px;line-height:1;}
+.pri{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;margin-right:4px;}
+.pri-s{background:var(--red-bg);color:var(--red);}
+.pri-a{background:var(--amber-bg);color:var(--amber);}
+.pri-b{background:var(--accent-bg);color:var(--accent);}
+.score-bar{height:3px;border-radius:2px;background:var(--border);margin-top:4px;overflow:hidden;width:100px;}
+.score-fill{height:100%;border-radius:2px;}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:90;backdrop-filter:blur(3px);}
+.modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:20px;min-width:340px;max-width:520px;max-height:75vh;overflow-y:auto;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,.15);}
+.modal h3{font-size:14px;font-weight:700;margin-bottom:12px;color:var(--text);}
+.modal-x{float:right;cursor:pointer;color:var(--text3);font-size:20px;line-height:1;}
 .drow{display:flex;justify-content:space-between;font-size:11px;padding:5px 0;border-bottom:1px solid var(--border);}
 .drow:last-child{border:none;}
-.dlbl{color:var(--text3);}
+.dlbl{color:var(--text2);}
 .dwarn{color:var(--red);font-weight:600;}
-
-.errbox{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:16px;color:#f87171;margin:12px 0;}
-.errbox h3{margin-bottom:6px;}
-.errbox p{font-size:11px;color:var(--text2);margin-top:4px;}
-
-/* ── Score bar ── */
-.score-bar{height:4px;border-radius:2px;background:var(--bg3);margin-top:4px;overflow:hidden;}
-.score-fill{height:100%;border-radius:2px;}
+.errbox{background:var(--red-bg);border:1px solid #fca5a5;border-radius:8px;padding:14px;color:var(--red);margin:10px 0;}
 </style>
 </head>
 <body>
 
 <div class="hdr">
   <div class="hdr-l">
-    <div class="logo">在庫<span>ダッシュボード</span></div>
+    <div class="logo">📦 在庫ダッシュボード</div>
     <div class="pages">
-      <button class="ptab active" onclick="showPage('stock')">📦 在庫現状</button>
-      <button class="ptab" onclick="showPage('action')">⚡ 在庫対策</button>
-      <button class="ptab" onclick="showPage('sold')">📈 売約分析</button>
+      <button class="ptab active" onclick="showPage('stock')">在庫現状</button>
+      <button class="ptab" onclick="showPage('unlisted')">未掲載管理</button>
+      <button class="ptab" onclick="showPage('longstock')">長期在庫</button>
+      <button class="ptab" onclick="showPage('action')">在庫対策</button>
+      <button class="ptab" onclick="showPage('sold')">売約分析</button>
     </div>
     <div class="upd" id="upd">—</div>
   </div>
@@ -179,38 +150,37 @@ tbody tr:hover td{background:rgba(79,142,247,.05)!important;}
 
 <div class="main">
 
-<!-- ═══════════════════════════════════════════
-     PAGE 1: 在庫現状
-═══════════════════════════════════════════ -->
+<!-- PAGE 1: 在庫現状 -->
 <div class="page active" id="page-stock">
-
   <div class="summary">
-    <div class="card"><div class="card-lbl">ミニバン</div><div class="card-val" id="sm">—</div><div class="card-sub" id="sm2"></div></div>
-    <div class="card"><div class="card-lbl">SUV</div><div class="card-val" id="ss">—</div><div class="card-sub" id="ss2"></div></div>
-    <div class="card"><div class="card-lbl">HVCP</div><div class="card-val" id="sh">—</div><div class="card-sub" id="sh2"></div></div>
-    <div class="card"><div class="card-lbl">軽</div><div class="card-val" id="sk">—</div><div class="card-sub" id="sk2"></div></div>
-    <div class="card card-ul"><div class="card-lbl">未掲載</div><div class="card-val" id="su">—</div><div class="card-sub" id="su2"></div></div>
-    <div class="card"><div class="card-lbl">在庫合計</div><div class="card-val" id="stotal" style="color:var(--accent)">—</div><div class="card-sub">掲載中</div></div>
-    <div class="card"><div class="card-lbl">長期在庫</div><div class="card-val" id="slong" style="color:var(--amber)">—</div><div class="card-sub">100日超</div></div>
+    <div class="card" onclick="showCatModal('ミニバン')"><div class="card-lbl">ミニバン</div><div class="card-val" id="sm">—</div><div class="card-sub" id="sm2">クリックで詳細</div></div>
+    <div class="card" onclick="showCatModal('SUV')"><div class="card-lbl">SUV</div><div class="card-val" id="ss">—</div><div class="card-sub" id="ss2">クリックで詳細</div></div>
+    <div class="card" onclick="showCatModal('HVCP')"><div class="card-lbl">HVCP</div><div class="card-val" id="sh">—</div><div class="card-sub" id="sh2">クリックで詳細</div></div>
+    <div class="card" onclick="showCatModal('軽')"><div class="card-lbl">軽</div><div class="card-val" id="sk">—</div><div class="card-sub" id="sk2">クリックで詳細</div></div>
+    <div class="card card-ul" onclick="showPage('unlisted')"><div class="card-lbl">未掲載</div><div class="card-val" id="su">—</div><div class="card-sub" id="su2">クリックで詳細</div></div>
   </div>
 
-  <!-- 車種×年式 -->
   <div class="sec">
     <div class="sec-hdr">
-      <span class="sec-title">車種 × 年式 マトリックス</span>
+      <span class="sec-title">車種 × マトリックス</span>
       <div class="ctrls">
         <select class="sel" id="catSel" onchange="renderMatrix()"><option value="">全カテゴリ</option><option>ミニバン</option><option>SUV</option><option>HVCP</option><option>軽</option></select>
+        <select class="sel" id="matrixType" onchange="renderMatrix()">
+          <option value="year">× 年式</option>
+          <option value="km">× 走行距離</option>
+          <option value="price">× 価格帯（20万毎）</option>
+        </select>
         <select class="sel" id="viewSel" onchange="renderMatrix()"><option value="count">台数</option><option value="price">平均価格（万）</option><option value="km">平均走行（万km）</option></select>
         <label class="chklbl"><input type="checkbox" id="showU" onchange="renderMatrix()"> 未掲載含む</label>
         <label class="chklbl"><input type="checkbox" id="alertOnly" onchange="renderMatrix()"> アラートのみ</label>
       </div>
       <div class="legend">
-        <div class="leg"><div class="ld" style="background:rgba(79,142,247,.15);border:1px solid rgba(79,142,247,.3)"></div>1</div>
-        <div class="leg"><div class="ld" style="background:rgba(79,142,247,.28)"></div>2</div>
-        <div class="leg"><div class="ld" style="background:rgba(79,142,247,.45)"></div>3〜4</div>
-        <div class="leg"><div class="ld" style="background:rgba(79,142,247,.65)"></div>5〜7</div>
-        <div class="leg"><div class="ld" style="background:#4f8ef7"></div>8+</div>
-        <div class="leg"><div class="ld" style="background:rgba(245,158,11,.2)"></div>未掲載</div>
+        <div class="leg"><div class="ld" style="background:#dbeafe;border:1px solid #bfdbfe"></div>1</div>
+        <div class="leg"><div class="ld" style="background:#bfdbfe"></div>2</div>
+        <div class="leg"><div class="ld" style="background:#3b82f6"></div>3〜4</div>
+        <div class="leg"><div class="ld" style="background:#2563eb"></div>5〜7</div>
+        <div class="leg"><div class="ld" style="background:#1d4ed8"></div>8+</div>
+        <div class="leg"><div class="ld" style="background:#fef3c7;border:1px solid #fde68a"></div>未掲載</div>
       </div>
     </div>
     <div class="sec-body" style="padding:8px;">
@@ -218,124 +188,114 @@ tbody tr:hover td{background:rgba(79,142,247,.05)!important;}
     </div>
   </div>
 
-  <!-- 未掲載 + 長期在庫 -->
-  <div class="two-col">
-    <div class="sec">
-      <div class="sec-hdr">
-        <span class="sec-title">⏳ 未掲載一覧</span>
-        <div class="ctrls">
-          <select class="sel" id="unlistedFilter" onchange="renderUnlisted()"><option value="">全て</option><option value="ready">掲載可</option><option value="wait">待ち</option></select>
-        </div>
-      </div>
-      <div class="sec-body" style="max-height:280px;overflow-y:auto;">
-        <div class="cards-grid" id="unlistedL"></div>
-      </div>
-    </div>
-    <div class="sec">
-      <div class="sec-hdr">
-        <span class="sec-title">🕐 長期在庫</span>
-        <div class="ctrls">
-          <select class="sel" id="longThresh" onchange="renderLong()">
-            <option value="60">60日以上</option>
-            <option value="100" selected>100日以上</option>
-            <option value="150">150日以上</option>
-            <option value="200">200日以上</option>
-          </select>
-        </div>
-      </div>
-      <div class="sec-body" style="max-height:280px;overflow-y:auto;">
-        <div class="cards-grid" id="longL"></div>
-      </div>
+  <div class="sec">
+    <div class="sec-hdr"><span class="sec-title">💰 ジャンル別 想定利益 / 在庫原価累計</span></div>
+    <div class="sec-body">
+      <div class="four-col" id="profitCards"></div>
     </div>
   </div>
-
 </div>
 
-<!-- ═══════════════════════════════════════════
-     PAGE 2: 在庫対策
-═══════════════════════════════════════════ -->
-<div class="page" id="page-action">
+<!-- PAGE 2: 未掲載管理 -->
+<div class="page" id="page-unlisted">
+  <div class="five-col">
+    <div class="kpi"><div class="kpi-lbl">未掲載 合計</div><div class="kpi-val" id="u-total" style="color:var(--red)">—</div><div class="kpi-sub">台</div></div>
+    <div class="kpi"><div class="kpi-lbl">入庫待ち</div><div class="kpi-val" id="u-wait" style="color:var(--amber)">—</div><div class="kpi-sub">台</div></div>
+    <div class="kpi"><div class="kpi-lbl">鈑金・仕上げ待ち</div><div class="kpi-val" id="u-sheet" style="color:var(--red)">—</div><div class="kpi-sub">台</div></div>
+    <div class="kpi"><div class="kpi-lbl">掲載可能</div><div class="kpi-val" id="u-ready" style="color:var(--green)">—</div><div class="kpi-sub">台（今すぐ掲載可）</div></div>
+    <div class="kpi"><div class="kpi-lbl">その他</div><div class="kpi-val" id="u-other" style="color:var(--text2)">—</div><div class="kpi-sub">台</div></div>
+  </div>
+  <div class="two-col">
+    <div class="sec">
+      <div class="sec-hdr"><span class="sec-title">⏳ 入庫待ち</span><span class="pill pill-y" id="cnt-wait">—台</span></div>
+      <div class="sec-body" style="max-height:320px;overflow-y:auto;"><div class="cards-grid" id="phase-wait"></div></div>
+    </div>
+    <div class="sec">
+      <div class="sec-hdr"><span class="sec-title">🔧 鈑金・仕上げ待ち</span><span class="pill pill-r" id="cnt-sheet">—台</span></div>
+      <div class="sec-body" style="max-height:320px;overflow-y:auto;"><div class="cards-grid" id="phase-sheet"></div></div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="sec">
+      <div class="sec-hdr"><span class="sec-title">✅ 掲載可能（入庫済み）</span><span class="pill pill-g" id="cnt-ready">—台</span></div>
+      <div class="sec-body" style="max-height:320px;overflow-y:auto;"><div class="cards-grid" id="phase-ready"></div></div>
+    </div>
+    <div class="sec">
+      <div class="sec-hdr"><span class="sec-title">📋 その他・不明</span><span class="pill pill-b" id="cnt-other">—台</span></div>
+      <div class="sec-body" style="max-height:320px;overflow-y:auto;"><div class="cards-grid" id="phase-other"></div></div>
+    </div>
+  </div>
+</div>
 
-  <!-- 対策サマリー -->
+<!-- PAGE 3: 長期在庫 -->
+<div class="page" id="page-longstock">
+  <div class="four-col">
+    <div class="kpi"><div class="kpi-lbl">300日超</div><div class="kpi-val" id="l-300" style="color:var(--red)">—</div><div class="kpi-sub">早急に値下げ推奨</div></div>
+    <div class="kpi"><div class="kpi-lbl">150〜300日</div><div class="kpi-val" id="l-150" style="color:var(--amber)">—</div><div class="kpi-sub">価格見直し推奨</div></div>
+    <div class="kpi"><div class="kpi-lbl">100〜150日</div><div class="kpi-val" id="l-100" style="color:var(--purple)">—</div><div class="kpi-sub">要注意</div></div>
+    <div class="kpi"><div class="kpi-lbl">60〜100日</div><div class="kpi-val" id="l-60" style="color:var(--text2)">—</div><div class="kpi-sub">様子見</div></div>
+  </div>
+  <div class="sec">
+    <div class="sec-hdr">
+      <span class="sec-title">🕐 長期在庫一覧</span>
+      <div class="ctrls">
+        <select class="sel" id="longThresh" onchange="renderLong()">
+          <option value="60">60日以上</option><option value="100" selected>100日以上</option>
+          <option value="150">150日以上</option><option value="300">300日以上</option>
+        </select>
+        <select class="sel" id="longCat" onchange="renderLong()">
+          <option value="">全カテゴリ</option><option>ミニバン</option><option>SUV</option><option>HVCP</option><option>軽</option>
+        </select>
+      </div>
+    </div>
+    <div class="sec-body" style="max-height:calc(100vh - 260px);overflow-y:auto;">
+      <div class="cards-grid" id="longL"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 4: 在庫対策 -->
+<div class="page" id="page-action">
   <div class="four-col">
     <div class="kpi"><div class="kpi-lbl">不足車種数</div><div class="kpi-val" id="k-short" style="color:var(--red)">—</div><div class="kpi-sub">即仕入れ必要</div></div>
     <div class="kpi"><div class="kpi-lbl">過剰車種数</div><div class="kpi-val" id="k-excess" style="color:var(--amber)">—</div><div class="kpi-sub">販売促進が必要</div></div>
     <div class="kpi"><div class="kpi-lbl">掲載可能台数</div><div class="kpi-val" id="k-ready" style="color:var(--teal)">—</div><div class="kpi-sub">今すぐ掲載できる</div></div>
     <div class="kpi"><div class="kpi-lbl">長期在庫台数</div><div class="kpi-val" id="k-long" style="color:var(--purple)">—</div><div class="kpi-sub">100日超・要是正</div></div>
   </div>
-
   <div class="two-col">
-    <!-- 仕入れ優先リスト -->
     <div class="sec">
-      <div class="sec-hdr">
-        <span class="sec-title">🛒 仕入れ優先リスト</span>
-        <span style="font-size:10px;color:var(--text3)">不足台数 × 売約実績で自動計算</span>
-      </div>
-      <div class="sec-body" style="max-height:340px;overflow-y:auto;">
-        <div class="cards-grid" id="buyListL"></div>
-      </div>
+      <div class="sec-hdr"><span class="sec-title">🛒 仕入れ優先リスト</span><span style="font-size:10px;color:var(--text3)">不足台数 × 売約実績で自動計算</span></div>
+      <div class="sec-body" style="max-height:360px;overflow-y:auto;"><div class="cards-grid" id="buyListL"></div></div>
     </div>
-
-    <!-- 過剰在庫是正 -->
     <div class="sec">
-      <div class="sec-hdr">
-        <span class="sec-title">📉 過剰在庫 是正リスト</span>
-        <span style="font-size:10px;color:var(--text3)">価格見直し・販促推奨</span>
-      </div>
-      <div class="sec-body" style="max-height:340px;overflow-y:auto;">
-        <div class="cards-grid" id="excessListL"></div>
-      </div>
+      <div class="sec-hdr"><span class="sec-title">📉 過剰在庫 是正リスト</span><span style="font-size:10px;color:var(--text3)">価格見直し・販促推奨</span></div>
+      <div class="sec-body" style="max-height:360px;overflow-y:auto;"><div class="cards-grid" id="excessListL"></div></div>
     </div>
   </div>
-
   <div class="two-col">
-    <!-- 長期在庫是正 -->
     <div class="sec">
-      <div class="sec-hdr">
-        <span class="sec-title">⚠ 長期在庫 是正リスト</span>
-        <span style="font-size:10px;color:var(--text3)">掲載から100日超・価格見直し推奨</span>
-      </div>
-      <div class="sec-body" style="max-height:280px;overflow-y:auto;">
-        <div class="cards-grid" id="longActionL"></div>
-      </div>
+      <div class="sec-hdr"><span class="sec-title">⚠ 長期在庫 是正リスト（100日超）</span></div>
+      <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="longActionL"></div></div>
     </div>
-
-    <!-- 今すぐ掲載できる未掲載 -->
     <div class="sec">
-      <div class="sec-hdr">
-        <span class="sec-title">✅ 今すぐ掲載できる車両</span>
-        <span style="font-size:10px;color:var(--teal)">未掲載のうち入庫済み</span>
-      </div>
-      <div class="sec-body" style="max-height:280px;overflow-y:auto;">
-        <div class="cards-grid" id="readyListL"></div>
-      </div>
+      <div class="sec-hdr"><span class="sec-title">✅ 今すぐ掲載できる車両</span></div>
+      <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="readyListL"></div></div>
     </div>
   </div>
-
 </div>
 
-<!-- ═══════════════════════════════════════════
-     PAGE 3: 売約分析
-═══════════════════════════════════════════ -->
+<!-- PAGE 5: 売約分析 -->
 <div class="page" id="page-sold">
-
-  <!-- KPI -->
   <div class="four-col">
     <div class="kpi"><div class="kpi-lbl">総売約台数</div><div class="kpi-val" id="kpi-total" style="color:var(--green)">—</div><div class="kpi-sub">全期間</div></div>
     <div class="kpi"><div class="kpi-lbl">平均回転日数</div><div class="kpi-val" id="kpi-days">—</div><div class="kpi-sub">日で売れる</div></div>
     <div class="kpi"><div class="kpi-lbl">平均利益</div><div class="kpi-val" id="kpi-profit" style="color:var(--amber)">—</div><div class="kpi-sub">万円 / 台</div></div>
     <div class="kpi"><div class="kpi-lbl">直近12ヶ月</div><div class="kpi-val" id="kpi-recent" style="color:var(--accent)">—</div><div class="kpi-sub">台 売約</div></div>
   </div>
-
-  <!-- 月別推移 -->
   <div class="sec" style="margin-bottom:10px;">
     <div class="sec-hdr"><span class="sec-title">📅 月別売約台数（直近18ヶ月）</span></div>
-    <div class="sec-body">
-      <div class="mbars" id="monthlyBars"></div>
-    </div>
+    <div class="sec-body"><div class="mbars" id="monthlyBars"></div></div>
   </div>
-
-  <!-- 各種ランキング -->
   <div class="two-col" style="margin-bottom:10px;">
     <div class="sec">
       <div class="sec-hdr"><span class="sec-title">🏆 車種別 売約数ランキング（上位20）</span></div>
@@ -346,392 +306,280 @@ tbody tr:hover td{background:rgba(79,142,247,.05)!important;}
       <div class="sec-body"><div class="barchart" id="rotationRank"></div></div>
     </div>
   </div>
-
   <div class="three-col">
-    <div class="sec">
-      <div class="sec-hdr"><span class="sec-title">🎨 色別 売約数</span></div>
-      <div class="sec-body"><div class="barchart" id="soldColor"></div></div>
-    </div>
-    <div class="sec">
-      <div class="sec-hdr"><span class="sec-title">📅 年式別 売約数</span></div>
-      <div class="sec-body"><div class="barchart" id="soldYear"></div></div>
-    </div>
-    <div class="sec">
-      <div class="sec-hdr"><span class="sec-title">🛣 走行距離帯 売約数</span></div>
-      <div class="sec-body"><div class="barchart" id="soldKm"></div></div>
-    </div>
+    <div class="sec"><div class="sec-hdr"><span class="sec-title">🎨 色別 売約数</span></div><div class="sec-body"><div class="barchart" id="soldColor"></div></div></div>
+    <div class="sec"><div class="sec-hdr"><span class="sec-title">📅 年式別 売約数</span></div><div class="sec-body"><div class="barchart" id="soldYear"></div></div></div>
+    <div class="sec"><div class="sec-hdr"><span class="sec-title">🛣 走行距離帯 売約数</span></div><div class="sec-body"><div class="barchart" id="soldKm"></div></div></div>
   </div>
+</div>
 
 </div>
 
-</div><!-- /main -->
-
-<div class="ov" id="ov" onclick="cx()"></div>
-<div class="dp" id="dp">
-  <span class="dpx" onclick="cx()">×</span>
-  <h3 id="dph"></h3>
-  <div id="dpb"></div>
+<div class="ov" id="ov" onclick="closeModal()"></div>
+<div class="modal" id="modal">
+  <span class="modal-x" onclick="closeModal()">×</span>
+  <h3 id="modal-title"></h3>
+  <div id="modal-body"></div>
 </div>
 
 <script>
-const SID = '1688vaYsy-Ibhp9SaM875OzOrykJlfahVMIGteVclN3o';
-const GIDS = {
-  minivan:  2047431649,
-  suv:      1044635441,
-  hvcp:     64189686,
-  kei:      1834933994,
-  unlisted: 1695712956,
-  sold:     857233948,
-  sold2025: 1127181298,
-};
+const SID='1688vaYsy-Ibhp9SaM875OzOrykJlfahVMIGteVclN3o';
+const GIDS={minivan:2047431649,suv:1044635441,hvcp:64189686,kei:1834933994,unlisted:1695712956,sold:857233948,sold2025:1127181298};
+const NAME_MAP={'ｳﾞｫｸｼｰ80系':'ヴォクシー80系','ｳﾞｫｸｼｰ90系':'ヴォクシー90系','ｳﾞｪﾙﾌｧｲｱ 30系':'ヴェルファイア30系','ﾉｱ80系':'ノア80系','ﾉｱ90系':'ノア90系','ｴｽｸｧｲｱ':'エスクァイア','ｼｴﾝﾀ':'シエンタ','ｽﾃｯﾌﾟﾜｺﾞﾝ':'ステップワゴン','ｾﾚﾅ 27前期':'セレナ27前期','ｾﾚﾅ 27後期':'セレナ27後期','ｾﾚﾅ 28現行':'セレナ28現行','ﾌﾘｰﾄﾞ':'フリード','ﾊﾘｱｰ80':'ハリアー80','ﾊﾘｱｰ80HV':'ハリアー80HV','ｳﾞｪｾﾞﾙ（現行）':'ヴェゼル現行','ｳﾞｪｾﾞﾙHV（現行）':'ヴェゼルHV現行','ｳﾞｪｾﾞﾙHV（前型）':'ヴェゼルHV前型','ｴｸｽﾄﾚｲﾙ32（前期）':'エクストレイル32前期','ｴｸｽﾄﾚｲﾙ32（後期）':'エクストレイル32後期','ｶﾛｰﾗｸﾛｽ':'カローラクロス','ﾌｫﾚｽﾀｰ':'フォレスター','ﾔﾘｽｸﾛｽ':'ヤリスクロス','ﾗｲｽﾞ':'ライズ','ｼﾞﾑニーﾉﾏﾄﾞ':'ジムニーノマド','ｱｸｱ前期':'アクア前期','ｱｸｱ中期':'アクア中期','ｱｸｱ後期':'アクア後期','ｱｸｱ現行':'アクア現行','ﾉｰﾄ前期':'ノート前期','ﾉｰﾄ中期':'ノート中期','ﾉｰﾄEpower':'ノートEpower','ﾉｰﾄEpower（現行）':'ノートEpower現行','ﾌﾟﾘｳｽ30系':'プリウス30系','ﾌﾟﾘｳｽ 50前期':'プリウス50前期','ﾌﾟﾘｳｽ 50後期':'プリウス50後期','ﾌﾟﾘｳｽ 50PHV':'プリウス50PHV','ﾌﾟﾘｳｽ 60':'プリウス60','ﾙｰﾐｰ':'ルーミー','ﾀﾝｸ':'タンク','ﾄｰﾙ':'トール','ｿﾘｵ':'ソリオ','ｽﾍﾟｲﾄﾞ':'スペイド','ｳﾞｨｯﾂ':'ヴィッツ','ｶﾛｰﾗｽﾎﾟｰﾂ':'カローラスポーツ','ｶﾛｰﾗﾂｰﾘﾝｸﾞ':'カローラツーリング','ﾏｰﾁ':'マーチ','ﾐﾗｰｼﾞｭ':'ミラージュ','N-BOXｶｽﾀﾑ':'N-BOXカスタム','Nﾜｺﾞﾝ':'Nワゴン','ｱﾙﾄ':'アルト','ｱﾙﾄﾗﾊﾟﾝ':'アルトラパン','ｴﾌﾞﾘｰ':'エブリー','ｷｬｽﾄ':'キャスト','ｷｬﾛﾙ':'キャロル','ｼﾞﾑﾆｰ':'ジムニー','ｽﾍﾟｰｼｱ':'スペーシア','ｽﾍﾟｰｼｱｶｽﾀﾑ':'スペーシアカスタム','ﾀﾝﾄ':'タント','ﾀﾝﾄｶｽﾀﾑ':'タントカスタム','ﾃﾞｲｽﾞ':'デイズ','ﾃﾞｲｽﾞﾙｰｸｽ':'デイズルークス','ﾊｽﾗｰ':'ハスラー','ﾐﾗｲｰｽ':'ミライース','ﾐﾗｼﾞｰﾉ':'ミラジーノ','ﾑｰｳﾞｺﾝﾃ':'ムーヴコンテ','ﾓｺ':'モコ','ﾙｰｸｽ':'ルークス','ﾙｰｸｽ\u3000ﾊｲｳｪｲｽﾀｰ':'ルークスHW','ﾜｺﾞﾝＲ':'ワゴンR','AZﾜｺﾞﾝ':'AZワゴン','EKﾜｺﾞﾝ':'EKワゴン','ｸﾘｯﾊﾟｰﾘｵ':'クリッパーリオ','ｵｰﾗ':'オーラ'};
+const TEISU={"ミニバン_ヴォクシー80系":10,"ミニバン_ヴォクシー90系":4,"ミニバン_ノア80系":3,"ミニバン_ノア90系":2,"ミニバン_エスクァイア":4,"ミニバン_セレナ27前期":6,"ミニバン_セレナ27後期":6,"ミニバン_セレナ28現行":5,"ミニバン_シエンタ":8,"ミニバン_フリード":8,"ミニバン_ステップワゴン":3,"ミニバン_ヴェルファイア30系":1,"SUV_ハリアー80":6,"SUV_ハリアー80HV":5,"SUV_RAV4":4,"SUV_ヴェゼルHV前型":4,"SUV_ヴェゼル現行":3,"SUV_ヴェゼルHV現行":3,"SUV_エクストレイル32前期":3,"SUV_エクストレイル32後期":5,"SUV_ライズ":4,"SUV_ヤリスクロス":4,"SUV_カローラクロス":4,"SUV_フォレスター":5,"SUV_CX-5":7,"SUV_CX30":1,"HVCP_アクア前期":6,"HVCP_アクア中期":6,"HVCP_アクア後期":7,"HVCP_アクア現行":3,"HVCP_ノート前期":3,"HVCP_ノート中期":3,"HVCP_ノートEpower":10,"HVCP_ノートEpower現行":4,"HVCP_プリウス30系":4,"HVCP_プリウス50前期":7,"HVCP_プリウス50後期":6,"HVCP_プリウス50PHV":2,"HVCP_プリウス60":3,"HVCP_ルーミー":4,"HVCP_タンク":4,"HVCP_ソリオ":4,"軽_N-BOX":15,"軽_N-BOXカスタム":8,"軽_タント":8,"軽_タントカスタム":5,"軽_ルークス":3,"軽_ルークスHW":5,"軽_デイズルークス":3,"軽_スペーシア":6,"軽_スペーシアカスタム":4,"軽_ハスラー":8,"軽_ジムニー":3,"軽_デイズ":15,"軽_ワゴンR":10,"軽_Nワゴン":5,"軽_ミライース":8,"軽_アルト":5,"軽_アルトラパン":5,"軽_N-ONE":3,"軽_キャスト":5,"軽_モコ":2,"軽_EKワゴン":2};
+const YEAR_ORDER=["H24以前","H24","H25","H26","H27","H28","H29","H30","H31/R1","R1","R2","R3","R4","R5","R6","R7","R8","不明"];
+const OLD_YEARS_SET=new Set(["H15","H19","H21","H22","H23"]);
+const CAT_ORDER=["ミニバン","SUV","HVCP","軽"];
+const KM_BANDS=["〜2万km","2〜4万km","4〜6万km","6〜8万km","8〜10万km","10万km超"];
+const PRICE_BANDS=["〜20万","20〜40万","40〜60万","60〜80万","80〜100万","100〜120万","120〜140万","140〜160万","160〜180万","180〜200万","200〜220万","220〜240万","240〜260万","260〜280万","280〜300万","300万超"];
+let STOCK=[],UNLISTED=[],SOLD=[];
 
-const NAME_MAP = {'ｳﾞｫｸｼｰ80系':'ヴォクシー80系','ｳﾞｫｸｼｰ90系':'ヴォクシー90系','ｳﾞｪﾙﾌｧｲｱ 30系':'ヴェルファイア30系','ﾉｱ80系':'ノア80系','ﾉｱ90系':'ノア90系','ｴｽｸｧｲｱ':'エスクァイア','ｼｴﾝﾀ':'シエンタ','ｽﾃｯﾌﾟﾜｺﾞﾝ':'ステップワゴン','ｾﾚﾅ 27前期':'セレナ27前期','ｾﾚﾅ 27後期':'セレナ27後期','ｾﾚﾅ 28現行':'セレナ28現行','ﾌﾘｰﾄﾞ':'フリード','ﾊﾘｱｰ80':'ハリアー80','ﾊﾘｱｰ80HV':'ハリアー80HV','ｳﾞｪｾﾞﾙ（現行）':'ヴェゼル現行','ｳﾞｪｾﾞﾙHV（現行）':'ヴェゼルHV現行','ｳﾞｪｾﾞﾙHV（前型）':'ヴェゼルHV前型','ｴｸｽﾄﾚｲﾙ32（前期）':'エクストレイル32前期','ｴｸｽﾄﾚｲﾙ32（後期）':'エクストレイル32後期','ｶﾛｰﾗｸﾛｽ':'カローラクロス','ﾌｫﾚｽﾀｰ':'フォレスター','ﾔﾘｽｸﾛｽ':'ヤリスクロス','ﾗｲｽﾞ':'ライズ','ｼﾞﾑニーﾉﾏﾄﾞ':'ジムニーノマド','ｱｸｱ前期':'アクア前期','ｱｸｱ中期':'アクア中期','ｱｸｱ後期':'アクア後期','ｱｸｱ現行':'アクア現行','ﾉｰﾄ前期':'ノート前期','ﾉｰﾄ中期':'ノート中期','ﾉｰﾄEpower':'ノートEpower','ﾉｰﾄEpower（現行）':'ノートEpower現行','ﾌﾟﾘｳｽ30系':'プリウス30系','ﾌﾟﾘｳｽ 50前期':'プリウス50前期','ﾌﾟﾘｳｽ 50後期':'プリウス50後期','ﾌﾟﾘｳｽ 50PHV':'プリウス50PHV','ﾌﾟﾘｳｽ 60':'プリウス60','ﾙｰﾐｰ':'ルーミー','ﾀﾝｸ':'タンク','ﾄｰﾙ':'トール','ｿﾘｵ':'ソリオ','ｽﾍﾟｲﾄﾞ':'スペイド','ｳﾞｨｯﾂ':'ヴィッツ','ｶﾛｰﾗｽﾎﾟｰﾂ':'カローラスポーツ','ｶﾛｰﾗﾂｰﾘﾝｸﾞ':'カローラツーリング','ﾏｰﾁ':'マーチ','ﾐﾗｰｼﾞｭ':'ミラージュ','N-BOXｶｽﾀﾑ':'N-BOXカスタム','Nﾜｺﾞﾝ':'Nワゴン','ｱﾙﾄ':'アルト','ｱﾙﾄﾗﾊﾟﾝ':'アルトラパン','ｴﾌﾞﾘｰ':'エブリー','ｷｬｽﾄ':'キャスト','ｷｬﾛﾙ':'キャロル','ｼﾞﾑﾆｰ':'ジムニー','ｽﾍﾟｰｼｱ':'スペーシア','ｽﾍﾟｰｼｱｶｽﾀﾑ':'スペーシアカスタム','ﾀﾝﾄ':'タント','ﾀﾝﾄｶｽﾀﾑ':'タントカスタム','ﾃﾞｲｽﾞ':'デイズ','ﾃﾞｲｽﾞﾙｰｸｽ':'デイズルークス','ﾊｽﾗｰ':'ハスラー','ﾐﾗｲｰｽ':'ミライース','ﾐﾗｼﾞｰﾉ':'ミラジーノ','ﾑｰｳﾞｺﾝﾃ':'ムーヴコンテ','ﾓｺ':'モコ','ﾙｰｸｽ':'ルークス','ﾙｰｸｽ\u3000ﾊｲｳｪｲｽﾀｰ':'ルークスHW','ﾜｺﾞﾝＲ':'ワゴンR','AZﾜｺﾞﾝ':'AZワゴン','EKﾜｺﾞﾝ':'EKワゴン','ｸﾘｯﾊﾟｰﾘｵ':'クリッパーリオ','ｵｰﾗ':'オーラ'};
-
-const TEISU = {"ミニバン_ヴォクシー80系":10,"ミニバン_ヴォクシー90系":4,"ミニバン_ノア80系":3,"ミニバン_ノア90系":2,"ミニバン_エスクァイア":4,"ミニバン_セレナ27前期":6,"ミニバン_セレナ27後期":6,"ミニバン_セレナ28現行":5,"ミニバン_シエンタ":8,"ミニバン_フリード":8,"ミニバン_ステップワゴン":3,"ミニバン_ヴェルファイア30系":1,"SUV_ハリアー80":6,"SUV_ハリアー80HV":5,"SUV_RAV4":4,"SUV_ヴェゼルHV前型":4,"SUV_ヴェゼル現行":3,"SUV_ヴェゼルHV現行":3,"SUV_エクストレイル32前期":3,"SUV_エクストレイル32後期":5,"SUV_ライズ":4,"SUV_ヤリスクロス":4,"SUV_カローラクロス":4,"SUV_フォレスター":5,"SUV_CX-5":7,"SUV_CX30":1,"HVCP_アクア前期":6,"HVCP_アクア中期":6,"HVCP_アクア後期":7,"HVCP_アクア現行":3,"HVCP_ノート前期":3,"HVCP_ノート中期":3,"HVCP_ノートEpower":10,"HVCP_ノートEpower現行":4,"HVCP_プリウス30系":4,"HVCP_プリウス50前期":7,"HVCP_プリウス50後期":6,"HVCP_プリウス50PHV":2,"HVCP_プリウス60":3,"HVCP_ルーミー":4,"HVCP_タンク":4,"HVCP_ソリオ":4,"軽_N-BOX":15,"軽_N-BOXカスタム":8,"軽_タント":8,"軽_タントカスタム":5,"軽_ルークス":3,"軽_ルークスHW":5,"軽_デイズルークス":3,"軽_スペーシア":6,"軽_スペーシアカスタム":4,"軽_ハスラー":8,"軽_ジムニー":3,"軽_デイズ":15,"軽_ワゴンR":10,"軽_Nワゴン":5,"軽_ミライース":8,"軽_アルト":5,"軽_アルトラパン":5,"軽_N-ONE":3,"軽_キャスト":5,"軽_モコ":2,"軽_EKワゴン":2};
-
-const YEAR_ORDER = ["H15","H19","H21","H22","H23","H24","H25","H26","H27","H28","H29","H30","H31/R1","R1","R2","R3","R4","R5","R6","R7","R8","不明"];
-const CAT_ORDER  = ["ミニバン","SUV","HVCP","軽"];
-
-let STOCK=[], UNLISTED=[], SOLD=[];
-
-// ── CSV ──
-const csvUrl = gid => `https://docs.google.com/spreadsheets/d/${SID}/export?format=csv&gid=${gid}`;
-function parseCsv(text){
-  return text.split('\n').map(line=>{
-    const cols=[];let cur='',inQ=false;
-    for(const c of line){if(c==='"')inQ=!inQ;else if(c===','&&!inQ){cols.push(cur.trim());cur='';}else cur+=c;}
-    cols.push(cur.trim());return cols;
-  });
-}
+const csvUrl=gid=>`https://docs.google.com/spreadsheets/d/${SID}/export?format=csv&gid=${gid}`;
+function parseCsv(t){return t.split('\n').map(l=>{const c=[];let cur='',q=false;for(const ch of l){if(ch==='"')q=!q;else if(ch===','&&!q){c.push(cur.trim());cur='';}else cur+=ch;}c.push(cur.trim());return c;});}
 async function fetchCsv(gid){const r=await fetch(csvUrl(gid));if(!r.ok)throw new Error(`HTTP ${r.status}`);return parseCsv(await r.text());}
 const nn=v=>{const n=parseFloat(v);return isNaN(n)?null:n;};
 const nm=s=>{s=String(s).trim();return NAME_MAP[s]||s;};
-function parseYear(v){
-  const s=String(v).trim();
-  if(s.includes('/')){try{const y=parseInt(s);if(y<=8)return`R${y}`;if(y===31)return'H31/R1';return`H${y}`;}catch(e){}}
-  const n=parseInt(s);if(isNaN(n))return'不明';if(n<=8)return`R${n}`;if(n===31)return'H31/R1';return`H${n}`;
-}
-function parseExcelDate(v){
-  if(!v||v==='')return null;
-  if(String(v).includes('-')&&String(v).length>=7){const d=new Date(v);return isNaN(d)?null:d;}
-  const n=parseFloat(v);if(!isNaN(n)&&n>40000&&n<55000)return new Date((n-25569)*86400*1000);
-  return null;
-}
+function parseYear(v){const s=String(v).trim();if(s.includes('/')){try{const y=parseInt(s);if(y<=8)return`R${y}`;if(y===31)return'H31/R1';return`H${y}`;}catch(e){}}const n=parseInt(s);if(isNaN(n))return'不明';if(n<=8)return`R${n}`;if(n===31)return'H31/R1';return`H${n}`;}
+function normY(y){return OLD_YEARS_SET.has(y)?'H24以前':y;}
+function kmBand(k){if(k==null)return null;if(k<20000)return'〜2万km';if(k<40000)return'2〜4万km';if(k<60000)return'4〜6万km';if(k<80000)return'6〜8万km';if(k<100000)return'8〜10万km';return'10万km超';}
+function pBand(p){if(p==null||p<=0)return null;const i=Math.floor(p/20);return i>=PRICE_BANDS.length-1?'300万超':PRICE_BANDS[i];}
+function parseDate(v){if(!v||v==='')return null;if(String(v).includes('-')&&String(v).length>=7){const d=new Date(v);return isNaN(d)?null:d;}const n=parseFloat(v);if(!isNaN(n)&&n>40000&&n<55000)return new Date((n-25569)*86400*1000);return null;}
 
-// ── Loaders ──
 async function loadStock(){
-  const configs=[
-    {key:'minivan',cat:'ミニバン',carC:12,priceC:23},
-    {key:'suv',cat:'SUV',carC:12,priceC:22},
-    {key:'hvcp',cat:'HVCP',carC:12,priceC:22},
-    {key:'kei',cat:'軽',carC:13,priceC:23},
-  ];
-  const results=[];
-  for(const c of configs){
-    const rows=await fetchCsv(GIDS[c.key]);
-    for(let i=1;i<rows.length;i++){
-      const r=rows[i];if(!r||r.length<5)continue;
-      const name=nm(r[c.carC]);if(!name||name.length<=1)continue;
-      const km=nn(r[19]);
-      results.push({cat:c.cat,name,year:parseYear(r[16]),km:(km&&km<500000)?km:null,price:nn(r[c.priceC]),color:String(r[18]||'').trim(),days:nn(r[30]),unlisted:false});
-    }
-  }
-  return results;
+  const cfg=[{key:'minivan',cat:'ミニバン',carC:12,priceC:23,costC:21,profitC:27},{key:'suv',cat:'SUV',carC:12,priceC:22,costC:21,profitC:27},{key:'hvcp',cat:'HVCP',carC:12,priceC:22,costC:21,profitC:27},{key:'kei',cat:'軽',carC:13,priceC:23,costC:22,profitC:28}];
+  const res=[];
+  for(const c of cfg){const rows=await fetchCsv(GIDS[c.key]);for(let i=1;i<rows.length;i++){const r=rows[i];if(!r||r.length<5)continue;const name=nm(r[c.carC]);if(!name||name.length<=1)continue;const km=nn(r[19]);const price=nn(r[c.priceC]);const cost=nn(r[c.costC]);const profit=nn(r[c.profitC]);res.push({cat:c.cat,name,year:normY(parseYear(r[16])),km:(km&&km<500000)?km:null,price:(price&&price>0&&price<2000)?price:null,cost:(cost&&cost>0&&cost<2000)?cost:null,profit:(profit&&Math.abs(profit)<500)?profit:null,color:String(r[18]||'').trim(),days:nn(r[30]),unlisted:false});}}
+  return res;
 }
 async function loadUnlisted(){
-  const rows=await fetchCsv(GIDS.unlisted);const result=[];
-  for(let i=1;i<rows.length;i++){
-    const r=rows[i];if(!r||r.length<5)continue;
-    const name=nm(r[13]);if(!name||name.length<=1)continue;
-    const km=nn(r[19]);
-    result.push({cat:String(r[0]||'').trim().replace('ﾐﾆﾊﾞﾝ','ミニバン'),name,year:parseYear(r[16]),km:(km&&km<500000)?km:null,price:nn(r[23]),color:String(r[18]||'').trim(),status:String(r[5]||'').trim(),unlisted:true});
-  }
-  return result;
+  const rows=await fetchCsv(GIDS.unlisted);const res=[];
+  for(let i=1;i<rows.length;i++){const r=rows[i];if(!r||r.length<5)continue;const name=nm(r[13]);if(!name||name.length<=1)continue;const km=nn(r[19]);res.push({cat:String(r[0]||'').trim().replace('ﾐﾆﾊﾞﾝ','ミニバン'),name,year:normY(parseYear(r[16])),km:(km&&km<500000)?km:null,price:nn(r[23]),color:String(r[18]||'').trim(),status:String(r[5]||'').trim(),unlisted:true});}
+  return res;
 }
 async function loadSold(){
-  const result=[];
-  for(const key of['sold','sold2025']){
-    const rows=await fetchCsv(GIDS[key]);
-    for(let i=1;i<rows.length;i++){
-      const r=rows[i];if(!r||r.length<10)continue;
-      const name=nm(r[7]);if(!name||name.length<=1)continue;
-      if(['AA','買取','下取','B','S','A','C'].includes(name))continue;
-      const km=nn(r[11]);const price=nn(r[15]);const profit=nn(r[17]);
-      const listedDate=parseExcelDate(r[3]);
-      let days=null;
-      if(key==='sold2025'){const d=nn(r[23]);if(d&&d>0&&d<3000)days=d;}
-      result.push({name,year:parseYear(r[9]),km:(km&&km<500000)?km:null,price:(price&&Math.abs(price)<5000)?price:null,profit:(profit&&Math.abs(profit)<5000)?profit:null,color:String(r[10]||'').trim(),days,month:listedDate?`${listedDate.getFullYear()}-${String(listedDate.getMonth()+1).padStart(2,'0')}`:null});
-    }
-  }
-  return result;
+  const res=[];
+  for(const key of['sold','sold2025']){const rows=await fetchCsv(GIDS[key]);for(let i=1;i<rows.length;i++){const r=rows[i];if(!r||r.length<10)continue;const name=nm(r[7]);if(!name||name.length<=1)continue;if(['AA','買取','下取','B','S','A','C'].includes(name))continue;const km=nn(r[11]);const price=nn(r[15]);const profit=nn(r[17]);const ld=parseDate(r[3]);let days=null;if(key==='sold2025'){const d=nn(r[23]);if(d&&d>0&&d<3000)days=d;}res.push({name,year:normY(parseYear(r[9])),km:(km&&km<500000)?km:null,price:(price&&Math.abs(price)<5000)?price:null,profit:(profit&&Math.abs(profit)<5000)?profit:null,color:String(r[10]||'').trim(),days,month:ld?`${ld.getFullYear()}-${String(ld.getMonth()+1).padStart(2,'0')}`:null});}}
+  return res;
 }
 
-// ── Main load ──
 async function loadAll(){
   const btn=document.getElementById('btntxt');const sp=document.getElementById('spin');
   btn.textContent='読込中...';sp.style.display='block';
   try{
     [STOCK,UNLISTED,SOLD]=await Promise.all([loadStock(),loadUnlisted(),loadSold()]);
-    updateSummary();renderMatrix();renderUnlisted();renderLong();
-    renderAction();renderSold();
+    updateSummary();renderMatrix();renderProfitCards();renderUnlisted();renderLong();renderAction();renderSold();
     document.getElementById('upd').textContent='更新: '+new Date().toLocaleString('ja-JP',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
-  }catch(e){
-    document.getElementById('MT').innerHTML=`<tr><td colspan="30"><div class="errbox" style="margin:12px"><h3>⚠ データ取得エラー</h3><p>${e.message}</p></div></td></tr>`;
-  }finally{btn.textContent='🔄 更新';sp.style.display='none';}
+  }catch(e){document.getElementById('MT').innerHTML=`<tr><td colspan="30"><div class="errbox"><b>⚠ エラー</b><br>${e.message}</div></td></tr>`;}
+  finally{btn.textContent='🔄 更新';sp.style.display='none';}
 }
 
-// ── Summary ──
 function updateSummary(){
   const ids={'ミニバン':'sm','SUV':'ss','HVCP':'sh','軽':'sk'};
   CAT_ORDER.forEach(c=>document.getElementById(ids[c]).textContent=STOCK.filter(d=>d.cat===c).length);
-  document.getElementById('stotal').textContent=STOCK.length;
   document.getElementById('su').textContent=UNLISTED.length;
   const byG={};UNLISTED.forEach(d=>{byG[d.cat]=(byG[d.cat]||0)+1;});
-  document.getElementById('su2').textContent=Object.entries(byG).map(([k,v])=>`${k}:${v}`).join(' / ');
-  const longCnt=STOCK.filter(d=>d.days!=null&&d.days>=100&&d.days<10000).length;
-  document.getElementById('slong').textContent=longCnt;
+  document.getElementById('su2').textContent=Object.entries(byG).map(([k,v])=>`${k}:${v}`).join(' ');
 }
 
-// ── Matrix ──
-function cellCls(n,hasU){if(hasU)return'nu';if(!n)return'n0';return['','n1','n2','n3','n3','n4','n4','n4','n5'][Math.min(n,8)];}
+function showCatModal(cat){
+  const items=STOCK.filter(d=>d.cat===cat);
+  const tProfit=items.filter(d=>d.profit!=null).reduce((a,b)=>a+b.profit,0);
+  const tCost=items.filter(d=>d.cost!=null).reduce((a,b)=>a+b.cost,0);
+  const avgD=items.filter(d=>d.days!=null&&d.days<10000).reduce((a,b,_,arr)=>a+b.days/arr.length,0);
+  const lCnt=items.filter(d=>d.days!=null&&d.days>=100&&d.days<10000).length;
+  const byName={};items.forEach(d=>{if(!byName[d.name])byName[d.name]={cnt:0,profit:0,cost:0};byName[d.name].cnt++;if(d.profit)byName[d.name].profit+=d.profit;if(d.cost)byName[d.name].cost+=d.cost;});
+  const rows=Object.entries(byName).sort((a,b)=>b[1].cnt-a[1].cnt).map(([n,v])=>`<div class="drow"><span>${n}</span><span style="font-family:var(--mono)">${v.cnt}台 / 原価${v.cost.toFixed(0)}万 / 利益${v.profit.toFixed(1)}万</span></div>`).join('');
+  document.getElementById('modal-title').textContent=`${cat}（${items.length}台）`;
+  document.getElementById('modal-body').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+      <div style="background:var(--bg3);border-radius:6px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--text3)">在庫台数</div><div style="font-size:20px;font-weight:700;color:var(--accent);font-family:var(--mono)">${items.length}</div></div>
+      <div style="background:var(--bg3);border-radius:6px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--text3)">原価累計</div><div style="font-size:16px;font-weight:700;color:var(--red);font-family:var(--mono)">${tCost.toFixed(0)}万円</div></div>
+      <div style="background:var(--bg3);border-radius:6px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--text3)">想定利益計</div><div style="font-size:16px;font-weight:700;color:var(--green);font-family:var(--mono)">${tProfit.toFixed(1)}万円</div></div>
+    </div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:8px">平均在庫日数: ${Math.round(avgD)}日 / 長期在庫(100日超): ${lCnt}台</div>
+    <div style="max-height:320px;overflow-y:auto">${rows}</div>`;
+  document.getElementById('modal').style.display='block';document.getElementById('ov').style.display='block';
+}
+function closeModal(){document.getElementById('modal').style.display='none';document.getElementById('ov').style.display='none';}
+
+function cellCls(n,u){if(u)return'nu';if(!n)return'n0';return['','n1','n2','n3','n3','n4','n4','n4','n5'][Math.min(n,8)];}
+function axisKeys(t){if(t==='year')return YEAR_ORDER;if(t==='km')return KM_BANDS;return PRICE_BANDS;}
+function axisVal(d,t){if(t==='year')return d.year;if(t==='km')return kmBand(d.km);return pBand(d.price);}
+
 function renderMatrix(){
   const cf=document.getElementById('catSel').value;
+  const type=document.getElementById('matrixType').value;
   const vf=document.getElementById('viewSel').value;
   const su=document.getElementById('showU').checked;
   const ao=document.getElementById('alertOnly').checked;
   let data=su?[...STOCK,...UNLISTED.map(d=>({...d}))]:[...STOCK];
   if(cf)data=data.filter(d=>d.cat===cf);
-  const yrs=YEAR_ORDER.filter(y=>data.some(d=>d.year===y));
+  const keys=axisKeys(type).filter(k=>data.some(d=>axisVal(d,type)===k));
   const cats=cf?[cf]:CAT_ORDER;
   const g={};
-  data.forEach(d=>{if(!g[d.cat])g[d.cat]={};if(!g[d.cat][d.name])g[d.cat][d.name]={};if(!g[d.cat][d.name][d.year])g[d.cat][d.name][d.year]=[];g[d.cat][d.name][d.year].push(d);});
-  let h=`<thead><tr><th>車種</th>${yrs.map(y=>`<th>${y}</th>`).join('')}<th>計</th><th>既定</th></tr></thead><tbody>`;
+  data.forEach(d=>{if(!g[d.cat])g[d.cat]={};if(!g[d.cat][d.name])g[d.cat][d.name]={};const k=axisVal(d,type);if(!k)return;if(!g[d.cat][d.name][k])g[d.cat][d.name][k]=[];g[d.cat][d.name][k].push(d);});
+  let h=`<thead><tr><th>車種</th>${keys.map(k=>`<th>${k}</th>`).join('')}<th>計</th><th>既定</th></tr></thead><tbody>`;
   cats.forEach(cat=>{
     if(!g[cat])return;
     let names=Object.keys(g[cat]).sort();
     if(ao)names=names.filter(n=>{const t=TEISU[`${cat}_${n}`];const tot=Object.values(g[cat][n]).flat().length;return t!=null&&Math.abs(tot-t)>=2;});
     if(!names.length)return;
-    h+=`<tr class="cat-row"><td colspan="${yrs.length+3}">${cat}</td></tr>`;
+    h+=`<tr class="cat-row"><td colspan="${keys.length+3}">${cat}</td></tr>`;
     names.forEach(name=>{
       const ym=g[cat][name];const k=`${cat}_${name}`;const t=TEISU[k];
       const tot=Object.values(ym).flat().length;const diff=t!=null?tot-t:null;
-      let bdg='';
-      if(diff!=null){if(diff<=-3)bdg=`<span class="ab abr">${diff}</span>`;else if(diff<0)bdg=`<span class="ab aby">${diff}</span>`;else if(diff>=3)bdg=`<span class="ab abg">+${diff}</span>`;}
+      let bdg='';if(diff!=null){if(diff<=-3)bdg=`<span class="ab abr">${diff}</span>`;else if(diff<0)bdg=`<span class="ab aby">${diff}</span>`;else if(diff>=3)bdg=`<span class="ab abg">+${diff}</span>`;}
       h+=`<tr><td>${name}${bdg}</td>`;
-      yrs.forEach(y=>{
-        const its=ym[y]||[];const li=its.filter(i=>!i.unlisted);const ul=its.filter(i=>i.unlisted);
+      keys.forEach(key=>{
+        const its=ym[key]||[];const li=its.filter(i=>!i.unlisted);const ul=its.filter(i=>i.unlisted);
         if(!its.length){h+='<td></td>';return;}
         let val='',cls='';
         if(vf==='count'){val=its.length;cls=cellCls(li.length||its.length,ul.length>0&&li.length===0);}
         else if(vf==='price'){const ps=its.filter(i=>i.price!=null).map(i=>i.price);val=ps.length?Math.round(ps.reduce((a,b)=>a+b)/ps.length):'—';cls='n2';}
         else{const ks=its.filter(i=>i.km!=null).map(i=>i.km);val=ks.length?(ks.reduce((a,b)=>a+b)/ks.length/10000).toFixed(1):'—';cls='n2';}
         const uLbl=ul.length?`<div class="u">未${ul.length}</div>`:'';
-        h+=`<td><div class="cell ${cls}" onclick="sd('${encodeURIComponent(cat)}','${encodeURIComponent(name)}','${y}',${su})">${val}${uLbl}</div></td>`;
+        h+=`<td><div class="cell ${cls}" onclick="showCell('${encodeURIComponent(cat)}','${encodeURIComponent(name)}','${encodeURIComponent(key)}','${type}',${su})">${val}${uLbl}</div></td>`;
       });
       h+=`<td class="tcol">${tot}</td><td class="dcol">${t!=null?t:'—'}</td></tr>`;
     });
   });
-  h+='</tbody>';
-  document.getElementById('MT').innerHTML=h;
+  h+='</tbody>';document.getElementById('MT').innerHTML=h;
 }
 
-// ── Detail ──
-function sd(cat,name,year,su){
-  cat=decodeURIComponent(cat);name=decodeURIComponent(name);
-  let its=STOCK.filter(d=>d.cat===cat&&d.name===name&&d.year===year);
-  if(su)its=[...its,...UNLISTED.filter(d=>d.cat===cat&&d.name===name&&d.year===year)];
+function showCell(cat,name,key,type,su){
+  cat=decodeURIComponent(cat);name=decodeURIComponent(name);key=decodeURIComponent(key);
+  let its=STOCK.filter(d=>d.cat===cat&&d.name===name&&axisVal(d,type)===key);
+  if(su)its=[...its,...UNLISTED.filter(d=>d.cat===cat&&d.name===name&&axisVal(d,type)===key)];
   if(!its.length)return;
-  document.getElementById('dph').textContent=`${name} / ${year}（${its.length}台）`;
-  document.getElementById('dpb').innerHTML=its.map((d,i)=>{
+  document.getElementById('modal-title').textContent=`${name} / ${key}（${its.length}台）`;
+  document.getElementById('modal-body').innerHTML=its.map((d,i)=>{
     const km=d.km!=null?(d.km/10000).toFixed(1)+'万km':'—';
     const pr=d.price!=null?d.price+'万円':'—';
+    const cost=d.cost!=null?d.cost+'万円':'—';
+    const profit=d.profit!=null?d.profit+'万円':'—';
     const dy=d.days!=null?d.days+'日':(d.unlisted?'未掲載':'—');
     const dw=d.days!=null&&d.days>=100?'dwarn':'';
-    return `<div class="drow"><span class="dlbl">#${i+1} ${d.color||'—'}</span><span>${km} / ${pr} / <span class="${dw}">${dy}</span></span></div>`;
+    return `<div class="drow"><span class="dlbl">#${i+1} ${d.color||'—'} / ${d.year}</span><span>${km} / 売${pr} / 原${cost} / <span class="${dw}">${dy}</span></span></div>`;
   }).join('');
-  document.getElementById('dp').style.display='block';document.getElementById('ov').style.display='block';
+  document.getElementById('modal').style.display='block';document.getElementById('ov').style.display='block';
 }
-function cx(){document.getElementById('dp').style.display='none';document.getElementById('ov').style.display='none';}
 
-// ── Unlisted ──
+function renderProfitCards(){
+  document.getElementById('profitCards').innerHTML=CAT_ORDER.map(cat=>{
+    const items=STOCK.filter(d=>d.cat===cat);
+    const tP=items.filter(d=>d.profit!=null).reduce((a,b)=>a+b.profit,0);
+    const tC=items.filter(d=>d.cost!=null).reduce((a,b)=>a+b.cost,0);
+    const cnt=items.length;
+    return `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+      <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">${cat}（${cnt}台）</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;justify-content:space-between"><span style="font-size:10px;color:var(--text3)">在庫原価累計</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--red)">${tC.toFixed(0)}万円</span></div>
+        <div style="display:flex;justify-content:space-between"><span style="font-size:10px;color:var(--text3)">想定利益累計</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">${tP.toFixed(1)}万円</span></div>
+        <div style="display:flex;justify-content:space-between"><span style="font-size:10px;color:var(--text3)">台あたり利益</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--amber)">${cnt>0?(tP/cnt).toFixed(1):'—'}万円</span></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 function renderUnlisted(){
-  const f=document.getElementById('unlistedFilter').value;
-  const noSt=['未入庫','鈑金','未仕上','不明','鈑金入庫中'];
-  let items=UNLISTED;
-  if(f==='ready')items=UNLISTED.filter(d=>!noSt.includes(d.status));
-  else if(f==='wait')items=UNLISTED.filter(d=>noSt.includes(d.status));
-  document.getElementById('unlistedL').innerHTML=items.map(d=>{
-    const isReady=!noSt.includes(d.status);
-    const cls=isReady?'pill-g':'pill-y';
-    const lbl=isReady?'掲載可':(d.status||'—');
-    return `<div class="aitem"><div><div class="aname">${d.name}</div><div class="adet">${d.cat} / ${d.year} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'}</div></div><span class="pill ${cls}">${lbl}</span></div>`;
-  }).join('');
+  const wt=['未入庫'],sh=['鈑金','未仕上','鈑金入庫中'],ot=['不明'];
+  const waitI=UNLISTED.filter(d=>wt.includes(d.status));
+  const sheetI=UNLISTED.filter(d=>sh.includes(d.status));
+  const readyI=UNLISTED.filter(d=>!wt.includes(d.status)&&!sh.includes(d.status)&&!ot.includes(d.status)&&d.name&&d.name.length>1);
+  const otherI=UNLISTED.filter(d=>ot.includes(d.status));
+  document.getElementById('u-total').textContent=UNLISTED.length;
+  document.getElementById('u-wait').textContent=waitI.length;
+  document.getElementById('u-sheet').textContent=sheetI.length;
+  document.getElementById('u-ready').textContent=readyI.length;
+  document.getElementById('u-other').textContent=otherI.length;
+  document.getElementById('cnt-wait').textContent=waitI.length+'台';
+  document.getElementById('cnt-sheet').textContent=sheetI.length+'台';
+  document.getElementById('cnt-ready').textContent=readyI.length+'台';
+  document.getElementById('cnt-other').textContent=otherI.length+'台';
+  const fmt=(d,pill,lbl)=>`<div class="aitem"><div><div class="aname">${d.name}</div><div class="adet">${d.cat} / ${d.year} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'}</div></div><span class="pill ${pill}">${lbl}</span></div>`;
+  document.getElementById('phase-wait').innerHTML=waitI.map(d=>fmt(d,'pill-y','入庫待ち')).join('');
+  document.getElementById('phase-sheet').innerHTML=sheetI.map(d=>fmt(d,'pill-r',d.status)).join('');
+  document.getElementById('phase-ready').innerHTML=readyI.map(d=>fmt(d,'pill-g','掲載可')).join('');
+  document.getElementById('phase-other').innerHTML=otherI.map(d=>fmt(d,'pill-b',d.status||'—')).join('');
 }
 
-// ── Long stock ──
 function renderLong(){
   const th=parseInt(document.getElementById('longThresh').value);
-  const items=STOCK.filter(d=>d.days!=null&&d.days>=th&&d.days<10000).sort((a,b)=>b.days-a.days).slice(0,50);
-  document.getElementById('longL').innerHTML=items.map(d=>{
+  const cf=document.getElementById('longCat').value;
+  let items=STOCK.filter(d=>d.days!=null&&d.days>=th&&d.days<10000);
+  if(cf)items=items.filter(d=>d.cat===cf);
+  items.sort((a,b)=>b.days-a.days);
+  document.getElementById('l-300').textContent=STOCK.filter(d=>d.days!=null&&d.days>=300&&d.days<10000).length;
+  document.getElementById('l-150').textContent=STOCK.filter(d=>d.days!=null&&d.days>=150&&d.days<300).length;
+  document.getElementById('l-100').textContent=STOCK.filter(d=>d.days!=null&&d.days>=100&&d.days<150).length;
+  document.getElementById('l-60').textContent=STOCK.filter(d=>d.days!=null&&d.days>=60&&d.days<100).length;
+  document.getElementById('longL').innerHTML=items.slice(0,60).map(d=>{
     const km=d.km?(d.km/10000).toFixed(1)+'万km':'—';
-    const cls=d.days>=300?'pill-r':d.days>=150?'pill-y':'pill-b';
-    return `<div class="aitem"><div><div class="aname">${d.name}</div><div class="adet">${d.cat} / ${d.year} / ${km} / ${d.color||'—'}</div></div><span class="pill ${cls}">${d.days}日</span></div>`;
+    const cls=d.days>=300?'pill-r':d.days>=150?'pill-y':d.days>=100?'pill-p':'pill-b';
+    const msg=d.days>=300?'早急に値下げ推奨':d.days>=150?'価格見直し推奨':d.days>=100?'要注意':'様子見';
+    return `<div class="aitem"><div><div class="aname">${d.name}</div><div class="adet">${d.cat} / ${d.year} / ${km} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'} → ${msg}</div></div><span class="pill ${cls}">${d.days}日</span></div>`;
   }).join('');
 }
 
-// ── Action page ──
 function renderAction(){
-  // 売約実績を集計
-  const soldCnt={};
-  SOLD.forEach(d=>{soldCnt[d.name]=(soldCnt[d.name]||0)+1;});
-
-  // 過不足
-  const shortage=[],excess=[];
-  const stockMap={};
-  STOCK.forEach(d=>{const k=`${d.cat}_${d.name}`;if(!stockMap[k])stockMap[k]={cat:d.cat,name:d.name,cnt:0};stockMap[k].cnt++;});
-  Object.entries(stockMap).forEach(([k,v])=>{
-    const t=TEISU[k];if(t==null)return;
-    const diff=v.cnt-t;
-    if(diff<=-1)shortage.push({...v,diff,t,soldCnt:soldCnt[v.name]||0});
-    else if(diff>=2)excess.push({...v,diff,t});
-  });
-
-  // KPIs
-  document.getElementById('k-short').textContent=shortage.length;
-  document.getElementById('k-excess').textContent=excess.length;
+  const sc={};SOLD.forEach(d=>{sc[d.name]=(sc[d.name]||0)+1;});
+  const srt=[],exc=[];
+  const sm={};STOCK.forEach(d=>{const k=`${d.cat}_${d.name}`;if(!sm[k])sm[k]={cat:d.cat,name:d.name,cnt:0};sm[k].cnt++;});
+  Object.entries(sm).forEach(([k,v])=>{const t=TEISU[k];if(t==null)return;const diff=v.cnt-t;if(diff<=-1)srt.push({...v,diff,t,sc:sc[v.name]||0});else if(diff>=2)exc.push({...v,diff,t});});
+  document.getElementById('k-short').textContent=srt.length;
+  document.getElementById('k-excess').textContent=exc.length;
   const noSt=['未入庫','鈑金','未仕上','不明','鈑金入庫中'];
-  const readyCnt=UNLISTED.filter(d=>!noSt.includes(d.status)).length;
-  document.getElementById('k-ready').textContent=readyCnt;
+  document.getElementById('k-ready').textContent=UNLISTED.filter(d=>!noSt.includes(d.status)&&d.name&&d.name.length>1).length;
   document.getElementById('k-long').textContent=STOCK.filter(d=>d.days!=null&&d.days>=100&&d.days<10000).length;
-
-  // 仕入れ優先リスト（不足台数 × 売約実績でスコア算出）
-  const buyList=shortage.map(d=>{
-    const score=Math.abs(d.diff)*2+(d.soldCnt||0);
-    const pri=score>=20?'S':score>=10?'A':'B';
-    return{...d,score,pri};
-  }).sort((a,b)=>b.score-a.score);
-
-  document.getElementById('buyListL').innerHTML=buyList.map(d=>{
-    const priCls=d.pri==='S'?'pri-s':d.pri==='A'?'pri-a':'pri-b';
-    return `<div class="aitem">
-      <div>
-        <div class="aname"><span class="pri ${priCls}">${d.pri}級</span> ${d.name}</div>
-        <div class="adet">${d.cat} / 規定${d.t}台 → 実${d.cnt}台（${d.diff}） / 売約実績${d.soldCnt}台</div>
-        <div class="score-bar" style="width:120px"><div class="score-fill" style="width:${Math.min(d.score/30*100,100)}%;background:${d.pri==='S'?'var(--red)':d.pri==='A'?'var(--amber)':'var(--accent)'}"></div></div>
-      </div>
-      <span class="pill pill-r">${d.diff}</span>
-    </div>`;
-  }).join('');
-
-  // 過剰在庫是正
-  excess.sort((a,b)=>b.diff-a.diff);
-  document.getElementById('excessListL').innerHTML=excess.map(d=>{
-    const avgDays=STOCK.filter(s=>s.name===d.name&&s.days!=null&&s.days<10000).reduce((a,b,_,arr)=>a+b.days/arr.length,0);
-    return `<div class="aitem">
-      <div>
-        <div class="aname">${d.name}</div>
-        <div class="adet">${d.cat} / 規定${d.t}台 → 実${d.cnt}台 / 平均${Math.round(avgDays)}日在庫</div>
-      </div>
-      <span class="pill pill-y">+${d.diff}</span>
-    </div>`;
-  }).join('');
-
-  // 長期在庫是正
-  const longItems=STOCK.filter(d=>d.days!=null&&d.days>=100&&d.days<10000).sort((a,b)=>b.days-a.days).slice(0,30);
-  document.getElementById('longActionL').innerHTML=longItems.map(d=>{
-    const cls=d.days>=300?'pill-r':d.days>=150?'pill-y':'pill-b';
-    const msg=d.days>=300?'早急に値下げ推奨':d.days>=150?'価格見直し推奨':'掲載継続';
-    return `<div class="aitem">
-      <div>
-        <div class="aname">${d.name}</div>
-        <div class="adet">${d.year} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'} → ${msg}</div>
-      </div>
-      <span class="pill ${cls}">${d.days}日</span>
-    </div>`;
-  }).join('');
-
-  // 今すぐ掲載できる
-  const readyItems=UNLISTED.filter(d=>!noSt.includes(d.status));
-  document.getElementById('readyListL').innerHTML=readyItems.map(d=>{
-    // この車種の不足状況確認
-    const k=`${d.cat}_${d.name}`;
-    const stk=stockMap[k];const t=TEISU[k];
-    const isNeeded=t!=null&&stk&&stk.cnt<t;
-    const urgency=isNeeded?'pill-r':'pill-g';
-    const lbl=isNeeded?'不足中・急ぎ':'掲載推奨';
-    return `<div class="aitem">
-      <div>
-        <div class="aname">${d.name}</div>
-        <div class="adet">${d.cat} / ${d.year} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'}</div>
-      </div>
-      <span class="pill ${urgency}">${lbl}</span>
-    </div>`;
-  }).join('');
+  const bl=srt.map(d=>{const s=Math.abs(d.diff)*2+(d.sc||0);const p=s>=20?'S':s>=10?'A':'B';return{...d,s,p};}).sort((a,b)=>b.s-a.s);
+  document.getElementById('buyListL').innerHTML=bl.map(d=>{const pc=d.p==='S'?'pri-s':d.p==='A'?'pri-a':'pri-b';return `<div class="aitem"><div><div class="aname"><span class="pri ${pc}">${d.p}級</span>${d.name}</div><div class="adet">${d.cat} / 規定${d.t}台→実${d.cnt}台（${d.diff}） / 売約実績${d.sc}台</div><div class="score-bar"><div class="score-fill" style="width:${Math.min(d.s/30*100,100)}%;background:${d.p==='S'?'var(--red)':d.p==='A'?'var(--amber)':'var(--accent)'}"></div></div></div><span class="pill pill-r">${d.diff}</span></div>`;}).join('');
+  exc.sort((a,b)=>b.diff-a.diff);
+  document.getElementById('excessListL').innerHTML=exc.map(d=>{const avg=STOCK.filter(s=>s.name===d.name&&s.days!=null&&s.days<10000).reduce((a,b,_,arr)=>a+b.days/arr.length,0);return `<div class="aitem"><div><div class="aname">${d.name}</div><div class="adet">${d.cat} / 規定${d.t}台→実${d.cnt}台 / 平均${Math.round(avg)}日在庫</div></div><span class="pill pill-y">+${d.diff}</span></div>`;}).join('');
+  document.getElementById('longActionL').innerHTML=STOCK.filter(d=>d.days!=null&&d.days>=100&&d.days<10000).sort((a,b)=>b.days-a.days).slice(0,30).map(d=>{const cls=d.days>=300?'pill-r':d.days>=150?'pill-y':'pill-p';const msg=d.days>=300?'早急値下げ推奨':d.days>=150?'価格見直し推奨':'要注意';return `<div class="aitem"><div><div class="aname">${d.name}</div><div class="adet">${d.year} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'} → ${msg}</div></div><span class="pill ${cls}">${d.days}日</span></div>`;}).join('');
+  document.getElementById('readyListL').innerHTML=UNLISTED.filter(d=>!noSt.includes(d.status)&&d.name&&d.name.length>1).map(d=>{const k=`${d.cat}_${d.name}`;const stk=sm[k];const t=TEISU[k];const need=t!=null&&stk&&stk.cnt<t;return `<div class="aitem"><div><div class="aname">${d.name}</div><div class="adet">${d.cat} / ${d.year} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'}</div></div><span class="pill ${need?'pill-r':'pill-g'}">${need?'不足中・急ぎ':'掲載推奨'}</span></div>`;}).join('');
 }
 
-// ── Sold analysis ──
 function renderSold(){
   const sd=SOLD;
   document.getElementById('kpi-total').textContent=sd.length.toLocaleString();
-  const dArr=sd.filter(d=>d.days!=null).map(d=>d.days);
-  document.getElementById('kpi-days').textContent=dArr.length?Math.round(dArr.reduce((a,b)=>a+b)/dArr.length):'—';
-  const pArr=sd.filter(d=>d.profit!=null&&d.profit>-1000&&d.profit<10000).map(d=>d.profit);
-  document.getElementById('kpi-profit').textContent=pArr.length?(pArr.reduce((a,b)=>a+b)/pArr.length).toFixed(1):'—';
-  const now=new Date();
-  const y1ago=`${now.getFullYear()-1}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  document.getElementById('kpi-recent').textContent=sd.filter(d=>d.month&&d.month>=y1ago).length;
-
-  // Monthly
-  const months={};sd.forEach(d=>{if(d.month)months[d.month]=(months[d.month]||0)+1;});
-  const sortedM=Object.keys(months).sort().slice(-18);
-  const maxM=Math.max(...sortedM.map(m=>months[m]),1);
-  document.getElementById('monthlyBars').innerHTML=sortedM.map(m=>{
-    const v=months[m];const h=Math.round(v/maxM*100);const lbl=m.replace(/^\d{4}-/,'');
-    return `<div class="mbar-wrap"><div class="mbar" style="height:${h}%;background:var(--accent);opacity:.8" title="${m}: ${v}台"></div><div class="mbar-lbl">${lbl}</div><div class="mbar-val">${v}</div></div>`;
-  }).join('');
-
-  // 売約ランキング
+  const dA=sd.filter(d=>d.days!=null).map(d=>d.days);document.getElementById('kpi-days').textContent=dA.length?Math.round(dA.reduce((a,b)=>a+b)/dA.length)+'日':'—';
+  const pA=sd.filter(d=>d.profit!=null&&d.profit>-1000&&d.profit<10000).map(d=>d.profit);document.getElementById('kpi-profit').textContent=pA.length?(pA.reduce((a,b)=>a+b)/pA.length).toFixed(1):'—';
+  const now=new Date();const y1=`${now.getFullYear()-1}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  document.getElementById('kpi-recent').textContent=sd.filter(d=>d.month&&d.month>=y1).length;
+  const mo={};sd.forEach(d=>{if(d.month)mo[d.month]=(mo[d.month]||0)+1;});
+  const sm2=Object.keys(mo).sort().slice(-18);const mm=Math.max(...sm2.map(m=>mo[m]),1);
+  document.getElementById('monthlyBars').innerHTML=sm2.map(m=>{const v=mo[m];const h=Math.round(v/mm*100);const l=m.replace(/^\d{4}-/,'');return `<div class="mbar-wrap"><div class="mbar" style="height:${h}%;background:var(--accent)" title="${m}: ${v}台"></div><div class="mbar-lbl">${l}</div><div class="mbar-val">${v}</div></div>`;}).join('');
   const nc={};sd.forEach(d=>{nc[d.name]=(nc[d.name]||0)+1;});
-  barChart('soldRank',Object.entries(nc).sort((a,b)=>b[1]-a[1]).slice(0,20).map(([k,v])=>({l:k,v})),'#4f8ef7');
-
-  // 回転率ランキング（平均掲載日数が短い順・最低5件以上売れた車種）
-  const daysByName={};
-  sd.filter(d=>d.days!=null).forEach(d=>{if(!daysByName[d.name])daysByName[d.name]=[];daysByName[d.name].push(d.days);});
-  const rotation=Object.entries(daysByName)
-    .filter(([,arr])=>arr.length>=5)
-    .map(([name,arr])=>({l:name,v:Math.round(arr.reduce((a,b)=>a+b)/arr.length)}))
-    .sort((a,b)=>a.v-b.v).slice(0,15);
-  barChart('rotationRank',rotation,'#22c55e');
-
-  // 色
+  barChart('soldRank',Object.entries(nc).sort((a,b)=>b[1]-a[1]).slice(0,20).map(([k,v])=>({l:k,v})),'#2979d4');
+  const dn={};sd.filter(d=>d.days!=null).forEach(d=>{if(!dn[d.name])dn[d.name]=[];dn[d.name].push(d.days);});
+  const rot=Object.entries(dn).filter(([,a])=>a.length>=5).map(([n,a])=>({l:n,v:Math.round(a.reduce((a,b)=>a+b)/a.length)})).sort((a,b)=>a.v-b.v).slice(0,15);
+  barChart('rotationRank',rot,'#16a34a');
   const cc={};sd.forEach(d=>{if(d.color&&d.color.length>0&&d.color!='nan')cc[d.color]=(cc[d.color]||0)+1;});
-  barChart('soldColor',Object.entries(cc).sort((a,b)=>b[1]-a[1]).slice(0,12).map(([k,v])=>({l:k,v})),'#14b8a6');
-
-  // 年式
+  barChart('soldColor',Object.entries(cc).sort((a,b)=>b[1]-a[1]).slice(0,12).map(([k,v])=>({l:k,v})),'#0891b2');
   const yc={};sd.forEach(d=>{yc[d.year]=(yc[d.year]||0)+1;});
-  barChart('soldYear',YEAR_ORDER.filter(y=>yc[y]).map(y=>({l:y,v:yc[y]})),'#a855f7');
-
-  // 走行
+  barChart('soldYear',YEAR_ORDER.filter(y=>yc[y]).map(y=>({l:y,v:yc[y]})),'#7c3aed');
   const bands=[['〜2万',0,20000],['〜4万',20000,40000],['〜6万',40000,60000],['〜8万',60000,80000],['8万超',80000,Infinity]];
-  barChart('soldKm',bands.map(([l,lo,hi])=>({l,v:sd.filter(d=>d.km!=null&&d.km>=lo&&d.km<hi).length})),'#f59e0b');
+  barChart('soldKm',bands.map(([l,lo,hi])=>({l,v:sd.filter(d=>d.km!=null&&d.km>=lo&&d.km<hi).length})),'#d97706');
 }
 
 function barChart(id,items,color){
   const max=Math.max(...items.map(i=>i.v),1);
-  document.getElementById(id).innerHTML=items.map(({l,v})=>{
-    const pct=Math.round(v/max*100);
-    return `<div class="brow"><div class="blbl" title="${l}">${l}</div><div class="btrack"><div class="bfill" style="width:${pct}%;background:${color}">${v}</div></div></div>`;
-  }).join('');
+  document.getElementById(id).innerHTML=items.map(({l,v})=>`<div class="brow"><div class="blbl" title="${l}">${l}</div><div class="btrack"><div class="bfill" style="width:${Math.round(v/max*100)}%;background:${color}">${v}</div></div></div>`).join('');
 }
 
-function showPage(name){
+function showPage(n){
   document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelector(`[onclick="showPage('${name}')"]`).classList.add('active');
-  document.getElementById(`page-${name}`).classList.add('active');
+  document.querySelector(`[onclick="showPage('${n}')"]`).classList.add('active');
+  document.getElementById(`page-${n}`).classList.add('active');
 }
 
 loadAll();
 </script>
 </body>
 </html>
+完了
+
+
+
+
