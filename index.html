@@ -1,6 +1,3 @@
-cat /home/claude/dashboard_v3.html
-出力
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -138,6 +135,7 @@ tbody tr:hover td{background:var(--accent-bg)!important;}
       <button class="ptab" onclick="showPage('unlisted')">未掲載管理</button>
       <button class="ptab" onclick="showPage('longstock')">長期在庫</button>
       <button class="ptab" onclick="showPage('action')">在庫対策</button>
+      <button class="ptab" onclick="showPage('balance')">車種バランス</button>
       <button class="ptab" onclick="showPage('sold')">売約分析</button>
     </div>
     <div class="upd" id="upd">—</div>
@@ -153,10 +151,26 @@ tbody tr:hover td{background:var(--accent-bg)!important;}
 <!-- PAGE 1: 在庫現状 -->
 <div class="page active" id="page-stock">
   <div class="summary">
-    <div class="card" onclick="showCatModal('ミニバン')"><div class="card-lbl">ミニバン</div><div class="card-val" id="sm">—</div><div class="card-sub" id="sm2">クリックで詳細</div></div>
-    <div class="card" onclick="showCatModal('SUV')"><div class="card-lbl">SUV</div><div class="card-val" id="ss">—</div><div class="card-sub" id="ss2">クリックで詳細</div></div>
-    <div class="card" onclick="showCatModal('HVCP')"><div class="card-lbl">HVCP</div><div class="card-val" id="sh">—</div><div class="card-sub" id="sh2">クリックで詳細</div></div>
-    <div class="card" onclick="showCatModal('軽')"><div class="card-lbl">軽</div><div class="card-val" id="sk">—</div><div class="card-sub" id="sk2">クリックで詳細</div></div>
+    <div class="card" onclick="showCatModal('ミニバン')"><div class="card-lbl">ミニバン</div><div class="card-val" id="sm">—</div>
+      <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap">
+        <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:#dbeafe;color:#1d4ed8" id="sm-hv">HV —</span>
+        <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:#d1fae5;color:#065f46" id="sm-fwd">4WD —</span>
+      </div></div>
+    <div class="card" onclick="showCatModal('SUV')"><div class="card-lbl">SUV</div><div class="card-val" id="ss">—</div>
+      <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap">
+        <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:#dbeafe;color:#1d4ed8" id="ss-hv">HV —</span>
+        <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:#d1fae5;color:#065f46" id="ss-fwd">4WD —</span>
+      </div></div>
+    <div class="card" onclick="showCatModal('HVCP')"><div class="card-lbl">HVCP</div><div class="card-val" id="sh">—</div>
+      <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap">
+        <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:#dbeafe;color:#1d4ed8" id="sh-hv">HV —</span>
+        <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:#d1fae5;color:#065f46" id="sh-fwd">4WD —</span>
+      </div></div>
+    <div class="card" onclick="showCatModal('軽')"><div class="card-lbl">軽</div><div class="card-val" id="sk">—</div>
+      <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap">
+        <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:#dbeafe;color:#1d4ed8" id="sk-hv">HV —</span>
+        <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:#d1fae5;color:#065f46" id="sk-fwd">4WD —</span>
+      </div></div>
     <div class="card card-ul" onclick="showPage('unlisted')"><div class="card-lbl">未掲載</div><div class="card-val" id="su">—</div><div class="card-sub" id="su2">クリックで詳細</div></div>
   </div>
 
@@ -325,7 +339,7 @@ tbody tr:hover td{background:var(--accent-bg)!important;}
 <script>
 const SID='1688vaYsy-Ibhp9SaM875OzOrykJlfahVMIGteVclN3o';
 const GIDS={minivan:2047431649,suv:1044635441,hvcp:64189686,kei:1834933994,unlisted:1695712956,sold:857233948,sold2025:1127181298};
-const NAME_MAP={'ｳﾞｫｸｼｰ80系':'ヴォクシー80系','ｳﾞｫｸｼｰ90系':'ヴォクシー90系','ｳﾞｪﾙﾌｧｲｱ 30系':'ヴェルファイア30系','ﾉｱ80系':'ノア80系','ﾉｱ90系':'ノア90系','ｴｽｸｧｲｱ':'エスクァイア','ｼｴﾝﾀ':'シエンタ','ｽﾃｯﾌﾟﾜｺﾞﾝ':'ステップワゴン','ｾﾚﾅ 27前期':'セレナ27前期','ｾﾚﾅ 27後期':'セレナ27後期','ｾﾚﾅ 28現行':'セレナ28現行','ﾌﾘｰﾄﾞ':'フリード','ﾊﾘｱｰ80':'ハリアー80','ﾊﾘｱｰ80HV':'ハリアー80HV','ｳﾞｪｾﾞﾙ（現行）':'ヴェゼル現行','ｳﾞｪｾﾞﾙHV（現行）':'ヴェゼルHV現行','ｳﾞｪｾﾞﾙHV（前型）':'ヴェゼルHV前型','ｴｸｽﾄﾚｲﾙ32（前期）':'エクストレイル32前期','ｴｸｽﾄﾚｲﾙ32（後期）':'エクストレイル32後期','ｶﾛｰﾗｸﾛｽ':'カローラクロス','ﾌｫﾚｽﾀｰ':'フォレスター','ﾔﾘｽｸﾛｽ':'ヤリスクロス','ﾗｲｽﾞ':'ライズ','ｼﾞﾑニーﾉﾏﾄﾞ':'ジムニーノマド','ｱｸｱ前期':'アクア前期','ｱｸｱ中期':'アクア中期','ｱｸｱ後期':'アクア後期','ｱｸｱ現行':'アクア現行','ﾉｰﾄ前期':'ノート前期','ﾉｰﾄ中期':'ノート中期','ﾉｰﾄEpower':'ノートEpower','ﾉｰﾄEpower（現行）':'ノートEpower現行','ﾌﾟﾘｳｽ30系':'プリウス30系','ﾌﾟﾘｳｽ 50前期':'プリウス50前期','ﾌﾟﾘｳｽ 50後期':'プリウス50後期','ﾌﾟﾘｳｽ 50PHV':'プリウス50PHV','ﾌﾟﾘｳｽ 60':'プリウス60','ﾙｰﾐｰ':'ルーミー','ﾀﾝｸ':'タンク','ﾄｰﾙ':'トール','ｿﾘｵ':'ソリオ','ｽﾍﾟｲﾄﾞ':'スペイド','ｳﾞｨｯﾂ':'ヴィッツ','ｶﾛｰﾗｽﾎﾟｰﾂ':'カローラスポーツ','ｶﾛｰﾗﾂｰﾘﾝｸﾞ':'カローラツーリング','ﾏｰﾁ':'マーチ','ﾐﾗｰｼﾞｭ':'ミラージュ','N-BOXｶｽﾀﾑ':'N-BOXカスタム','Nﾜｺﾞﾝ':'Nワゴン','ｱﾙﾄ':'アルト','ｱﾙﾄﾗﾊﾟﾝ':'アルトラパン','ｴﾌﾞﾘｰ':'エブリー','ｷｬｽﾄ':'キャスト','ｷｬﾛﾙ':'キャロル','ｼﾞﾑﾆｰ':'ジムニー','ｽﾍﾟｰｼｱ':'スペーシア','ｽﾍﾟｰｼｱｶｽﾀﾑ':'スペーシアカスタム','ﾀﾝﾄ':'タント','ﾀﾝﾄｶｽﾀﾑ':'タントカスタム','ﾃﾞｲｽﾞ':'デイズ','ﾃﾞｲｽﾞﾙｰｸｽ':'デイズルークス','ﾊｽﾗｰ':'ハスラー','ﾐﾗｲｰｽ':'ミライース','ﾐﾗｼﾞｰﾉ':'ミラジーノ','ﾑｰｳﾞｺﾝﾃ':'ムーヴコンテ','ﾓｺ':'モコ','ﾙｰｸｽ':'ルークス','ﾙｰｸｽ\u3000ﾊｲｳｪｲｽﾀｰ':'ルークスHW','ﾜｺﾞﾝＲ':'ワゴンR','AZﾜｺﾞﾝ':'AZワゴン','EKﾜｺﾞﾝ':'EKワゴン','ｸﾘｯﾊﾟｰﾘｵ':'クリッパーリオ','ｵｰﾗ':'オーラ'};
+const NAME_MAP={'ｳﾞｫｸｼｰ80系':'ヴォクシー80系','ｳﾞｫｸｼｰ90系':'ヴォクシー90系','ｳﾞｪﾙﾌｧｲｱ 30系':'ヴェルファイア30系','ﾉｱ80系':'ノア80系','ﾉｱ90系':'ノア90系','ｴｽｸｧｲｱ':'エスクァイア','ｼｴﾝﾀ':'シエンタ','ｽﾃｯﾌﾟﾜｺﾞﾝ':'ステップワゴン','ｾﾚﾅ 27前期':'セレナ27前期','ｾﾚﾅ 27後期':'セレナ27後期','ｾﾚﾅ 28現行':'セレナ28現行','ﾌﾘｰﾄﾞ':'フリード','ﾊﾘｱｰ80':'ハリアー80','ﾊﾘｱｰ80HV':'ハリアー80HV','ｳﾞｪｾﾞﾙ（現行）':'ヴェゼル現行','ｳﾞｪｾﾞﾙHV（現行）':'ヴェゼルHV現行','ｳﾞｪｾﾞﾙHV（前型）':'ヴェゼルHV前型','ｴｸｽﾄﾚｲﾙ32（前期）':'エクストレイル32前期','ｴｸｽﾄﾚｲﾙ32（後期）':'エクストレイル32後期','ｶﾛｰﾗｸﾛｽ':'カローラクロス','ﾌｫﾚｽﾀｰ':'フォレスター','ﾔﾘｽｸﾛｽ':'ヤリスクロス','ﾗｲｽﾞ':'ライズ','ｼﾞﾑニーﾉﾏﾄﾞ':'ジムニーノマド','ｱｸｱ前期':'アクア前期','ｱｸｱ中期':'アクア中期','ｱｸｱ後期':'アクア後期','ｱｸｱ現行':'アクア現行','ﾉｰﾄ前期':'ノート前期','ﾉｰﾄ中期':'ノート中期','ﾉｰﾄEpower':'ノートEpower','ﾉｰﾄEpower（現行）':'ノートEpower現行','ﾌﾟﾘｳｽ30系':'プリウス30系','ﾌﾟﾘｳｽ 50前期':'プリウス50前期','ﾌﾟﾘｳｽ 50後期':'プリウス50後期','ﾌﾟﾘｳｽ 50PHV':'プリウス50PHV','ﾌﾟﾘｳｽ 60':'プリウス60','ﾙｰﾐｰ':'ルーミー','ﾀﾝｸ':'タンク','ﾄｰﾙ':'トール','ｿﾘｵ':'ソリオ','ｽﾍﾟｲﾄﾞ':'スペイド','ｳﾞｨｯﾂ':'ヴィッツ','ｶﾛｰﾗｽﾎﾟｰﾂ':'カローラスポーツ','ｶﾛｰﾗﾂｰﾘﾝｸﾞ':'カローラツーリング','ﾏｰﾁ':'マーチ','ﾐﾗｰｼﾞｭ':'ミラージュ','N-BOXｶｽﾀﾑ':'N-BOXカスタム','Nﾜｺﾞﾝ':'Nワゴン','ｱﾙﾄ':'アルト','ｱﾙﾄﾗﾊﾟﾝ':'アルトラパン','ｴﾌﾞﾘｰ':'エブリー','ｷｬｽﾄ':'キャスト','ｷｬﾛﾙ':'キャロル','ｼﾞﾑﾆｰ':'ジムニー','ｽﾍﾟｰｼｱ':'スペーシア','ｽﾍﾟｰｼｱｶｽﾀﾑ':'スペーシアカスタム','ﾀﾝﾄ':'タント','ﾀﾝﾄｶｽﾀﾑ':'タントカスタム','ﾃﾞｲｽﾞ':'デイズ','ﾃﾞｲｽﾞﾙｰｸｽ':'デイズルークス','ﾊｽﾗｰ':'ハスラー','ﾐﾗｲｰｽ':'ミライース','ﾐﾗｼﾞｰﾉ':'ミラジーノ','ﾑｰｳﾞｺﾝﾃ':'ムーヴコンテ','ﾓｺ':'モコ','ﾙｰｸｽ':'ルークス','ﾙｰｸｽ\u3000ﾊｲｳｪｲｽﾀｰ':'ルークスHW','ﾜｺﾞﾝＲ':'ワゴンR','AZﾜｺﾞﾝ':'AZワゴン','EKﾜｺﾞﾝ':'EKワゴン','ｸﾘｯﾊﾟｰﾘｵ':'クリッパーリオ','ｵｰﾗ':'オーラ','ﾗﾝｸﾙ250':'ランクル250','ﾌｪｱﾚﾃﾞｨZ':'フェアレディZ','ﾛｰﾄﾞｽﾀｰ':'ロードスター','ｲﾝﾌﾟﾚｯｻｽﾎﾟｰﾂ':'インプレッサスポーツ','ﾌﾟﾘｳｽ60PHEV':'プリウス60PHEV'};
 const TEISU={"ミニバン_ヴォクシー80系":10,"ミニバン_ヴォクシー90系":4,"ミニバン_ノア80系":3,"ミニバン_ノア90系":2,"ミニバン_エスクァイア":4,"ミニバン_セレナ27前期":6,"ミニバン_セレナ27後期":6,"ミニバン_セレナ28現行":5,"ミニバン_シエンタ":8,"ミニバン_フリード":8,"ミニバン_ステップワゴン":3,"ミニバン_ヴェルファイア30系":1,"SUV_ハリアー80":6,"SUV_ハリアー80HV":5,"SUV_RAV4":4,"SUV_ヴェゼルHV前型":4,"SUV_ヴェゼル現行":3,"SUV_ヴェゼルHV現行":3,"SUV_エクストレイル32前期":3,"SUV_エクストレイル32後期":5,"SUV_ライズ":4,"SUV_ヤリスクロス":4,"SUV_カローラクロス":4,"SUV_フォレスター":5,"SUV_CX-5":7,"SUV_CX30":1,"HVCP_アクア前期":6,"HVCP_アクア中期":6,"HVCP_アクア後期":7,"HVCP_アクア現行":3,"HVCP_ノート前期":3,"HVCP_ノート中期":3,"HVCP_ノートEpower":10,"HVCP_ノートEpower現行":4,"HVCP_プリウス30系":4,"HVCP_プリウス50前期":7,"HVCP_プリウス50後期":6,"HVCP_プリウス50PHV":2,"HVCP_プリウス60":3,"HVCP_ルーミー":4,"HVCP_タンク":4,"HVCP_ソリオ":4,"軽_N-BOX":15,"軽_N-BOXカスタム":8,"軽_タント":8,"軽_タントカスタム":5,"軽_ルークス":3,"軽_ルークスHW":5,"軽_デイズルークス":3,"軽_スペーシア":6,"軽_スペーシアカスタム":4,"軽_ハスラー":8,"軽_ジムニー":3,"軽_デイズ":15,"軽_ワゴンR":10,"軽_Nワゴン":5,"軽_ミライース":8,"軽_アルト":5,"軽_アルトラパン":5,"軽_N-ONE":3,"軽_キャスト":5,"軽_モコ":2,"軽_EKワゴン":2};
 const YEAR_ORDER=["H24以前","H24","H25","H26","H27","H28","H29","H30","H31/R1","R1","R2","R3","R4","R5","R6","R7","R8","不明"];
 const OLD_YEARS_SET=new Set(["H15","H19","H21","H22","H23"]);
@@ -375,7 +389,14 @@ async function loadAll(){
 
 function updateSummary(){
   const ids={'ミニバン':'sm','SUV':'ss','HVCP':'sh','軽':'sk'};
-  CAT_ORDER.forEach(c=>document.getElementById(ids[c]).textContent=STOCK.filter(d=>d.cat===c).length);
+  CAT_ORDER.forEach(c=>{
+    const items=STOCK.filter(d=>d.cat===c);
+    document.getElementById(ids[c]).textContent=items.length;
+    const hvEl=document.getElementById(ids[c]+'-hv');
+    const fwdEl=document.getElementById(ids[c]+'-fwd');
+    if(hvEl)hvEl.textContent='HV '+items.filter(d=>d.hv==='〇').length;
+    if(fwdEl)fwdEl.textContent='4WD '+items.filter(d=>d.fwd==='〇').length;
+  });
   document.getElementById('su').textContent=UNLISTED.length;
   const byG={};UNLISTED.forEach(d=>{byG[d.cat]=(byG[d.cat]||0)+1;});
   document.getElementById('su2').textContent=Object.entries(byG).map(([k,v])=>`${k}:${v}`).join(' ');
@@ -421,7 +442,11 @@ function renderMatrix(){
   let h=`<thead><tr><th>車種</th>${keys.map(k=>`<th>${k}</th>`).join('')}<th>計</th><th>既定</th></tr></thead><tbody>`;
   cats.forEach(cat=>{
     if(!g[cat])return;
-    let names=Object.keys(g[cat]).sort();
+    let names=Object.keys(g[cat]).sort((a,b)=>{
+      const ta=Object.values(g[cat][a]).flat().filter(i=>!i.unlisted).length;
+      const tb=Object.values(g[cat][b]).flat().filter(i=>!i.unlisted).length;
+      return tb-ta;
+    });
     if(ao)names=names.filter(n=>{const t=TEISU[`${cat}_${n}`];const tot=Object.values(g[cat][n]).flat().length;return t!=null&&Math.abs(tot-t)>=2;});
     if(!names.length)return;
     h+=`<tr class="cat-row"><td colspan="${keys.length+3}">${cat}</td></tr>`;
@@ -567,19 +592,233 @@ function barChart(id,items,color){
   document.getElementById(id).innerHTML=items.map(({l,v})=>`<div class="brow"><div class="blbl" title="${l}">${l}</div><div class="btrack"><div class="bfill" style="width:${Math.round(v/max*100)}%;background:${color}">${v}</div></div></div>`).join('');
 }
 
+
+
+
+// ═══ v4追加: 正しい列インデックスでデータロード ═══
+const NM_V4={'ｳﾞｫｸｼｰ80系':'ヴォクシー80系','ｳﾞｫｸｼｰ90系':'ヴォクシー90系','ｳﾞｪﾙﾌｧｲｱ 30系':'ヴェルファイア30系','ﾉｱ80系':'ノア80系','ﾉｱ90系':'ノア90系','ｴｽｸｧｲｱ':'エスクァイア','ｼｴﾝﾀ':'シエンタ','ｽﾃｯﾌﾟﾜｺﾞﾝ':'ステップワゴン','ｾﾚﾅ 27前期':'セレナ27前期','ｾﾚﾅ 27後期':'セレナ27後期','ｾﾚﾅ 28現行':'セレナ28現行','ﾌﾘｰﾄﾞ':'フリード','ﾊﾘｱｰ80':'ハリアー80','ﾊﾘｱｰ80HV':'ハリアー80HV','ｳﾞｪｾﾞﾙ（現行）':'ヴェゼル現行','ｳﾞｪｾﾞﾙHV（現行）':'ヴェゼルHV現行','ｳﾞｪｾﾞﾙHV（前型）':'ヴェゼルHV前型','ｴｸｽﾄﾚｲﾙ32（前期）':'エクストレイル32前期','ｴｸｽﾄﾚｲﾙ32（後期）':'エクストレイル32後期','ｶﾛｰﾗｸﾛｽ':'カローラクロス','ﾌｫﾚｽﾀｰ':'フォレスター','ﾔﾘｽｸﾛｽ':'ヤリスクロス','ﾗｲｽﾞ':'ライズ','ｼﾞﾑニーﾉﾏﾄﾞ':'ジムニーノマド','ｱｸｱ前期':'アクア10前期','ｱｸｱ中期':'アクア10中期','ｱｸｱ後期':'アクア10後期','ｱｸｱ現行':'アクア20現行','ｱｸｱ10前期':'アクア10前期','ｱｸｱ10中期':'アクア10中期','ｱｸｱ10後期':'アクア10後期','ｱｸｱ20現行':'アクア20現行','ﾉｰﾄ前期':'ノート前期','ﾉｰﾄ中期':'ノート中期','ﾉｰﾄEpower':'ノートEpower','ﾉｰﾄEpower（現行）':'ノートEpower現行','ﾌﾟﾘｳｽ30系':'プリウス30系','ﾌﾟﾘｳｽ 50前期':'プリウス50前期','ﾌﾟﾘｳｽ 50後期':'プリウス50後期','ﾌﾟﾘｳｽ 50PHV':'プリウス50PHV','ﾌﾟﾘｳｽ 60':'プリウス60','ﾙｰﾐｰ':'ルーミー','ﾀﾝｸ':'タンク','ﾄｰﾙ':'トール','ｿﾘｵ':'ソリオ','ｽﾍﾟｲﾄﾞ':'スペイド','ｳﾞｨｯﾂ':'ヴィッツ','ｶﾛｰﾗｽﾎﾟｰﾂ':'カローラスポーツ','ｶﾛｰﾗﾂｰﾘﾝｸﾞ':'カローラツーリング','ﾏｰﾁ':'マーチ','ﾐﾗｰｼﾞｭ':'ミラージュ','N-BOXｶｽﾀﾑ':'N-BOXカスタム','Nﾜｺﾞﾝ':'Nワゴン','ｱﾙﾄ':'アルト','ｱﾙﾄﾗﾊﾟﾝ':'アルトラパン','ｴﾌﾞﾘｰ':'エブリー','ｷｬｽﾄ':'キャスト','ｷｬﾛﾙ':'キャロル','ｼﾞﾑﾆｰ':'ジムニー','ｽﾍﾟｰｼｱ':'スペーシア','ｽﾍﾟｰｼｱｶｽﾀﾑ':'スペーシアカスタム','ﾀﾝﾄ':'タント','ﾀﾝﾄｶｽﾀﾑ':'タントカスタム','ﾃﾞｲｽﾞ':'デイズ','ﾃﾞｲｽﾞﾙｰｸｽ':'デイズルークス','ﾊｽﾗｰ':'ハスラー','ﾐﾗｲｰｽ':'ミライース','ﾐﾗｼﾞｰﾉ':'ミラジーノ','ﾑｰｳﾞｺﾝﾃ':'ムーヴコンテ','ﾓｺ':'モコ','ﾙｰｸｽ':'ルークス','ﾙｰｸｽ　ﾊｲｳｪｲｽﾀｰ':'ルークスHW','ﾜｺﾞﾝＲ':'ワゴンR','AZﾜｺﾞﾝ':'AZワゴン','EKﾜｺﾞﾝ':'EKワゴン','ｸﾘｯﾊﾟｰﾘｵ':'クリッパーリオ','ｵｰﾗ':'オーラ','ﾗﾝｸﾙ250':'ランクル250','ﾌｪｱﾚﾃﾞｨZ':'フェアレディZ','ﾛｰﾄﾞｽﾀｰ':'ロードスター','ｲﾝﾌﾟﾚｯｻｽﾎﾟｰﾂ':'インプレッサスポーツ','ﾌﾟﾘｳｽ60PHEV':'プリウス60PHEV'};
+
+const YEAR_ORDER_V4=["H23以前","H24","H25","H26","H27","H28","H29","H30","H31/R1","R1","R2","R3","R4","R5","R6","R7","R8","不明"];
+const OLD_Y_V4=new Set(["H15","H16","H17","H18","H19","H20","H21","H22","H23"]);
+const KM_BANDS_V4=["〜2万km","2〜4万km","4〜6万km","6〜8万km","8〜10万km","10万km超"];
+const PRICE_BANDS_V4=["〜20万","20〜40万","40〜60万","60〜80万","80〜100万","100〜120万","120〜140万","140〜160万","160〜180万","180〜200万","200〜220万","220〜240万","240〜260万","260〜280万","280〜300万","300万超"];
+
+function nmV4(s){s=String(s||'').trim();return NM_V4[s]||s;}
+function parseYearV4(v){if(v==null||v==='')return'不明';const s=String(v).trim();if(s.includes('/')){try{const y=parseInt(s);if(y<=8)return`R${y}`;if(y===31)return'H31/R1';return`H${y}`;}catch(e){}}try{const n=parseInt(s);if(isNaN(n))return'不明';if(n<=8)return`R${n}`;if(n===31)return'H31/R1';return`H${n}`;}catch(e){return'不明';}}
+const normYV4=y=>OLD_Y_V4.has(y)?'H23以前':y;
+function kmBandV4(k){if(k==null)return null;if(k<20000)return'〜2万km';if(k<40000)return'2〜4万km';if(k<60000)return'4〜6万km';if(k<80000)return'6〜8万km';if(k<100000)return'8〜10万km';return'10万km超';}
+function pBandV4(p){if(p==null||p<=0)return null;const i=Math.floor(p/20);return i>=PRICE_BANDS_V4.length-1?'300万超':PRICE_BANDS_V4[i];}
+
+// CSVの数値パース（日時シリアル値対応）
+function parseNumV4(v){
+  if(v===null||v===''||v===undefined)return null;
+  const n=parseFloat(v);
+  if(!isNaN(n)&&n>0)return n;
+  return null;
+}
+
+async function loadStockV4(){
+  const cfg=[
+    {key:'minivan',cat:'ミニバン',carC:13,costC:24,prC:25,prfC:30,dC:32},
+    {key:'suv',    cat:'SUV',    carC:13,costC:24,prC:25,prfC:30,dC:32},
+    {key:'hvcp',   cat:'HVCP',  carC:13,costC:24,prC:25,prfC:30,dC:32},
+    {key:'kei',    cat:'軽',    carC:13,costC:24,prC:25,prfC:30,dC:32},
+  ];
+  const res=[];
+  for(const c of cfg){
+    const rows=await fetchCsv(GIDS[c.key]);
+    for(let i=1;i<rows.length;i++){
+      const r=rows[i];if(!r||r.length<5)continue;
+      const name=nmV4(r[c.carC]);if(!name||name.length<=1)continue;
+      const km=parseNumV4(r[21]);
+      const cost=parseNumV4(r[c.costC]);
+      const price=parseNumV4(r[c.prC]);
+      const profit=parseNumV4(r[c.prfC]);
+      const days=parseNumV4(r[c.dC]);
+      res.push({
+        cat:c.cat,name,
+        year:normYV4(parseYearV4(r[18])),
+        km:(km&&km<500000)?km:null,
+        price:(price&&price>0&&price<2000)?price:null,
+        cost:(cost&&cost>0&&cost<2000)?cost:null,
+        profit:(profit&&Math.abs(profit)<500)?profit:null,
+        days:(days&&days>=1&&days<2000)?Math.round(days):null,
+        hv:r[14]?.trim()==='〇'?'〇':'',
+        fwd:r[15]?.trim()==='〇'?'〇':'',
+        color:r[20]?.trim()||'',
+        unlisted:false
+      });
+    }
+  }
+  return res;
+}
+
+async function loadUnlistedV4(){
+  const rows=await fetchCsv(GIDS.unlisted);const res=[];
+  for(let i=1;i<rows.length;i++){
+    const r=rows[i];if(!r||r.length<5)continue;
+    const name=nmV4(r[13]);if(!name||name.length<=1)continue;
+    const km=parseNumV4(r[21]);
+    const cost=parseNumV4(r[24]);
+    const price=parseNumV4(r[25]);
+    res.push({
+      cat:r[0]?.trim().replace('ﾐﾆﾊﾞﾝ','ミニバン')||'',
+      name,year:normYV4(parseYearV4(r[18])),
+      km:(km&&km<500000)?km:null,
+      price:(price&&price>0&&price<2000)?price:null,
+      cost:(cost&&cost>0&&cost<2000)?cost:null,
+      hv:r[14]?.trim()==='〇'?'〇':'',
+      fwd:r[15]?.trim()==='〇'?'〇':'',
+      color:r[20]?.trim()||'',
+      status:r[4]?.trim()||'',
+      unlisted:true
+    });
+  }
+  return res;
+}
+
+async function loadSoldV4(){
+  const res=[];
+  const skip=new Set(['AA','買取','下取','B','S','A','C','nan','ディーラー','買取下取']);
+  for(const key of['sold','sold2025']){
+    const rows=await fetchCsv(GIDS[key]);
+    for(let i=1;i<rows.length;i++){
+      const r=rows[i];if(!r||r.length<10)continue;
+      const name=nmV4(r[7]);if(!name||skip.has(name)||name.length<=1)continue;
+      const km=parseNumV4(r[11]);
+      const price=parseNumV4(r[15]);
+      const profit=parseNumV4(r[17]);
+      const ld=parseDate(r[3]);
+      let days=null;
+      if(key==='sold2025'){const d=parseNumV4(r[23]);if(d&&d>0&&d<3000)days=Math.round(d);}
+      res.push({
+        name,year:normYV4(parseYearV4(r[9])),
+        km:(km&&km<500000)?km:null,
+        price:(price&&Math.abs(price)<5000)?price:null,
+        profit:(profit&&Math.abs(profit)<5000)?profit:null,
+        color:r[10]?.trim()||'',days,
+        month:ld?`${ld.getFullYear()}-${String(ld.getMonth()+1).padStart(2,'0')}`:null
+      });
+    }
+  }
+  return res;
+}
+
+async function loadAll(){
+  const btn=document.getElementById('btntxt');const sp=document.getElementById('spin');
+  btn.textContent='読込中...';sp.style.display='block';
+  try{
+    [STOCK,UNLISTED,SOLD]=await Promise.all([loadStockV4(),loadUnlistedV4(),loadSoldV4()]);
+    YEAR_ORDER.length=0;YEAR_ORDER_V4.forEach(y=>YEAR_ORDER.push(y));
+    KM_BANDS.length=0;KM_BANDS_V4.forEach(k=>KM_BANDS.push(k));
+    PRICE_BANDS.length=0;PRICE_BANDS_V4.forEach(p=>PRICE_BANDS.push(p));
+    updateSummary();renderMatrix();renderProfitCards();renderUnlisted();renderLong();renderAction();renderSold();
+    if(document.getElementById('page-balance').classList.contains('active'))renderBalance();
+    document.getElementById('upd').textContent='更新: '+new Date().toLocaleString('ja-JP',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+  }catch(e){
+    document.getElementById('MT').innerHTML=`<tr><td colspan="30"><div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:14px;color:#dc2626;margin:10px"><b>⚠ エラー: </b>${e.message}</div></td></tr>`;
+  }finally{btn.textContent='🔄 更新';sp.style.display='none';}
+}
+
+// ─── 車種バランス ───
+let BAL_CHARTS={};
+function renderBalance(){
+  const cf=document.getElementById('balCat').value;
+  const data=cf?STOCK.filter(d=>d.cat===cf):STOCK;
+  const cnt={};data.forEach(d=>{cnt[d.name]=(cnt[d.name]||0)+1;});
+  const names=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).map(([n])=>n);
+  const sel=document.getElementById('balName');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">▼ 車種を選択して詳細表示</option>'+
+    names.map(n=>`<option value="${n}"${n===cur?' selected':''}>${n}（${cnt[n]}台）</option>`).join('');
+  const COLS=['#2979d4','#16a34a','#d97706','#7c3aed','#0891b2','#dc2626','#059669','#9333ea','#0f766e','#92400e','#1d4ed8','#065f46'];
+  document.getElementById('balanceOverview').innerHTML=names.slice(0,48).map((name,i)=>{
+    const items=data.filter(d=>d.name===name);
+    const hv=items.filter(d=>d.hv==='〇').length;
+    const fwd=items.filter(d=>d.fwd==='〇').length;
+    const avgP=items.filter(d=>d.price!=null).reduce((s,d,_,a)=>s+d.price/a.length,0)||0;
+    const col=COLS[i%COLS.length];
+    return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px;cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='${col}'" onmouseout="this.style.borderColor='var(--border)'" onclick="selectBalVehicle('${name}')">
+      <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:5px">${name}</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
+        <div style="font-size:22px;font-weight:700;color:${col};font-family:var(--mono)">${items.length}</div>
+        <div style="font-size:10px;color:var(--text3)">台<br>${avgP>0?'平均'+avgP.toFixed(0)+'万':''}</div>
+      </div>
+      <div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:5px">
+        ${hv>0?`<span style="font-size:9px;font-weight:600;padding:1px 5px;border-radius:8px;background:#dbeafe;color:#1d4ed8">HV ${hv}</span>`:''}
+        ${fwd>0?`<span style="font-size:9px;font-weight:600;padding:1px 5px;border-radius:8px;background:#d1fae5;color:#065f46">4WD ${fwd}</span>`:''}
+      </div>
+      <div style="height:3px;background:var(--bg4);border-radius:2px;overflow:hidden"><div style="height:100%;width:${Math.min(items.length/20*100,100)}%;background:${col}"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function selectBalVehicle(name){
+  document.getElementById('balName').value=name;
+  renderBalanceDetail();
+}
+
+function renderBalanceDetail(){
+  const name=document.getElementById('balName').value;
+  if(!name){document.getElementById('balanceDetail').style.display='none';return;}
+  document.getElementById('balanceDetail').style.display='block';
+  document.getElementById('balCompareTitle').textContent=`📊 ${name}: 在庫 vs 売約 年式比較`;
+  const items=STOCK.filter(d=>d.name===name);
+  const soldItems=SOLD.filter(d=>d.name===name);
+
+  // 年式分布
+  const yc={};items.forEach(d=>{yc[d.year]=(yc[d.year]||0)+1;});
+  const yKeys=YEAR_ORDER.filter(y=>yc[y]);
+  balBarChart('balYearChart',yKeys.map(y=>({l:y,v:yc[y]})),'#2979d4');
+
+  // 価格帯分布
+  const pc={};items.filter(d=>d.price!=null).forEach(d=>{const b=pBandV4(d.price);if(b)pc[b]=(pc[b]||0)+1;});
+  balBarChart('balPriceChart',PRICE_BANDS_V4.filter(p=>pc[p]).map(p=>({l:p,v:pc[p]})),'#7c3aed');
+
+  // 走行距離分布
+  const kc={};items.filter(d=>d.km!=null).forEach(d=>{const b=kmBandV4(d.km);if(b)kc[b]=(kc[b]||0)+1;});
+  balBarChart('balKmChart',KM_BANDS_V4.filter(k=>kc[k]).map(k=>({l:k,v:kc[k]})),'#d97706');
+
+  // 色分布
+  const cc={};items.forEach(d=>{if(d.color&&d.color!='nan'&&d.color.length>0)cc[d.color]=(cc[d.color]||0)+1;});
+  balBarChart('balColorChart',Object.entries(cc).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([k,v])=>({l:k,v})),'#0891b2');
+
+  // 在庫vs売約
+  const syc={};items.forEach(d=>{syc[d.year]=(syc[d.year]||0)+1;});
+  const sdyc={};soldItems.forEach(d=>{sdyc[d.year]=(sdyc[d.year]||0)+1;});
+  const allY=new Set([...Object.keys(syc),...Object.keys(sdyc)]);
+  const yOrd=YEAR_ORDER.filter(y=>allY.has(y));
+  const cmpData=[];
+  yOrd.forEach(y=>{
+    if(syc[y])cmpData.push({l:`在${y}`,v:syc[y],color:'#2979d4'});
+    if(sdyc[y])cmpData.push({l:`売${y}`,v:sdyc[y],color:'#16a34a'});
+  });
+  balBarChart2('balCompareChart',cmpData);
+}
+
+function balBarChart(id,items,color){
+  const el=document.getElementById(id);if(!el)return;
+  if(!items.length){el.innerHTML='<div style="color:var(--text3);font-size:11px;padding:8px">データなし</div>';return;}
+  const max=Math.max(...items.map(i=>i.v),1);
+  el.innerHTML=items.map(({l,v})=>`<div class="brow"><div class="blbl" title="${l}">${l}</div><div class="btrack"><div class="bfill" style="width:${Math.round(v/max*100)}%;background:${color}">${v}</div></div></div>`).join('');
+}
+
+function balBarChart2(id,items){
+  const el=document.getElementById(id);if(!el)return;
+  if(!items.length){el.innerHTML='<div style="color:var(--text3);font-size:11px;padding:8px">データなし</div>';return;}
+  const max=Math.max(...items.map(i=>i.v),1);
+  el.innerHTML=items.map(({l,v,color})=>`<div class="brow"><div class="blbl" title="${l}">${l}</div><div class="btrack"><div class="bfill" style="width:${Math.round(v/max*100)}%;background:${color||'#2979d4'}">${v}</div></div></div>`).join('');
+}
+
 function showPage(n){
   document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelector(`[onclick="showPage('${n}')"]`).classList.add('active');
   document.getElementById(`page-${n}`).classList.add('active');
+  if(n==='balance')renderBalance();
 }
 
 loadAll();
 </script>
 </body>
 </html>
-完了
-
-
-
-
