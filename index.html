@@ -140,6 +140,7 @@ tbody tr:hover td{background:var(--accent-bg)!important;}
     </div>
     <div class="upd" id="upd">—</div>
   </div>
+  <button class="rbtn" onclick="openApiModal()" style="margin-right:6px">⚙ API設定</button>
   <button class="rbtn" onclick="loadAll()">
     <div class="spin" id="spin"></div>
     <span id="btntxt">🔄 更新</span>
@@ -546,8 +547,9 @@ function renderLong(){
   document.getElementById('longL').innerHTML=items.slice(0,60).map(d=>{
     const km=d.km?(d.km/10000).toFixed(1)+'万km':'—';
     const cls=d.days>=300?'pill-r':d.days>=150?'pill-y':d.days>=100?'pill-p':'pill-b';
-    const msg=d.days>=300?'早急に値下げ推奨':d.days>=150?'価格見直し推奨':d.days>=100?'要注意':'様子見';
-    return `<div class="aitem"><div><div class="aname">${d.name}</div><div class="adet">${d.cat} / ${d.year} / ${km} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'} → ${msg}</div></div><span class="pill ${cls}">${d.days}日</span></div>`;
+    const msg=d.days>=300?'早急値下げ推奨':d.days>=150?'価格見直し推奨':d.days>=100?'要注意':'様子見';
+    const vd=encodeURIComponent(JSON.stringify({name:d.name,cat:d.cat,year:d.year,km:d.km,price:d.price,color:d.color,days:d.days,hv:d.hv,fwd:d.fwd}));
+    return `<div class="aitem" style="gap:6px"><div style="flex:1"><div class="aname">${d.name}</div><div class="adet">${d.cat} / ${d.year} / ${km} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'} → ${msg}</div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span class="pill ${cls}">${d.days}日</span><button onclick='runAiDiagnosis("${vd}")' style="background:var(--accent);color:#fff;border:none;padding:3px 9px;border-radius:5px;cursor:pointer;font-size:10px;white-space:nowrap">AI診断</button></div></div>`;
   }).join('');
 }
 
@@ -868,6 +870,125 @@ function showPage(n){
   document.querySelector(`[onclick="showPage('${n}')"]`).classList.add('active');
   document.getElementById(`page-${n}`).classList.add('active');
   if(n==='balance')renderBalance();
+}
+
+
+// ═══ API設定 ═══
+function openApiModal(){
+  const saved=localStorage.getItem('anthropic_api_key');
+  if(saved)document.getElementById('apiKeyInput').value=saved;
+  document.getElementById('modal-api').style.display='block';
+  document.getElementById('ov-api').style.display='block';
+}
+function closeApiModal(){
+  document.getElementById('modal-api').style.display='none';
+  document.getElementById('ov-api').style.display='none';
+}
+function saveApiKey(){
+  const key=document.getElementById('apiKeyInput').value.trim();
+  if(!key){document.getElementById('apiKeyStatus').textContent='キーを入力してください';return;}
+  localStorage.setItem('anthropic_api_key',key);
+  document.getElementById('apiKeyStatus').textContent='✅ 保存しました';
+  document.getElementById('apiKeyStatus').style.color='var(--green)';
+  setTimeout(closeApiModal,1000);
+}
+function clearApiKey(){
+  localStorage.removeItem('anthropic_api_key');
+  document.getElementById('apiKeyInput').value='';
+  document.getElementById('apiKeyStatus').textContent='🗑 削除しました';
+  document.getElementById('apiKeyStatus').style.color='var(--red)';
+}
+function closeAiModal(){
+  document.getElementById('modal-ai').style.display='none';
+  document.getElementById('ov-ai').style.display='none';
+}
+
+// ═══ AI価格診断 ═══
+async function runAiDiagnosis(vehicleData){
+  const apiKey=localStorage.getItem('anthropic_api_key');
+  if(!apiKey){
+    alert('APIキーが設定されていません。\n右上の「⚙ API設定」からキーを入力してください。');
+    openApiModal();
+    return;
+  }
+
+  let d;
+  try{d=typeof vehicleData==='string'?JSON.parse(decodeURIComponent(vehicleData)):vehicleData;}
+  catch(e){d=vehicleData;}
+
+  const km=d.km?(d.km/10000).toFixed(1)+'万km':'不明';
+  const title=`${d.name} ${d.year} ${km} ${d.price?d.price+'万円':''} ${d.color||''}`;
+
+  document.getElementById('ai-modal-title').textContent='AI価格診断中...';
+  document.getElementById('ai-modal-body').innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;padding:20px;color:var(--text2)">
+      <div class="spin" style="display:block;width:20px;height:20px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite"></div>
+      <span>カーセンサー等で相場を調査中...</span>
+    </div>`;
+  document.getElementById('modal-ai').style.display='block';
+  document.getElementById('ov-ai').style.display='block';
+
+  const prompt=`あなたは中古車価格の専門アドバイザーです。
+以下の車両について、カーセンサーやグーネット等の相場情報をweb検索で調べ、価格診断を行ってください。
+
+【対象車両】
+- 車種: ${d.name}
+- カテゴリ: ${d.cat}
+- 年式: ${d.year}
+- 走行距離: ${km}
+- 現在のプライス: ${d.price?d.price+'万円':'不明'}
+- 色: ${d.color||'不明'}
+- HV: ${d.hv==='〇'?'あり':'なし'}
+- 4WD: ${d.fwd==='〇'?'あり':'なし'}
+- 掲載日数: ${d.days?d.days+'日':'不明'}
+
+【指示】
+1. web検索でカーセンサーやグーネット等の相場を調べる
+2. 同条件（車種・年式・走行距離帯）の相場価格帯を提示
+3. 現在価格との比較（高い/安い/適正）
+4. 具体的な推奨価格と理由
+5. 売却促進のためのアドバイス
+
+日本語で回答してください。`;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':apiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1500,
+        tools:[{type:'web_search_20250305',name:'web_search'}],
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+
+    if(!res.ok){
+      const err=await res.json();
+      throw new Error(err.error?.message||'API Error');
+    }
+
+    const data=await res.json();
+    const text=data.content.filter(b=>b.type==='text').map(b=>b.text).join('\n');
+
+    document.getElementById('ai-modal-title').textContent=`AI価格診断: ${d.name}`;
+    document.getElementById('ai-modal-body').innerHTML=`
+      <div style="background:var(--bg3);border-radius:6px;padding:10px 12px;margin-bottom:10px;font-size:11px;color:var(--text2);font-family:var(--mono)">
+        ${d.year} / ${km} / ${d.price?d.price+'万円':'—'} / ${d.color||'—'} / ${d.days}日在庫
+      </div>
+      <div style="font-size:12px;line-height:1.7;white-space:pre-wrap;color:var(--text)">${text}</div>`;
+
+  }catch(e){
+    document.getElementById('ai-modal-title').textContent='エラー';
+    document.getElementById('ai-modal-body').innerHTML=`
+      <div class="errbox"><b>エラー:</b> ${e.message}<br>
+      <span style="font-size:11px;margin-top:4px;display:block">APIキーを確認してください。</span></div>`;
+  }
 }
 
 loadAll();
