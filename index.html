@@ -676,7 +676,7 @@ async function loadUnlistedV4(){
   return res;
 }
 
-async async function loadSoldV4(){
+async function loadSoldV4(){
   const res=[];
   const rows=await fetchCsv(GIDS.sold);
   for(let i=1;i<rows.length;i++){
