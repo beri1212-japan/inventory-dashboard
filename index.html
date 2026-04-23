@@ -140,6 +140,7 @@ tbody tr:hover td{background:var(--accent-bg)!important;}
     </div>
     <div class="upd" id="upd">—</div>
   </div>
+  <button class="rbtn" onclick="openMarketModal()" style="margin-right:6px;background:#065f46">📊 市場分析</button>
   <button class="rbtn" onclick="openApiModal()" style="margin-right:6px">⚙ API設定</button>
   <button class="rbtn" onclick="loadAll()">
     <div class="spin" id="spin"></div>
@@ -1166,6 +1167,199 @@ function exportAiPdf(nameEnc, year, km, price){
   document.querySelectorAll('button').forEach(b=>b.style.display='none');
   window.onload=function(){setTimeout(function(){window.print();},500)};
 <\/script>
+
+<!-- 市場分析モーダル -->
+<div class="ov" id="ov-market" onclick="closeMarketModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:90;backdrop-filter:blur(3px)"></div>
+<div id="modal-market" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:20px;width:600px;max-height:85vh;overflow-y:auto;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,.15)">
+  <span onclick="closeMarketModal()" style="float:right;cursor:pointer;color:var(--text3);font-size:20px;line-height:1">×</span>
+  <h3 style="font-size:14px;font-weight:700;margin-bottom:14px">📊 エリア市場分析</h3>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+    <div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">車種</div>
+      <input type="text" id="marketCar" placeholder="例: N-BOX、ヴォクシー80系" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">エリア</div>
+      <select id="marketArea" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+        <option value="石川県・富山県">石川県・富山県</option>
+        <option value="北陸・甲信越">北陸・甲信越</option>
+        <option value="北陸・甲信越／東海">北陸・甲信越／東海</option>
+        <option value="北陸・甲信越／関東／東海">北陸・甲信越／関東／東海</option>
+        <option value="関東">関東</option>
+        <option value="東海">東海</option>
+        <option value="全国">全国</option>
+      </select>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+    <div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">年式（任意）</div>
+      <input type="text" id="marketYear" placeholder="例: R3〜R5" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">価格帯（任意）</div>
+      <input type="text" id="marketPrice" placeholder="例: 50〜100万" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">修復歴</div>
+      <select id="marketRepair" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+        <option value="修復歴なしのみ">修復歴なしのみ</option>
+        <option value="修復歴含む">修復歴含む</option>
+      </select>
+    </div>
+  </div>
+
+  <button onclick="runMarketAnalysis()" style="width:100%;background:#065f46;color:#fff;border:none;padding:9px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;font-family:var(--font);margin-bottom:12px">
+    🔍 分析開始
+  </button>
+
+  <div id="market-result"></div>
+</div>
+
+</body></html>`);
+  printWin.document.close();
+}
+
+
+// ═══ エリア市場分析 ═══
+function openMarketModal(){
+  const apiKey=localStorage.getItem('anthropic_api_key');
+  if(!apiKey){alert('APIキーが設定されていません。\n右上の「⚙ API設定」からキーを入力してください。');openApiModal();return;}
+  document.getElementById('modal-market').style.display='block';
+  document.getElementById('ov-market').style.display='block';
+}
+function closeMarketModal(){
+  document.getElementById('modal-market').style.display='none';
+  document.getElementById('ov-market').style.display='none';
+}
+
+async function runMarketAnalysis(){
+  const apiKey=localStorage.getItem('anthropic_api_key');
+  if(!apiKey){alert('APIキーが設定されていません');return;}
+
+  const car   = document.getElementById('marketCar').value.trim();
+  const area  = document.getElementById('marketArea').value;
+  const year  = document.getElementById('marketYear').value.trim();
+  const price = document.getElementById('marketPrice').value.trim();
+  const repair= document.getElementById('marketRepair').value;
+
+  if(!car){alert('車種を入力してください');return;}
+
+  const resultEl=document.getElementById('market-result');
+  resultEl.innerHTML=`<div style="display:flex;align-items:center;gap:10px;padding:16px;color:var(--text2)">
+    <div class="spin" style="display:block;width:20px;height:20px;border:2px solid var(--border2);border-top-color:#065f46;border-radius:50%;animation:spin .7s linear infinite"></div>
+    <span>カーセンサーで${car}（${area}）を調査中...</span>
+  </div>`;
+
+  const yearCond  = year  ? `・年式: ${year}` : '';
+  const priceCond = price ? `・価格帯: ${price}` : '';
+
+  const prompt=`あなたは中古車市場の専門アナリストです。
+カーセンサーやグーネット等のweb検索を使って以下の条件で市場分析を行ってください。
+
+【分析対象】
+- 車種: ${car}
+- エリア: ${area}
+- ${repair}${yearCond}${priceCond}
+
+【調査内容】
+1. 該当エリアの推定在庫台数（カーセンサー・グーネット等で検索して数える）
+2. 価格帯分布（どの価格帯に何台あるか）
+3. 年式分布（どの年式が多いか）
+4. 走行距離分布（走行距離帯別の台数）
+5. 色別分布（人気の色と台数）
+6. 平均価格・最安値・最高値
+7. 市場全体のコメント（供給過多・品薄・競合状況など）
+8. 仕入れ・販売戦略へのアドバイス
+
+必ず実際にweb検索を行い、具体的な数字を含めて回答してください。
+日本語で回答してください。`;
+
+  try{
+    const cleanKey=apiKey.trim();
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':cleanKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-haiku-4-5-20251001',
+        max_tokens:2000,
+        tools:[{type:'web_search_20250305',name:'web_search'}],
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+
+    if(!res.ok){const err=await res.json();throw new Error(err.error?.message||`HTTP ${res.status}`);}
+
+    const data=await res.json();
+    const text=data.content.filter(b=>b.type==='text').map(b=>b.text).join('\n');
+
+    const now=new Date();
+    const dateStr=now.toLocaleDateString('ja-JP',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+
+    resultEl.innerHTML=`
+      <div style="background:var(--gbg);border-radius:6px;padding:7px 12px;margin-bottom:8px;font-size:11px;color:var(--green);font-weight:600">
+        分析完了: ${car} / ${area}${yearCond}${priceCond} / ${repair}
+      </div>
+      <div style="font-size:12px;line-height:1.8;white-space:pre-wrap;color:var(--text);margin-bottom:12px">${text}</div>
+      <div style="display:flex;gap:8px">
+        <button onclick="exportMarketPdf('${encodeURIComponent(car)}','${encodeURIComponent(area)}')" style="background:#065f46;color:#fff;border:none;padding:7px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500">📄 PDFで保存</button>
+      </div>
+      <div style="font-size:10px;color:var(--text3);margin-top:8px">分析日時: ${dateStr}</div>`;
+
+  }catch(e){
+    resultEl.innerHTML=`<div class="errbox"><b>エラー:</b> ${e.message}</div>`;
+  }
+}
+
+function exportMarketPdf(carEnc, areaEnc){
+  const car=decodeURIComponent(carEnc);
+  const area=decodeURIComponent(areaEnc);
+  const resultEl=document.getElementById('market-result');
+  if(!resultEl)return;
+
+  const now=new Date();
+  const dateStr=now.toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'});
+
+  const printWin=window.open('','_blank','width=820,height=1000');
+  printWin.document.write(`<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8">
+<title>市場分析レポート - ${car}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Hiragino Sans','Meiryo',sans-serif;font-size:12px;color:#1a2332;background:#f5f5f5;padding:16px}
+  .wrap{background:#fff;max-width:720px;margin:0 auto;padding:24px 28px;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+  .hdr{border-bottom:2px solid #065f46;padding-bottom:10px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:flex-start}
+  .hdr-title{font-size:18px;font-weight:700;color:#065f46}
+  .hdr-sub{font-size:11px;color:#666;margin-top:3px}
+  .hdr-logo{font-size:10px;color:#999;text-align:right}
+  .badge{background:#d1fae5;color:#065f46;border-radius:6px;padding:7px 12px;margin-bottom:12px;font-size:11px;font-weight:600}
+  .result{font-size:12px;line-height:1.8;white-space:pre-wrap}
+  .footer{margin-top:18px;padding-top:8px;border-top:1px solid #e0e0e0;display:flex;justify-content:space-between;font-size:10px;color:#999}
+  @media print{body{background:#fff;padding:0}.wrap{box-shadow:none}button{display:none}}
+</style></head><body>
+<div class="wrap">
+  <div class="hdr">
+    <div>
+      <div class="hdr-title">📊 エリア市場分析レポート</div>
+      <div class="hdr-sub">作成日: ${dateStr}　　対象: ${car} / ${area}</div>
+    </div>
+    <div class="hdr-logo">INDIO<br>inventory management</div>
+  </div>
+  <div class="badge">${resultEl.querySelector('[style*="gbg"], [style*="green"]')?.textContent||''}</div>
+  <div class="result">${resultEl.querySelector('[style*="pre-wrap"]')?.textContent||''}</div>
+  <div class="footer">
+    <span>INDIO inventory management - エリア市場分析システム</span>
+    <span>${dateStr} 生成</span>
+  </div>
+</div>
+<script>document.querySelectorAll('button').forEach(b=>b.style.display='none');window.onload=function(){setTimeout(function(){window.print();},500)}<\/script>
 </body></html>`);
   printWin.document.close();
 }
@@ -1193,6 +1387,57 @@ loadAll();
   <span onclick="closeAiModal()" style="float:right;cursor:pointer;color:var(--text3);font-size:20px;line-height:1">×</span>
   <h3 id="ai-modal-title" style="font-size:14px;font-weight:700;margin-bottom:12px">AI価格診断</h3>
   <div id="ai-modal-body"></div>
+</div>
+
+
+<!-- 市場分析モーダル -->
+<div class="ov" id="ov-market" onclick="closeMarketModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:90;backdrop-filter:blur(3px)"></div>
+<div id="modal-market" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:20px;width:600px;max-height:85vh;overflow-y:auto;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,.15)">
+  <span onclick="closeMarketModal()" style="float:right;cursor:pointer;color:var(--text3);font-size:20px;line-height:1">×</span>
+  <h3 style="font-size:14px;font-weight:700;margin-bottom:14px">📊 エリア市場分析</h3>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+    <div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">車種</div>
+      <input type="text" id="marketCar" placeholder="例: N-BOX、ヴォクシー80系" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">エリア</div>
+      <select id="marketArea" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+        <option value="石川県・富山県">石川県・富山県</option>
+        <option value="北陸・甲信越">北陸・甲信越</option>
+        <option value="北陸・甲信越／東海">北陸・甲信越／東海</option>
+        <option value="北陸・甲信越／関東／東海">北陸・甲信越／関東／東海</option>
+        <option value="関東">関東</option>
+        <option value="東海">東海</option>
+        <option value="全国">全国</option>
+      </select>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+    <div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">年式（任意）</div>
+      <input type="text" id="marketYear" placeholder="例: R3〜R5" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">価格帯（任意）</div>
+      <input type="text" id="marketPrice" placeholder="例: 50〜100万" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">修復歴</div>
+      <select id="marketRepair" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+        <option value="修復歴なしのみ">修復歴なしのみ</option>
+        <option value="修復歴含む">修復歴含む</option>
+      </select>
+    </div>
+  </div>
+
+  <button onclick="runMarketAnalysis()" style="width:100%;background:#065f46;color:#fff;border:none;padding:9px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;font-family:var(--font);margin-bottom:12px">
+    🔍 分析開始
+  </button>
+
+  <div id="market-result"></div>
 </div>
 
 </body>
