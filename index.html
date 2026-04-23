@@ -1032,21 +1032,17 @@ ${d.cat==='軽'?
     const maxKmCount=Math.max(...kmCounts,1);
 
     const priceBar=priceRanges.map((r,i)=>`
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
-        <span style="font-size:9px;color:#666;width:52px;text-align:right">${r}</span>
-        <div style="flex:1;height:12px;background:#f0f0f0;border-radius:2px;overflow:hidden">
-          <div style="width:${Math.round(priceCounts[i]/maxPriceCount*100)}%;height:100%;background:#f59e0b;border-radius:2px"></div>
-        </div>
-        <span style="font-size:9px;color:#666;width:20px">${priceCounts[i]}</span>
+      <div class="bar-row">
+        <span class="bar-lbl">${r}</span>
+        <div class="bar-track"><div class="bar-fill-p" style="width:${Math.round(priceCounts[i]/maxPriceCount*100)}%"></div></div>
+        <span class="bar-num">${priceCounts[i]}</span>
       </div>`).join('');
 
     const kmBar=kmRanges.map((r,i)=>`
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
-        <span style="font-size:9px;color:#666;width:52px;text-align:right">${r}km</span>
-        <div style="flex:1;height:12px;background:#f0f0f0;border-radius:2px;overflow:hidden">
-          <div style="width:${Math.round(kmCounts[i]/maxKmCount*100)}%;height:100%;background:#0d9488;border-radius:2px"></div>
-        </div>
-        <span style="font-size:9px;color:#666;width:20px">${kmCounts[i]}</span>
+      <div class="bar-row">
+        <span class="bar-lbl">${r}km</span>
+        <div class="bar-track"><div class="bar-fill-k" style="width:${Math.round(kmCounts[i]/maxKmCount*100)}%"></div></div>
+        <span class="bar-num">${kmCounts[i]}</span>
       </div>`).join('');
 
     const isPopularColor=['白','パール','黒','ホワイト','ブラック','白パール'].some(c=>d.color&&d.color.includes(c));
@@ -1055,28 +1051,30 @@ ${d.cat==='軽'?
 
     const reportHtml=`
       <div id="ai-report-content">
-        <div style="background:#e8f0fb;border-radius:6px;padding:6px 10px;margin-bottom:8px;font-size:11px;color:#1d4ed8;font-weight:600">
-          検索エリア: ${areaLabel}
+        <div class="area-box" data-area="1">検索エリア: ${areaLabel}（在庫${d.days}日 / ${d.cat}）</div>
+        <div class="cond-box">
+          <div><span style="color:#999">年式条件：</span>${d.year}±1年</div>
+          <div><span style="color:#999">走行条件：</span>${d.km?(Math.max(0,d.km/10000-1).toFixed(0)+'〜'+(d.km/10000+1).toFixed(0)+'万km'):'—'}</div>
+          <div><span style="color:#999">色条件：</span>${isPopularColor?'【人気色】白・パール・黒のみ':'【非人気色】全カラー'}</div>
+          <div><span style="color:#999">駆動条件：</span>${d.fwd==='〇'?'4WDのみ':'2WDのみ'}</div>
+          <div><span style="color:#999">修復歴：</span>修復歴なしのみ</div>
         </div>
-        <div style="background:#f7f9fc;border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:#4a6070;font-family:monospace">
-          <strong>検索条件：</strong> ${d.year}±1年 / ${d.km?(Math.max(0,d.km/10000-1).toFixed(0)+'〜'+(d.km/10000+1).toFixed(0)+'万km'):'—'} / ${colorCond} / ${driveCond}
-        </div>
-        <div style="background:#f7f9fc;border-radius:6px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:#4a6070;font-family:monospace">
+        <div class="info-box">
           ${d.year} / ${km} / ${d.price?d.price+'万円':'—'} / ${d.color||'—'} / ${d.days}日在庫
-          ${soldData.length>0?` / 過去売約${soldData.length}台 / 平均売価${avgSoldPrice.toFixed(0)}万円 / 平均回転${Math.round(avgSoldDays)}日`:''}
+          ${soldData.length>0?` ｜ 過去売約${soldData.length}台 / 平均売価${avgSoldPrice.toFixed(0)}万円 / 平均回転${Math.round(avgSoldDays)}日`:''}
         </div>
         ${soldData.length>0?`
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-          <div style="background:#fff;border:1px solid #e0e0e0;border-radius:6px;padding:10px">
-            <div style="font-size:10px;color:#666;margin-bottom:6px;font-weight:600">過去売約 価格帯分布（${soldData.length}台）</div>
+        <div class="chart-grid">
+          <div class="chart-box">
+            <div class="chart-title">過去売約 価格帯分布（${soldData.length}台）</div>
             ${priceBar}
           </div>
-          <div style="background:#fff;border:1px solid #e0e0e0;border-radius:6px;padding:10px">
-            <div style="font-size:10px;color:#666;margin-bottom:6px;font-weight:600">過去売約 走行距離分布</div>
+          <div class="chart-box">
+            <div class="chart-title">過去売約 走行距離分布</div>
             ${kmBar}
           </div>
-        </div>`:
-        '<div style="font-size:11px;color:#999;margin-bottom:10px">※過去売約データなし</div>'}
+        </div>`:'<div style="font-size:11px;color:#999;margin-bottom:12px">※過去売約データなし</div>'}
+        <div class="result-hdr">AI診断結果</div>
         <div style="font-size:12px;line-height:1.8;white-space:pre-wrap;color:#1a2332">${text}</div>
       </div>
       <div style="margin-top:14px;display:flex;gap:8px">
@@ -1103,39 +1101,71 @@ function exportAiPdf(nameEnc, year, km, price){
   const now=new Date();
   const dateStr=now.toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'});
 
-  const printWin=window.open('','_blank','width=800,height=900');
+  // ai-report-contentの中身を取得
+  const areaEl=reportEl.querySelector('[data-area]');
+  const areaText=areaEl?areaEl.textContent:'';
+
+  // 検索条件ボックス・グラフ・テキストをそのまま流用
+  const innerHtml=reportEl.innerHTML;
+
+  const printWin=window.open('','_blank','width=820,height=1000');
   printWin.document.write(`<!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
 <title>AI価格診断レポート - ${name}</title>
 <style>
-  body{font-family:'Hiragino Sans','Meiryo',sans-serif;font-size:12px;color:#1a2332;margin:0;padding:20px;background:#fff}
-  h1{font-size:18px;font-weight:700;color:#1d4ed8;margin:0 0 4px}
-  .sub{font-size:11px;color:#666;margin-bottom:16px}
-  .badge{display:inline-block;background:#e8f0fb;color:#1d4ed8;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600;margin-right:6px}
-  .info-box{background:#f7f9fc;border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:#4a6070;font-family:monospace}
-  .area-box{background:#e8f0fb;border-radius:6px;padding:6px 10px;margin-bottom:8px;font-size:11px;color:#1d4ed8;font-weight:600}
-  .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-  .chart-box{background:#fff;border:1px solid #e0e0e0;border-radius:6px;padding:10px}
-  .chart-title{font-size:10px;color:#666;margin-bottom:6px;font-weight:600}
-  .bar-row{display:flex;align-items:center;gap:6px;margin-bottom:3px}
-  .bar-lbl{font-size:9px;color:#666;width:52px;text-align:right}
-  .bar-track{flex:1;height:12px;background:#f0f0f0;border-radius:2px;overflow:hidden}
-  .bar-fill-y{height:100%;background:#f59e0b;border-radius:2px}
-  .bar-fill-t{height:100%;background:#0d9488;border-radius:2px}
-  .bar-num{font-size:9px;color:#666;width:20px}
-  .result{font-size:12px;line-height:1.8;white-space:pre-wrap;margin-top:12px}
-  .footer{margin-top:20px;padding-top:10px;border-top:1px solid #e0e0e0;font-size:10px;color:#999;text-align:right}
-  @media print{body{padding:10px}}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Hiragino Sans','Meiryo',sans-serif;font-size:12px;color:#1a2332;background:#f5f5f5;padding:16px}
+  .wrap{background:#fff;max-width:720px;margin:0 auto;padding:24px 28px;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+  .hdr{border-bottom:2px solid #2979d4;padding-bottom:10px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:flex-start}
+  .hdr-title{font-size:18px;font-weight:700;color:#2979d4}
+  .hdr-sub{font-size:11px;color:#666;margin-top:3px}
+  .hdr-logo{font-size:10px;color:#999;text-align:right}
+  .area-box{background:#e8f0fb;border-radius:6px;padding:7px 12px;margin-bottom:8px;font-size:11px;color:#1d4ed8;font-weight:600}
+  .cond-box{background:#f7f9fc;border:1px solid #e0e8f0;border-radius:6px;padding:8px 12px;margin-bottom:8px;font-size:11px;color:#4a6070;display:grid;grid-template-columns:1fr 1fr;gap:4px}
+  .info-box{background:#f7f9fc;border-radius:6px;padding:7px 12px;margin-bottom:14px;font-size:11px;color:#4a6070;font-family:monospace}
+  .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+  .chart-box{border:1px solid #e0e0e0;border-radius:6px;padding:10px}
+  .chart-title{font-size:10px;font-weight:600;color:#555;margin-bottom:8px}
+  .bar-row{display:flex;align-items:center;gap:5px;margin-bottom:3px}
+  .bar-lbl{font-size:9px;color:#777;width:52px;text-align:right;flex-shrink:0}
+  .bar-track{flex:1;height:11px;background:#f0f0f0;border-radius:2px;overflow:hidden}
+  .bar-fill-p{height:100%;background:#f59e0b;border-radius:2px}
+  .bar-fill-k{height:100%;background:#0d9488;border-radius:2px}
+  .bar-num{font-size:9px;color:#777;width:20px;flex-shrink:0}
+  .bar-note{margin-top:5px;padding-top:5px;border-top:1px dashed #e0e0e0;font-size:10px}
+  .result-hdr{font-size:11px;font-weight:600;color:#555;margin-bottom:6px;border-left:3px solid #2979d4;padding-left:8px}
+  .result-badge{background:#fff8e1;border-left:3px solid #f59e0b;padding:6px 10px;margin-bottom:8px;border-radius:0 4px 4px 0;font-size:11px}
+  .result-text{font-size:11px;line-height:1.8;white-space:pre-wrap}
+  .footer{margin-top:18px;padding-top:8px;border-top:1px solid #e0e0e0;display:flex;justify-content:space-between;font-size:10px;color:#999}
+  @media print{
+    body{background:#fff;padding:0}
+    .wrap{box-shadow:none;max-width:100%;padding:16px}
+    button{display:none}
+  }
 </style>
 </head>
 <body>
-<h1>AI価格診断レポート</h1>
-<div class="sub">作成日: ${dateStr}　　対象車両: ${name} ${year} / ${km} / ${price}</div>
-${reportEl.innerHTML}
-<div class="footer">INDIO inventory management - AI価格診断システム</div>
-<script>window.onload=function(){window.print();}<\/script>
+<div class="wrap">
+  <div class="hdr">
+    <div>
+      <div class="hdr-title">AI価格診断レポート</div>
+      <div class="hdr-sub">作成日: ${dateStr}　　対象: ${name} ${year} / ${km} / ${price}</div>
+    </div>
+    <div class="hdr-logo">INDIO<br>inventory management</div>
+  </div>
+  ${innerHtml}
+  <div class="footer">
+    <span>INDIO inventory management - AI価格診断システム</span>
+    <span>${dateStr} 生成</span>
+  </div>
+</div>
+<script>
+  // ボタン非表示
+  document.querySelectorAll('button').forEach(b=>b.style.display='none');
+  window.onload=function(){setTimeout(function(){window.print();},500)};
+<\/script>
 </body></html>`);
   printWin.document.close();
 }
