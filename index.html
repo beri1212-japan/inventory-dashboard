@@ -993,5 +993,28 @@ async function runAiDiagnosis(vehicleData){
 
 loadAll();
 </script>
+
+<!-- API設定モーダル -->
+<div class="ov" id="ov-api" onclick="closeApiModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:90;backdrop-filter:blur(3px)"></div>
+<div id="modal-api" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:20px;width:380px;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,.15)">
+  <span onclick="closeApiModal()" style="float:right;cursor:pointer;color:var(--text3);font-size:20px;line-height:1">×</span>
+  <h3 style="font-size:14px;font-weight:700;margin-bottom:12px">⚙ AI価格診断 設定</h3>
+  <div style="font-size:11px;color:var(--text2);margin-bottom:8px">Anthropic APIキーを入力してください。<br>ブラウザに保存されます（外部送信なし）。</div>
+  <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-..." style="width:100%;padding:8px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--mono);background:var(--bg3);color:var(--text);margin-bottom:10px;box-sizing:border-box">
+  <div style="display:flex;gap:8px">
+    <button onclick="saveApiKey()" style="flex:1;background:var(--accent);color:#fff;border:none;padding:8px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500">保存</button>
+    <button onclick="clearApiKey()" style="background:var(--rbg);color:var(--red);border:1px solid var(--red);padding:8px 12px;border-radius:6px;cursor:pointer;font-size:12px">削除</button>
+  </div>
+  <div id="apiKeyStatus" style="font-size:11px;margin-top:8px;color:var(--green)"></div>
+</div>
+
+<!-- AI診断結果モーダル -->
+<div class="ov" id="ov-ai" onclick="closeAiModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:90;backdrop-filter:blur(3px)"></div>
+<div id="modal-ai" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:20px;width:560px;max-height:78vh;overflow-y:auto;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,.15)">
+  <span onclick="closeAiModal()" style="float:right;cursor:pointer;color:var(--text3);font-size:20px;line-height:1">×</span>
+  <h3 id="ai-modal-title" style="font-size:14px;font-weight:700;margin-bottom:12px">AI価格診断</h3>
+  <div id="ai-modal-body"></div>
+</div>
+
 </body>
 </html>
