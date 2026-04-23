@@ -886,7 +886,7 @@ function closeApiModal(){
 }
 function saveApiKey(){
   const key=document.getElementById('apiKeyInput').value.trim();
-  if(!key){document.getElementById('apiKeyStatus').textContent='キーを入力してください';return;}
+  if(!key.startsWith('sk-ant')){document.getElementById('apiKeyStatus').textContent='キーの形式が正しくありません（sk-ant...で始まるキーを入力）';document.getElementById('apiKeyStatus').style.color='var(--red)';return;}
   localStorage.setItem('anthropic_api_key',key);
   document.getElementById('apiKeyStatus').textContent='✅ 保存しました';
   document.getElementById('apiKeyStatus').style.color='var(--green)';
@@ -952,16 +952,17 @@ async function runAiDiagnosis(vehicleData){
 日本語で回答してください。`;
 
   try{
+    const cleanKey=apiKey.trim().replace(/[^a-zA-Z0-9\-_]/g,'');
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{
         'Content-Type':'application/json',
-        'x-api-key':apiKey,
+        'x-api-key':cleanKey,
         'anthropic-version':'2023-06-01',
         'anthropic-dangerous-direct-browser-access':'true'
       },
       body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
+        model:'claude-sonnet-4-6-20251101',
         max_tokens:1500,
         tools:[{type:'web_search_20250305',name:'web_search'}],
         messages:[{role:'user',content:prompt}]
