@@ -932,13 +932,13 @@ async function runAiDiagnosis(vehicleData){
   function getSearchArea(cat, days){
     const isKei = cat==='軽';
     if(isKei){
-      if(days>=150) return '北陸甲信越・中部エリア';
-      if(days>=100) return '北陸甲信越エリア';
-      return '石川県・富山県';
+      if(days>=150) return '北陸・甲信越／東海エリア';
+      if(days>=100) return '北陸・甲信越エリア';
+      return '石川県・富山県（北陸・甲信越）';
     } else {
-      if(days>=180) return '北陸甲信越・関東・中部エリア';
-      if(days>=100) return '北陸甲信越・中部エリア';
-      return '北陸甲信越エリア';
+      if(days>=180) return '北陸・甲信越／関東／東海エリア';
+      if(days>=100) return '北陸・甲信越／東海エリア';
+      return '北陸・甲信越エリア';
     }
   }
   const searchArea = getSearchArea(d.cat, d.days||0);
@@ -962,18 +962,25 @@ async function runAiDiagnosis(vehicleData){
 
 【エリア選定理由】
 ${d.cat==='軽'?
-  (d.days>=150?'軽自動車・在庫150日以上のため北陸甲信越・中部まで拡大':
-   d.days>=100?'軽自動車・在庫100日以上のため北陸甲信越まで拡大':
-   '軽自動車・在庫99日以内のため地元（石川・富山）中心'):
-  (d.days>=180?'在庫180日以上のため北陸甲信越・関東・中部まで拡大':
-   d.days>=100?'在庫100日以上のため北陸甲信越・中部まで拡大':
-   '在庫99日以内のため北陸甲信越エリア中心')}
+  (d.days>=150?'軽自動車・在庫150日以上のため北陸・甲信越・中部まで拡大':
+   d.days>=100?'軽自動車・在庫100日以上のため北陸・甲信越まで拡大':
+   '軽自動車・在庫99日以内のため石川県・富山県中心'):
+  (d.days>=180?'在庫180日以上のため北陸・甲信越・関東・中部まで拡大':
+   d.days>=100?'在庫100日以上のため北陸・甲信越・中部まで拡大':
+   '在庫99日以内のため北陸・甲信越エリア中心')}
+
+【検索条件の絞り込み】
+- 年式：${d.year}の前後1年以内
+- 走行距離：${d.km?(Math.max(0,d.km/10000-1).toFixed(0)+'万km〜'+(d.km/10000+1).toFixed(0)+'万km'):'不明'}
+- 色：${['白','パール','黒','ホワイト','ブラック','白パール'].some(c=>d.color&&d.color.includes(c))?'【人気色】白・パール・黒のみで検索（他の色と混合しないこと）':'【非人気色】全カラーで検索'}
+- 駆動方式：${d.fwd==='〇'?'4WDのみで検索（2WDと混合しないこと）':'2WD（FF/FR）のみで検索（4WDと混合しないこと）'}
+- 修復歴：【修復歴なし】のみで検索（カーセンサーの「修復歴なし」チェックを必ず入れること）
 
 【指示】
-1. web検索で上記エリアのカーセンサー・グーネット等の相場を調べる
-2. 同条件（車種・年式・走行距離帯）の相場価格帯を提示
+1. web検索で上記エリア・条件のカーセンサー・グーネット等の相場を調べる
+2. 同条件（車種・年式±1年・走行距離±1万km）の相場価格帯を提示
 3. 現在価格との比較（高い/安い/適正）
-4. 具体的な推奨価格と理由
+4. 具体的な推奨価格と理由（値上げ・値下げの根拠を明確に）
 5. 売却促進のためのアドバイス
 
 日本語で回答してください。`;
@@ -1006,14 +1013,77 @@ ${d.cat==='軽'?
 
     const areaLabel=getSearchArea(d.cat,d.days||0);
     document.getElementById('ai-modal-title').textContent=`AI価格診断: ${d.name}`;
-    document.getElementById('ai-modal-body').innerHTML=`
-      <div style="background:var(--abg);border-radius:6px;padding:6px 10px;margin-bottom:8px;font-size:11px;color:var(--accent);font-weight:600">
-        検索エリア: ${areaLabel}
+
+    // グラフ用データ準備
+    const soldData=SOLD.filter(s=>s.name===d.name);
+    const avgSoldDays=soldData.filter(s=>s.days!=null).reduce((a,b,_,arr)=>a+b.days/arr.length,0)||0;
+    const avgSoldPrice=soldData.filter(s=>s.price!=null).reduce((a,b,_,arr)=>a+b.price/arr.length,0)||0;
+
+    // 価格帯グラフデータ
+    const priceRanges=['〜50万','50〜100万','100〜150万','150〜200万','200〜250万','250〜300万','300万超'];
+    const priceThresholds=[50,100,150,200,250,300,Infinity];
+    const priceCounts=priceThresholds.map((t,i)=>soldData.filter(s=>s.price!=null&&s.price<t&&(i===0||s.price>=priceThresholds[i-1])).length);
+    const maxPriceCount=Math.max(...priceCounts,1);
+
+    // 走行距離グラフデータ
+    const kmRanges=['〜1万','1〜2万','2〜3万','3〜4万','4〜5万','5〜6万','6〜7万','7万超'];
+    const kmThresholds=[10000,20000,30000,40000,50000,60000,70000,Infinity];
+    const kmCounts=kmThresholds.map((t,i)=>soldData.filter(s=>s.km!=null&&s.km<t&&(i===0||s.km>=kmThresholds[i-1])).length);
+    const maxKmCount=Math.max(...kmCounts,1);
+
+    const priceBar=priceRanges.map((r,i)=>`
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+        <span style="font-size:9px;color:#666;width:52px;text-align:right">${r}</span>
+        <div style="flex:1;height:12px;background:#f0f0f0;border-radius:2px;overflow:hidden">
+          <div style="width:${Math.round(priceCounts[i]/maxPriceCount*100)}%;height:100%;background:#f59e0b;border-radius:2px"></div>
+        </div>
+        <span style="font-size:9px;color:#666;width:20px">${priceCounts[i]}</span>
+      </div>`).join('');
+
+    const kmBar=kmRanges.map((r,i)=>`
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+        <span style="font-size:9px;color:#666;width:52px;text-align:right">${r}km</span>
+        <div style="flex:1;height:12px;background:#f0f0f0;border-radius:2px;overflow:hidden">
+          <div style="width:${Math.round(kmCounts[i]/maxKmCount*100)}%;height:100%;background:#0d9488;border-radius:2px"></div>
+        </div>
+        <span style="font-size:9px;color:#666;width:20px">${kmCounts[i]}</span>
+      </div>`).join('');
+
+    const isPopularColor=['白','パール','黒','ホワイト','ブラック','白パール'].some(c=>d.color&&d.color.includes(c));
+    const colorCond=isPopularColor?'白・パール・黒のみ':'全カラー';
+    const driveCond=d.fwd==='〇'?'4WDのみ':'2WDのみ';
+
+    const reportHtml=`
+      <div id="ai-report-content">
+        <div style="background:#e8f0fb;border-radius:6px;padding:6px 10px;margin-bottom:8px;font-size:11px;color:#1d4ed8;font-weight:600">
+          検索エリア: ${areaLabel}
+        </div>
+        <div style="background:#f7f9fc;border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:#4a6070;font-family:monospace">
+          <strong>検索条件：</strong> ${d.year}±1年 / ${d.km?(Math.max(0,d.km/10000-1).toFixed(0)+'〜'+(d.km/10000+1).toFixed(0)+'万km'):'—'} / ${colorCond} / ${driveCond}
+        </div>
+        <div style="background:#f7f9fc;border-radius:6px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:#4a6070;font-family:monospace">
+          ${d.year} / ${km} / ${d.price?d.price+'万円':'—'} / ${d.color||'—'} / ${d.days}日在庫
+          ${soldData.length>0?` / 過去売約${soldData.length}台 / 平均売価${avgSoldPrice.toFixed(0)}万円 / 平均回転${Math.round(avgSoldDays)}日`:''}
+        </div>
+        ${soldData.length>0?`
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+          <div style="background:#fff;border:1px solid #e0e0e0;border-radius:6px;padding:10px">
+            <div style="font-size:10px;color:#666;margin-bottom:6px;font-weight:600">過去売約 価格帯分布（${soldData.length}台）</div>
+            ${priceBar}
+          </div>
+          <div style="background:#fff;border:1px solid #e0e0e0;border-radius:6px;padding:10px">
+            <div style="font-size:10px;color:#666;margin-bottom:6px;font-weight:600">過去売約 走行距離分布</div>
+            ${kmBar}
+          </div>
+        </div>`:
+        '<div style="font-size:11px;color:#999;margin-bottom:10px">※過去売約データなし</div>'}
+        <div style="font-size:12px;line-height:1.8;white-space:pre-wrap;color:#1a2332">${text}</div>
       </div>
-      <div style="background:var(--bg3);border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:var(--text2);font-family:var(--mono)">
-        ${d.year} / ${km} / ${d.price?d.price+'万円':'—'} / ${d.color||'—'} / ${d.days}日在庫
-      </div>
-      <div style="font-size:12px;line-height:1.7;white-space:pre-wrap;color:var(--text)">${text}</div>`;
+      <div style="margin-top:14px;display:flex;gap:8px">
+        <button onclick="exportAiPdf('${encodeURIComponent(d.name)}','${d.year}','${km}','${d.price||'—'}万円')" style="background:#2979d4;color:#fff;border:none;padding:7px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500">📄 PDFで保存</button>
+      </div>`;
+
+    document.getElementById('ai-modal-body').innerHTML=reportHtml;
 
   }catch(e){
     document.getElementById('ai-modal-title').textContent='エラー';
@@ -1021,6 +1091,53 @@ ${d.cat==='軽'?
       <div class="errbox"><b>エラー:</b> ${e.message}<br>
       <span style="font-size:11px;margin-top:4px;display:block">APIキーを確認してください。</span></div>`;
   }
+}
+
+
+// ═══ AI診断レポートPDF出力 ═══
+function exportAiPdf(nameEnc, year, km, price){
+  const name=decodeURIComponent(nameEnc);
+  const reportEl=document.getElementById('ai-report-content');
+  if(!reportEl){alert('レポートが見つかりません');return;}
+
+  const now=new Date();
+  const dateStr=now.toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'});
+
+  const printWin=window.open('','_blank','width=800,height=900');
+  printWin.document.write(`<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>AI価格診断レポート - ${name}</title>
+<style>
+  body{font-family:'Hiragino Sans','Meiryo',sans-serif;font-size:12px;color:#1a2332;margin:0;padding:20px;background:#fff}
+  h1{font-size:18px;font-weight:700;color:#1d4ed8;margin:0 0 4px}
+  .sub{font-size:11px;color:#666;margin-bottom:16px}
+  .badge{display:inline-block;background:#e8f0fb;color:#1d4ed8;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600;margin-right:6px}
+  .info-box{background:#f7f9fc;border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:#4a6070;font-family:monospace}
+  .area-box{background:#e8f0fb;border-radius:6px;padding:6px 10px;margin-bottom:8px;font-size:11px;color:#1d4ed8;font-weight:600}
+  .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  .chart-box{background:#fff;border:1px solid #e0e0e0;border-radius:6px;padding:10px}
+  .chart-title{font-size:10px;color:#666;margin-bottom:6px;font-weight:600}
+  .bar-row{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+  .bar-lbl{font-size:9px;color:#666;width:52px;text-align:right}
+  .bar-track{flex:1;height:12px;background:#f0f0f0;border-radius:2px;overflow:hidden}
+  .bar-fill-y{height:100%;background:#f59e0b;border-radius:2px}
+  .bar-fill-t{height:100%;background:#0d9488;border-radius:2px}
+  .bar-num{font-size:9px;color:#666;width:20px}
+  .result{font-size:12px;line-height:1.8;white-space:pre-wrap;margin-top:12px}
+  .footer{margin-top:20px;padding-top:10px;border-top:1px solid #e0e0e0;font-size:10px;color:#999;text-align:right}
+  @media print{body{padding:10px}}
+</style>
+</head>
+<body>
+<h1>AI価格診断レポート</h1>
+<div class="sub">作成日: ${dateStr}　　対象車両: ${name} ${year} / ${km} / ${price}</div>
+${reportEl.innerHTML}
+<div class="footer">INDIO inventory management - AI価格診断システム</div>
+<script>window.onload=function(){window.print();}<\/script>
+</body></html>`);
+  printWin.document.close();
 }
 
 loadAll();
