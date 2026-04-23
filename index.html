@@ -338,7 +338,7 @@ tbody tr:hover td{background:var(--accent-bg)!important;}
 
 <script>
 const SID='1688vaYsy-Ibhp9SaM875OzOrykJlfahVMIGteVclN3o';
-const GIDS={minivan:2047431649,suv:1044635441,hvcp:64189686,kei:1834933994,unlisted:1695712956,sold:857233948,sold2025:1127181298};
+const GIDS={minivan:2047431649,suv:1044635441,hvcp:64189686,kei:1834933994,unlisted:1695712956,sold:222968280};
 const NAME_MAP={'ｳﾞｫｸｼｰ80系':'ヴォクシー80系','ｳﾞｫｸｼｰ90系':'ヴォクシー90系','ｳﾞｪﾙﾌｧｲｱ 30系':'ヴェルファイア30系','ﾉｱ80系':'ノア80系','ﾉｱ90系':'ノア90系','ｴｽｸｧｲｱ':'エスクァイア','ｼｴﾝﾀ':'シエンタ','ｽﾃｯﾌﾟﾜｺﾞﾝ':'ステップワゴン','ｾﾚﾅ 27前期':'セレナ27前期','ｾﾚﾅ 27後期':'セレナ27後期','ｾﾚﾅ 28現行':'セレナ28現行','ﾌﾘｰﾄﾞ':'フリード','ﾊﾘｱｰ80':'ハリアー80','ﾊﾘｱｰ80HV':'ハリアー80HV','ｳﾞｪｾﾞﾙ（現行）':'ヴェゼル現行','ｳﾞｪｾﾞﾙHV（現行）':'ヴェゼルHV現行','ｳﾞｪｾﾞﾙHV（前型）':'ヴェゼルHV前型','ｴｸｽﾄﾚｲﾙ32（前期）':'エクストレイル32前期','ｴｸｽﾄﾚｲﾙ32（後期）':'エクストレイル32後期','ｶﾛｰﾗｸﾛｽ':'カローラクロス','ﾌｫﾚｽﾀｰ':'フォレスター','ﾔﾘｽｸﾛｽ':'ヤリスクロス','ﾗｲｽﾞ':'ライズ','ｼﾞﾑニーﾉﾏﾄﾞ':'ジムニーノマド','ｱｸｱ前期':'アクア前期','ｱｸｱ中期':'アクア中期','ｱｸｱ後期':'アクア後期','ｱｸｱ現行':'アクア現行','ﾉｰﾄ前期':'ノート前期','ﾉｰﾄ中期':'ノート中期','ﾉｰﾄEpower':'ノートEpower','ﾉｰﾄEpower（現行）':'ノートEpower現行','ﾌﾟﾘｳｽ30系':'プリウス30系','ﾌﾟﾘｳｽ 50前期':'プリウス50前期','ﾌﾟﾘｳｽ 50後期':'プリウス50後期','ﾌﾟﾘｳｽ 50PHV':'プリウス50PHV','ﾌﾟﾘｳｽ 60':'プリウス60','ﾙｰﾐｰ':'ルーミー','ﾀﾝｸ':'タンク','ﾄｰﾙ':'トール','ｿﾘｵ':'ソリオ','ｽﾍﾟｲﾄﾞ':'スペイド','ｳﾞｨｯﾂ':'ヴィッツ','ｶﾛｰﾗｽﾎﾟｰﾂ':'カローラスポーツ','ｶﾛｰﾗﾂｰﾘﾝｸﾞ':'カローラツーリング','ﾏｰﾁ':'マーチ','ﾐﾗｰｼﾞｭ':'ミラージュ','N-BOXｶｽﾀﾑ':'N-BOXカスタム','Nﾜｺﾞﾝ':'Nワゴン','ｱﾙﾄ':'アルト','ｱﾙﾄﾗﾊﾟﾝ':'アルトラパン','ｴﾌﾞﾘｰ':'エブリー','ｷｬｽﾄ':'キャスト','ｷｬﾛﾙ':'キャロル','ｼﾞﾑﾆｰ':'ジムニー','ｽﾍﾟｰｼｱ':'スペーシア','ｽﾍﾟｰｼｱｶｽﾀﾑ':'スペーシアカスタム','ﾀﾝﾄ':'タント','ﾀﾝﾄｶｽﾀﾑ':'タントカスタム','ﾃﾞｲｽﾞ':'デイズ','ﾃﾞｲｽﾞﾙｰｸｽ':'デイズルークス','ﾊｽﾗｰ':'ハスラー','ﾐﾗｲｰｽ':'ミライース','ﾐﾗｼﾞｰﾉ':'ミラジーノ','ﾑｰｳﾞｺﾝﾃ':'ムーヴコンテ','ﾓｺ':'モコ','ﾙｰｸｽ':'ルークス','ﾙｰｸｽ\u3000ﾊｲｳｪｲｽﾀｰ':'ルークスHW','ﾜｺﾞﾝＲ':'ワゴンR','AZﾜｺﾞﾝ':'AZワゴン','EKﾜｺﾞﾝ':'EKワゴン','ｸﾘｯﾊﾟｰﾘｵ':'クリッパーリオ','ｵｰﾗ':'オーラ','ﾗﾝｸﾙ250':'ランクル250','ﾌｪｱﾚﾃﾞｨZ':'フェアレディZ','ﾛｰﾄﾞｽﾀｰ':'ロードスター','ｲﾝﾌﾟﾚｯｻｽﾎﾟｰﾂ':'インプレッサスポーツ','ﾌﾟﾘｳｽ60PHEV':'プリウス60PHEV'};
 const TEISU={"ミニバン_ヴォクシー80系":10,"ミニバン_ヴォクシー90系":4,"ミニバン_ノア80系":3,"ミニバン_ノア90系":2,"ミニバン_エスクァイア":4,"ミニバン_セレナ27前期":6,"ミニバン_セレナ27後期":6,"ミニバン_セレナ28現行":5,"ミニバン_シエンタ":8,"ミニバン_フリード":8,"ミニバン_ステップワゴン":3,"ミニバン_ヴェルファイア30系":1,"SUV_ハリアー80":6,"SUV_ハリアー80HV":5,"SUV_RAV4":4,"SUV_ヴェゼルHV前型":4,"SUV_ヴェゼル現行":3,"SUV_ヴェゼルHV現行":3,"SUV_エクストレイル32前期":3,"SUV_エクストレイル32後期":5,"SUV_ライズ":4,"SUV_ヤリスクロス":4,"SUV_カローラクロス":4,"SUV_フォレスター":5,"SUV_CX-5":7,"SUV_CX30":1,"HVCP_アクア前期":6,"HVCP_アクア中期":6,"HVCP_アクア後期":7,"HVCP_アクア現行":3,"HVCP_ノート前期":3,"HVCP_ノート中期":3,"HVCP_ノートEpower":10,"HVCP_ノートEpower現行":4,"HVCP_プリウス30系":4,"HVCP_プリウス50前期":7,"HVCP_プリウス50後期":6,"HVCP_プリウス50PHV":2,"HVCP_プリウス60":3,"HVCP_ルーミー":4,"HVCP_タンク":4,"HVCP_ソリオ":4,"軽_N-BOX":15,"軽_N-BOXカスタム":8,"軽_タント":8,"軽_タントカスタム":5,"軽_ルークス":3,"軽_ルークスHW":5,"軽_デイズルークス":3,"軽_スペーシア":6,"軽_スペーシアカスタム":4,"軽_ハスラー":8,"軽_ジムニー":3,"軽_デイズ":15,"軽_ワゴンR":10,"軽_Nワゴン":5,"軽_ミライース":8,"軽_アルト":5,"軽_アルトラパン":5,"軽_N-ONE":3,"軽_キャスト":5,"軽_モコ":2,"軽_EKワゴン":2};
 const YEAR_ORDER=["H24以前","H24","H25","H26","H27","H28","H29","H30","H31/R1","R1","R2","R3","R4","R5","R6","R7","R8","不明"];
@@ -603,7 +603,16 @@ function pBandV4(p){if(p==null||p<=0)return null;const i=Math.floor(p/20);return
 function parseNumV4(v){
   if(v===null||v===''||v===undefined)return null;
   const n=parseFloat(v);
-  if(!isNaN(n)&&n>0)return n;
+  if(!isNaN(n))return n;
+  const s=String(v).trim();
+  const m=s.match(/^1900[/\-]0*([0-9]+)[/\-]0*([0-9]+)/);
+  if(m){
+    const mo=parseInt(m[1]);const dy=parseInt(m[2]);
+    const dpm=[0,31,28,31,30,31,30,31,31,30,31,30,31];
+    let total=dy+1;
+    for(let i=1;i<mo;i++)total+=dpm[i];
+    return total;
+  }
   return null;
 }
 
@@ -667,29 +676,34 @@ async function loadUnlistedV4(){
   return res;
 }
 
-async function loadSoldV4(){
+async async function loadSoldV4(){
   const res=[];
-  const skip=new Set(['AA','買取','下取','B','S','A','C','nan','ディーラー','買取下取']);
-  for(const key of['sold','sold2025']){
-    const rows=await fetchCsv(GIDS[key]);
-    for(let i=1;i<rows.length;i++){
-      const r=rows[i];if(!r||r.length<10)continue;
-      const name=nmV4(r[7]);if(!name||skip.has(name)||name.length<=1)continue;
-      const km=parseNumV4(r[11]);
-      const price=parseNumV4(r[15]);
-      const profit=parseNumV4(r[17]);
-      const ld=parseDate(r[3]);
-      let days=null;
-      if(key==='sold2025'){const d=parseNumV4(r[23]);if(d&&d>0&&d<3000)days=Math.round(d);}
-      res.push({
-        name,year:normYV4(parseYearV4(r[9])),
-        km:(km&&km<500000)?km:null,
-        price:(price&&Math.abs(price)<5000)?price:null,
-        profit:(profit&&Math.abs(profit)<5000)?profit:null,
-        color:r[10]?.trim()||'',days,
-        month:ld?`${ld.getFullYear()}-${String(ld.getMonth()+1).padStart(2,'0')}`:null
-      });
-    }
+  const rows=await fetchCsv(GIDS.sold);
+  for(let i=1;i<rows.length;i++){
+    const r=rows[i];if(!r||r.length<5)continue;
+    const name=nmV4(r[13]);if(!name||name.length<=1)continue;
+    // ミニバン・SUV・HVCP・軽のみ対象（買取・下取などを除外）
+    const genre=r[0]?.trim().replace('ﾐﾆﾊﾞﾝ','ミニバン')||'';
+    if(!['ミニバン','SUV','HVCP','軽'].includes(genre))continue;
+    const km=parseNumV4(r[21]);
+    const price=parseNumV4(r[25]);
+    const cost=parseNumV4(r[24]);
+    const profit=parseNumV4(r[30]);
+    const dv=parseNumV4(r[32]);
+    const days=dv&&dv>0&&dv<3000?Math.round(dv):null;
+    const ld=parseDate(r[7]);
+    const month=ld?`${ld.getFullYear()}-${String(ld.getMonth()+1).padStart(2,'0')}`:null;
+    res.push({
+      name,year:normYV4(parseYearV4(r[18])),
+      km:(km&&km<500000)?km:null,
+      price:(price&&price>0&&price<2000)?price:null,
+      cost:(cost&&cost>0&&cost<2000)?cost:null,
+      profit:(profit&&Math.abs(profit)<500)?profit:null,
+      color:r[20]?.trim()||'',
+      hv:r[14]?.trim()==='〇'?'〇':'',
+      fwd:r[15]?.trim()==='〇'?'〇':'',
+      days,month
+    });
   }
   return res;
 }
