@@ -222,31 +222,31 @@ tbody tr:hover td{background:var(--accent-bg)!important;}
   <div class="two-col">
     <div class="sec">
       <div class="sec-hdr"><span class="sec-title">🚚 未入庫</span><span class="pill pill-b" id="cnt-p1">—台</span></div>
-      <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p1" style="max-width:250px"></div></div>
+      <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p1" style="max-width:500px"></div></div>
     </div>
     <div class="sec">
       <div class="sec-hdr"><span class="sec-title">✅ 掲載待ち</span><span class="pill pill-g" id="cnt-p2">—台</span></div>
-      <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p2" style="max-width:250px"></div></div>
+      <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p2" style="max-width:500px"></div></div>
     </div>
   </div>
   <div class="two-col">
     <div class="sec">
       <div class="sec-hdr"><span class="sec-title">🧹 未仕上</span><span class="pill pill-y" id="cnt-p3">—台</span></div>
-      <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p3" style="max-width:250px"></div></div>
+      <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p3" style="max-width:500px"></div></div>
     </div>
     <div class="sec">
       <div class="sec-hdr"><span class="sec-title">🔧 BP入庫中</span><span class="pill pill-r" id="cnt-p4">—台</span></div>
-      <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p4" style="max-width:250px"></div></div>
+      <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p4" style="max-width:500px"></div></div>
     </div>
   </div>
   <div class="two-col">
     <div class="sec">
       <div class="sec-hdr"><span class="sec-title">🙅 BP待ち</span><span class="pill pill-r" id="cnt-p5">—台</span></div>
-      <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p5" style="max-width:250px"></div></div>
+      <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p5" style="max-width:500px"></div></div>
     </div>
     <div class="sec">
       <div class="sec-hdr"><span class="sec-title">📃 その他</span><span class="pill pill-b" id="cnt-p6">—台</span></div>
-      <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p6" style="max-width:250px"></div></div>
+      <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p6" style="max-width:500px"></div></div>
     </div>
   </div>
 </div>
@@ -504,7 +504,7 @@ function renderUnlisted(){
   const fmt=(d,pill,lbl)=>{
     const lower4str=d.lower4?` ／ 下4桁${d.lower4}`:'';
     const km=d.km?(d.km/10000).toFixed(1)+'万km':'—';
-    return `<div class="aitem" style="padding:5px 10px"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex:1"><span style="font-size:12px;font-weight:600">${d.name}${lower4str}${tags(d)}</span><span style="font-size:10px;color:var(--text2);font-family:var(--mono)">${d.cat} / ${d.year} / ${km} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'}</span></div><span class="pill ${pill}" style="flex-shrink:0">${lbl}</span></div>`;
+    return `<div class="aitem" style="padding:6px 12px;max-width:500px"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex:1"><span style="font-size:12px;font-weight:500">${d.name}${lower4str}</span><span style="font-size:10px;color:var(--text2);font-family:var(--mono)">${d.cat} / ${d.year} / ${km} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'}</span></div><span class="pill ${pill}" style="flex-shrink:0;margin-left:8px">${lbl}</span></div>`;
   };
 
   const p1=UNLISTED.filter(d=>d.status==='未入庫');
