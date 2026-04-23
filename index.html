@@ -928,6 +928,21 @@ async function runAiDiagnosis(vehicleData){
   document.getElementById('modal-ai').style.display='block';
   document.getElementById('ov-ai').style.display='block';
 
+  // エリア判定
+  function getSearchArea(cat, days){
+    const isKei = cat==='軽';
+    if(isKei){
+      if(days>=150) return '北陸甲信越・中部エリア';
+      if(days>=100) return '北陸甲信越エリア';
+      return '石川県・富山県';
+    } else {
+      if(days>=180) return '北陸甲信越・関東・中部エリア';
+      if(days>=100) return '北陸甲信越・中部エリア';
+      return '北陸甲信越エリア';
+    }
+  }
+  const searchArea = getSearchArea(d.cat, d.days||0);
+
   const prompt=`あなたは中古車価格の専門アドバイザーです。
 以下の車両について、カーセンサーやグーネット等の相場情報をweb検索で調べ、価格診断を行ってください。
 
@@ -942,8 +957,20 @@ async function runAiDiagnosis(vehicleData){
 - 4WD: ${d.fwd==='〇'?'あり':'なし'}
 - 掲載日数: ${d.days?d.days+'日':'不明'}
 
+【検索エリア】${searchArea}
+※このエリアの相場を優先的に調べてください。
+
+【エリア選定理由】
+${d.cat==='軽'?
+  (d.days>=150?'軽自動車・在庫150日以上のため北陸甲信越・中部まで拡大':
+   d.days>=100?'軽自動車・在庫100日以上のため北陸甲信越まで拡大':
+   '軽自動車・在庫99日以内のため地元（石川・富山）中心'):
+  (d.days>=180?'在庫180日以上のため北陸甲信越・関東・中部まで拡大':
+   d.days>=100?'在庫100日以上のため北陸甲信越・中部まで拡大':
+   '在庫99日以内のため北陸甲信越エリア中心')}
+
 【指示】
-1. web検索でカーセンサーやグーネット等の相場を調べる
+1. web検索で上記エリアのカーセンサー・グーネット等の相場を調べる
 2. 同条件（車種・年式・走行距離帯）の相場価格帯を提示
 3. 現在価格との比較（高い/安い/適正）
 4. 具体的な推奨価格と理由
@@ -977,9 +1004,13 @@ async function runAiDiagnosis(vehicleData){
     const data=await res.json();
     const text=data.content.filter(b=>b.type==='text').map(b=>b.text).join('\n');
 
+    const areaLabel=getSearchArea(d.cat,d.days||0);
     document.getElementById('ai-modal-title').textContent=`AI価格診断: ${d.name}`;
     document.getElementById('ai-modal-body').innerHTML=`
-      <div style="background:var(--bg3);border-radius:6px;padding:10px 12px;margin-bottom:10px;font-size:11px;color:var(--text2);font-family:var(--mono)">
+      <div style="background:var(--abg);border-radius:6px;padding:6px 10px;margin-bottom:8px;font-size:11px;color:var(--accent);font-weight:600">
+        検索エリア: ${areaLabel}
+      </div>
+      <div style="background:var(--bg3);border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:var(--text2);font-family:var(--mono)">
         ${d.year} / ${km} / ${d.price?d.price+'万円':'—'} / ${d.color||'—'} / ${d.days}日在庫
       </div>
       <div style="font-size:12px;line-height:1.7;white-space:pre-wrap;color:var(--text)">${text}</div>`;
