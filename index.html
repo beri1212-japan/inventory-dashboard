@@ -221,22 +221,32 @@ tbody tr:hover td{background:var(--accent-bg)!important;}
   </div>
   <div class="two-col">
     <div class="sec">
-      <div class="sec-hdr"><span class="sec-title">🔧 BP入庫中</span><span class="pill pill-r" id="cnt-wait">—台</span></div>
-      <div class="sec-body" style="max-height:320px;overflow-y:auto;"><div class="cards-grid" id="phase-wait" style="max-width:250px"></div></div>
+      <div class="sec-hdr"><span class="sec-title">🚚 未入庫</span><span class="pill pill-b" id="cnt-p1">—台</span></div>
+      <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p1" style="max-width:250px"></div></div>
     </div>
     <div class="sec">
-      <div class="sec-hdr"><span class="sec-title">✅ 掲載待ち</span><span class="pill pill-g" id="cnt-sheet">—台</span></div>
-      <div class="sec-body" style="max-height:320px;overflow-y:auto;"><div class="cards-grid" id="phase-sheet" style="max-width:250px"></div></div>
+      <div class="sec-hdr"><span class="sec-title">✅ 掲載待ち</span><span class="pill pill-g" id="cnt-p2">—台</span></div>
+      <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p2" style="max-width:250px"></div></div>
     </div>
   </div>
   <div class="two-col">
     <div class="sec">
-      <div class="sec-hdr"><span class="sec-title">🔨 未仕上</span><span class="pill pill-y" id="cnt-ready">—台</span></div>
-      <div class="sec-body" style="max-height:320px;overflow-y:auto;"><div class="cards-grid" id="phase-ready" style="max-width:250px"></div></div>
+      <div class="sec-hdr"><span class="sec-title">🧹 未仕上</span><span class="pill pill-y" id="cnt-p3">—台</span></div>
+      <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p3" style="max-width:250px"></div></div>
     </div>
     <div class="sec">
-      <div class="sec-hdr"><span class="sec-title">📋 その他・不明</span><span class="pill pill-b" id="cnt-other">—台</span></div>
-      <div class="sec-body" style="max-height:320px;overflow-y:auto;"><div class="cards-grid" id="phase-other" style="max-width:250px"></div></div>
+      <div class="sec-hdr"><span class="sec-title">🔧 BP入庫中</span><span class="pill pill-r" id="cnt-p4">—台</span></div>
+      <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p4" style="max-width:250px"></div></div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="sec">
+      <div class="sec-hdr"><span class="sec-title">🙅 BP待ち</span><span class="pill pill-r" id="cnt-p5">—台</span></div>
+      <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p5" style="max-width:250px"></div></div>
+    </div>
+    <div class="sec">
+      <div class="sec-hdr"><span class="sec-title">📃 その他</span><span class="pill pill-b" id="cnt-p6">—台</span></div>
+      <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p6" style="max-width:250px"></div></div>
     </div>
   </div>
 </div>
@@ -491,33 +501,36 @@ function renderProfitCards(){
 
 function renderUnlisted(){
   const tags=d=>(d.hv==='〇'?'<span class="ctag ctag-hv" style="margin-left:4px">HV</span>':'')+(d.fwd==='〇'?'<span class="ctag ctag-fwd" style="margin-left:4px">4WD</span>':'');
-  const fmt=(d,pill,lbl)=>`<div class="aitem"><div><div class="aname">${d.name}${tags(d)}</div><div class="adet">${d.cat} / ${d.year} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'}</div></div><span class="pill ${pill}">${lbl}</span></div>`;
+  const fmt=(d,pill,lbl)=>{
+    const lower4str=d.lower4?` ／ 下4桁${d.lower4}`:'';
+    const km=d.km?(d.km/10000).toFixed(1)+'万km':'—';
+    return `<div class="aitem" style="padding:5px 10px"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex:1"><span style="font-size:12px;font-weight:600">${d.name}${lower4str}${tags(d)}</span><span style="font-size:10px;color:var(--text2);font-family:var(--mono)">${d.cat} / ${d.year} / ${km} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'}</span></div><span class="pill ${pill}" style="flex-shrink:0">${lbl}</span></div>`;
+  };
 
-  const bpIn   =UNLISTED.filter(d=>d.status==='BP入庫中');
-  const bpWait =UNLISTED.filter(d=>d.status==='BP待ち'||d.status==='鈑金待ち'||d.status==='鈑金');
-  const listed =UNLISTED.filter(d=>d.status==='掲載待'||d.status==='掲載待ち');
-  const unfinish=UNLISTED.filter(d=>d.status==='未仕上');
-  const unincome=UNLISTED.filter(d=>d.status==='未入庫');
-  const other  =UNLISTED.filter(d=>!['BP入庫中','BP待ち','鈑金待ち','鈑金','掲載待','掲載待ち','未仕上','未入庫'].includes(d.status));
+  const p1=UNLISTED.filter(d=>d.status==='未入庫');
+  const p2=UNLISTED.filter(d=>d.status==='掲載待'||d.status==='掲載待ち');
+  const p3=UNLISTED.filter(d=>d.status==='未仕上');
+  const p4=UNLISTED.filter(d=>d.status==='BP入庫中');
+  const p5=UNLISTED.filter(d=>d.status==='BP待ち'||d.status==='鈑金待ち'||d.status==='鈑金');
+  const p6=UNLISTED.filter(d=>!['未入庫','掲載待','掲載待ち','未仕上','BP入庫中','BP待ち','鈑金待ち','鈑金'].includes(d.status));
 
   document.getElementById('u-total').textContent=UNLISTED.length;
-  document.getElementById('u-wait').textContent=unincome.length;
-  document.getElementById('u-sheet').textContent=bpIn.length+bpWait.length;
-  document.getElementById('u-ready').textContent=listed.length+unfinish.length;
-  document.getElementById('u-other').textContent=other.length;
-  document.getElementById('cnt-wait').textContent=bpIn.length+'台';
-  document.getElementById('cnt-sheet').textContent=listed.length+'台';
-  document.getElementById('cnt-ready').textContent=unfinish.length+'台';
-  document.getElementById('cnt-other').textContent=(unincome.length+bpWait.length+other.length)+'台';
+  document.getElementById('u-wait').textContent=p1.length;
+  document.getElementById('u-sheet').textContent=p2.length+p3.length;
+  document.getElementById('u-ready').textContent=p2.length;
+  document.getElementById('u-other').textContent=p4.length+p5.length+p6.length;
 
-  document.getElementById('phase-wait').innerHTML=bpIn.map(d=>fmt(d,'pill-r','BP入庫中')).join('');
-  document.getElementById('phase-sheet').innerHTML=listed.map(d=>fmt(d,'pill-g','掲載待ち')).join('');
-  document.getElementById('phase-ready').innerHTML=unfinish.map(d=>fmt(d,'pill-y','未仕上')).join('');
-  document.getElementById('phase-other').innerHTML=[
-    ...unincome.map(d=>fmt(d,'pill-b','未入庫')),
-    ...bpWait.map(d=>fmt(d,'pill-r','BP待ち')),
-    ...other.map(d=>fmt(d,'pill-b',d.status||'その他')),
-  ].join('');
+  ['p1','p2','p3','p4','p5','p6'].forEach((k,i)=>{
+    const cnt=document.getElementById('cnt-'+k);
+    if(cnt)cnt.textContent=[p1,p2,p3,p4,p5,p6][i].length+'台';
+  });
+
+  document.getElementById('phase-p1').innerHTML=p1.map(d=>fmt(d,'pill-b','未入庫')).join('');
+  document.getElementById('phase-p2').innerHTML=p2.map(d=>fmt(d,'pill-g','掲載待ち')).join('');
+  document.getElementById('phase-p3').innerHTML=p3.map(d=>fmt(d,'pill-y','未仕上')).join('');
+  document.getElementById('phase-p4').innerHTML=p4.map(d=>fmt(d,'pill-r','BP入庫中')).join('');
+  document.getElementById('phase-p5').innerHTML=p5.map(d=>fmt(d,'pill-r','BP待ち')).join('');
+  document.getElementById('phase-p6').innerHTML=p6.map(d=>fmt(d,'pill-b',d.status||'その他')).join('');
 }
 
 function renderLong(){
@@ -691,6 +704,7 @@ async function loadUnlistedV4(){
     const km=parseNumV4(r[21]);
     const cost=parseNumV4(r[24]);
     const price=parseNumV4(r[25]);
+    const lower4=parseNumV4(r[23]);
     res.push({
       cat:r[0]?.trim().replace('ﾐﾆﾊﾞﾝ','ミニバン')||'',
       name,year:normYV4(parseYearV4(r[18])),
@@ -701,6 +715,7 @@ async function loadUnlistedV4(){
       fwd:r[15]?.trim()==='〇'?'〇':'',
       color:r[20]?.trim()||'',
       status:r[4]?.trim()||'',
+      lower4:lower4?String(Math.round(lower4)).padStart(4,'0'):'',
       unlisted:true
     });
   }
