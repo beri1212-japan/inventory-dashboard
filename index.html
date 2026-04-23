@@ -376,16 +376,6 @@ async function loadSold(){
   return res;
 }
 
-async function loadAll(){
-  const btn=document.getElementById('btntxt');const sp=document.getElementById('spin');
-  btn.textContent='読込中...';sp.style.display='block';
-  try{
-    [STOCK,UNLISTED,SOLD]=await Promise.all([loadStock(),loadUnlisted(),loadSold()]);
-    updateSummary();renderMatrix();renderProfitCards();renderUnlisted();renderLong();renderAction();renderSold();
-    document.getElementById('upd').textContent='更新: '+new Date().toLocaleString('ja-JP',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
-  }catch(e){document.getElementById('MT').innerHTML=`<tr><td colspan="30"><div class="errbox"><b>⚠ エラー</b><br>${e.message}</div></td></tr>`;}
-  finally{btn.textContent='🔄 更新';sp.style.display='none';}
-}
 
 function updateSummary(){
   const ids={'ミニバン':'sm','SUV':'ss','HVCP':'sh','軽':'sk'};
