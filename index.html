@@ -214,12 +214,15 @@ tbody tr:hover td{background:var(--accent-bg)!important;}
 
 <!-- PAGE 2: 未掲載管理 -->
 <div class="page" id="page-unlisted">
-  <div class="five-col">
-    <div class="kpi"><div class="kpi-lbl">未掲載 合計</div><div class="kpi-val" id="u-total" style="color:var(--red)">—</div><div class="kpi-sub">台</div></div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:12px">
+    <div class="five-col" style="flex:1;margin-bottom:0">
+      <div class="kpi"><div class="kpi-lbl">未掲載 合計</div><div class="kpi-val" id="u-total" style="color:var(--red)">—</div><div class="kpi-sub">台</div></div>
     <div class="kpi"><div class="kpi-lbl">入庫待ち</div><div class="kpi-val" id="u-wait" style="color:var(--amber)">—</div><div class="kpi-sub">台</div></div>
     <div class="kpi"><div class="kpi-lbl">鈑金・仕上げ待ち</div><div class="kpi-val" id="u-sheet" style="color:var(--red)">—</div><div class="kpi-sub">台</div></div>
     <div class="kpi"><div class="kpi-lbl">掲載可能</div><div class="kpi-val" id="u-ready" style="color:var(--green)">—</div><div class="kpi-sub">台（今すぐ掲載可）</div></div>
     <div class="kpi"><div class="kpi-lbl">その他</div><div class="kpi-val" id="u-other" style="color:var(--text2)">—</div><div class="kpi-sub">台</div></div>
+    </div>
+    <button onclick="exportUnlistedPdf()" style="background:#2979d4;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500;white-space:nowrap;flex-shrink:0;height:fit-content;margin-top:4px">📄 PDF出力</button>
   </div>
   <div class="two-col">
     <div class="sec">
@@ -1360,6 +1363,112 @@ function exportMarketPdf(carEnc, areaEnc){
   </div>
 </div>
 <script>document.querySelectorAll('button').forEach(b=>b.style.display='none');window.onload=function(){setTimeout(function(){window.print();},500)}<\/script>
+</body></html>`);
+  printWin.document.close();
+}
+
+
+// ═══ 未掲載管理 PDF出力 ═══
+function exportUnlistedPdf(){
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'});
+  const timeStr = now.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+
+  // 各フェーズのデータ取得
+  const phases = [
+    {id:'phase-p1', title:'🚚 未入庫',   color:'#1d4ed8', bg:'#dbeafe'},
+    {id:'phase-p2', title:'✅ 掲載待ち', color:'#16a34a', bg:'#dcfce7'},
+    {id:'phase-p3', title:'🧹 未仕上',   color:'#d97706', bg:'#fef3c7'},
+    {id:'phase-p4', title:'🔧 BP入庫中', color:'#dc2626', bg:'#fee2e2'},
+    {id:'phase-p5', title:'🙅 BP待ち',   color:'#dc2626', bg:'#fee2e2'},
+    {id:'phase-p6', title:'📃 その他',   color:'#4a6070', bg:'#f0f4f8'},
+  ];
+
+  // 各フェーズのHTMLを生成
+  const phaseHtml = phases.map(p => {
+    const el = document.getElementById(p.id);
+    if(!el) return '';
+    if(!el.children.length) return `
+      <div style="margin-bottom:16px">
+        <div style="background:${p.bg};color:${p.color};padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;display:flex;justify-content:space-between">
+          <span>${p.title}</span><span>0台</span>
+        </div>
+        <div style="border:1px solid #e0e0e0;border-top:none;padding:8px 12px;font-size:11px;color:#999">該当車両なし</div>
+      </div>`;
+    const items = Array.from(el.children).map(item => {
+      const name = item.querySelector('.aname')?.textContent || '';
+      const det  = item.querySelector('.adet')?.textContent || '';
+      const pill = item.querySelector('.pill')?.textContent || '';
+      return `<tr>
+        <td style="padding:4px 8px;border-bottom:1px solid #eee;font-size:11px;font-weight:500">${name}</td>
+        <td style="padding:4px 8px;border-bottom:1px solid #eee;font-size:10px;color:#666">${det}</td>
+        <td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:center">
+          <span style="background:${p.bg};color:${p.color};padding:1px 8px;border-radius:10px;font-size:10px;font-weight:600">${pill}</span>
+        </td>
+      </tr>`;
+    }).join('');
+    return `
+      <div style="margin-bottom:16px">
+        <div style="background:${p.bg};color:${p.color};padding:6px 12px;border-radius:6px 6px 0 0;font-size:12px;font-weight:700;display:flex;justify-content:space-between">
+          <span>${p.title}</span>
+          <span>${el.children.length}台</span>
+        </div>
+        <table style="width:100%;border-collapse:collapse;border:1px solid #e0e0e0;border-top:none">
+          <thead>
+            <tr style="background:#f7f9fc">
+              <th style="padding:4px 8px;font-size:10px;color:#666;text-align:left;font-weight:600;border-bottom:1px solid #e0e0e0">車名 / 下4桁</th>
+              <th style="padding:4px 8px;font-size:10px;color:#666;text-align:left;font-weight:600;border-bottom:1px solid #e0e0e0">詳細</th>
+              <th style="padding:4px 8px;font-size:10px;color:#666;text-align:center;font-weight:600;border-bottom:1px solid #e0e0e0;width:80px">状況</th>
+            </tr>
+          </thead>
+          <tbody>${items}</tbody>
+        </table>
+      </div>`;
+  }).join('');
+
+  const total   = document.getElementById('u-total')?.textContent||'—';
+  const wait    = document.getElementById('u-wait')?.textContent||'—';
+  const sheet   = document.getElementById('u-sheet')?.textContent||'—';
+  const ready   = document.getElementById('u-ready')?.textContent||'—';
+  const other   = document.getElementById('u-other')?.textContent||'—';
+
+  const printWin = window.open('','_blank','width=820,height=1000');
+  printWin.document.write(`<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8">
+<title>未掲載管理レポート ${dateStr}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Hiragino Sans','Meiryo',sans-serif;font-size:12px;color:#1a2332;background:#f5f5f5;padding:16px}
+  .wrap{background:#fff;max-width:760px;margin:0 auto;padding:24px 28px;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+  .hdr{border-bottom:2px solid #2979d4;padding-bottom:10px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-start}
+  .kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px}
+  .kpi-box{background:#f7f9fc;border:1px solid #e0e8f0;border-radius:6px;padding:8px 10px;text-align:center}
+  .kpi-lbl{font-size:9px;color:#888;margin-bottom:3px}
+  .kpi-val{font-size:18px;font-weight:700;font-family:monospace}
+  .footer{margin-top:16px;padding-top:8px;border-top:1px solid #e0e0e0;display:flex;justify-content:space-between;font-size:10px;color:#999}
+  @media print{body{background:#fff;padding:0}.wrap{box-shadow:none;max-width:100%}button{display:none}}
+</style></head><body>
+<div class="wrap">
+  <div class="hdr">
+    <div>
+      <div style="font-size:18px;font-weight:700;color:#2979d4">未掲載車両管理レポート</div>
+      <div style="font-size:11px;color:#666;margin-top:3px">出力日時: ${dateStr} ${timeStr}</div>
+    </div>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi-box"><div class="kpi-lbl">未掲載 合計</div><div class="kpi-val" style="color:#dc2626">${total}</div><div style="font-size:9px;color:#888;margin-top:2px">台</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">入庫待ち</div><div class="kpi-val" style="color:#d97706">${wait}</div><div style="font-size:9px;color:#888;margin-top:2px">台</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">鈑金・仕上げ</div><div class="kpi-val" style="color:#dc2626">${sheet}</div><div style="font-size:9px;color:#888;margin-top:2px">台</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">掲載可能</div><div class="kpi-val" style="color:#16a34a">${ready}</div><div style="font-size:9px;color:#888;margin-top:2px">台</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">その他</div><div class="kpi-val" style="color:#4a6070">${other}</div><div style="font-size:9px;color:#888;margin-top:2px">台</div></div>
+  </div>
+  ${phaseHtml}
+  <div class="footer">
+    <span>未掲載車両管理レポート</span>
+    <span>${dateStr} ${timeStr} 生成</span>
+  </div>
+</div>
+<script>window.onload=function(){setTimeout(function(){window.print();},500)}<\/script>
 </body></html>`);
   printWin.document.close();
 }
