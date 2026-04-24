@@ -55,9 +55,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13
 .ld{width:10px;height:10px;border-radius:2px;}
 .tbl-wrap{overflow:auto;max-height:calc(100vh - 320px);border-radius:6px;border:1px solid var(--border);max-width:800px;}
 table{border-collapse:collapse;white-space:nowrap;min-width:100%;}
-thead th{position:sticky;top:0;z-index:10;background:#e8eef5;font-size:9px;font-weight:600;padding:3px 1px;border-bottom:1.5px solid var(--border2);color:var(--text2);text-align:center;font-family:var(--mono);width:28px;min-width:28px;max-width:28px;}
+thead th{position:sticky;top:0;z-index:10;background:#e8eef5;font-size:9px;font-weight:600;padding:3px 1px;border-bottom:1.5px solid var(--border2);border-right:1px solid var(--border2);color:var(--text2);text-align:center;font-family:var(--mono);width:28px;min-width:28px;max-width:28px;}
 thead th:first-child{position:sticky;left:0;z-index:20;text-align:left;min-width:110px;max-width:110px;width:110px;background:#dde5ef;}
-tbody td{padding:1px 1px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;width:28px;min-width:28px;max-width:28px;}
+tbody td{padding:1px 1px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);text-align:center;vertical-align:middle;width:28px;min-width:28px;max-width:28px;}
 tbody td:first-child{position:sticky;left:0;background:var(--bg2);border-right:1.5px solid var(--border);z-index:5;text-align:left;padding:2px 6px;font-size:11px;font-weight:500;width:110px;min-width:110px;max-width:110px;}
 tbody tr:hover td{background:var(--accent-bg)!important;}
 .cat-row td{background:#dde8f5!important;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:.08em;padding:4px 10px;border-bottom:1.5px solid var(--border2)!important;}
@@ -435,7 +435,27 @@ function renderMatrix(){
   const cats=cf?[cf]:CAT_ORDER;
   const g={};
   data.forEach(d=>{if(!g[d.cat])g[d.cat]={};if(!g[d.cat][d.name])g[d.cat][d.name]={};const k=axisVal(d,type);if(!k)return;if(!g[d.cat][d.name][k])g[d.cat][d.name][k]=[];g[d.cat][d.name][k].push(d);});
-  let h=`<thead><tr><th>車種</th><th>計</th><th>既定</th>${keys.map(k=>`<th>${k}</th>`).join('')}</tr></thead><tbody>`;
+
+  // ① 縦軸（列）ごとの合計を集計
+  const colTotals={};
+  keys.forEach(key=>{
+    let tot=0;
+    cats.forEach(cat=>{if(!g[cat])return;Object.values(g[cat]).forEach(ym=>{tot+=(ym[key]||[]).filter(i=>!i.unlisted).length;});});
+    colTotals[key]=tot;
+  });
+
+  // ② ヘッダー：車種 | 計 | 既定 | 過不足 | 年式列...
+  let h=`<thead><tr>
+    <th>車種</th>
+    <th>計</th><th>既定</th><th>過不足</th>
+    ${keys.map(k=>`<th>${k}</th>`).join('')}
+  </tr></thead><tbody>
+  <tr style="background:#fff;font-weight:700;border-bottom:2px solid var(--border2)">
+    <td style="position:sticky;left:0;background:#f7f9fc;font-size:10px;font-weight:700;padding:3px 8px;color:var(--accent);border-right:1.5px solid var(--border)">縦計</td>
+    <td></td><td></td><td></td>
+    ${keys.map(k=>`<td style="text-align:center;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent);border:1px solid var(--border)">${colTotals[k]||''}</td>`).join('')}
+  </tr>`;
+
   cats.forEach(cat=>{
     if(!g[cat])return;
     let names=Object.keys(g[cat]).sort((a,b)=>{
@@ -443,16 +463,25 @@ function renderMatrix(){
       const tb=Object.values(g[cat][b]).flat().filter(i=>!i.unlisted).length;
       return tb-ta;
     });
-    if(ao)names=names.filter(n=>{const t=TEISU[`${cat}_${n}`];const tot=Object.values(g[cat][n]).flat().length;return t!=null&&Math.abs(tot-t)>=2;});
+    if(ao)names=names.filter(n=>{const t=TEISU[`${cat}_${n}`];const tot=Object.values(g[cat][n]).flat().filter(i=>!i.unlisted).length;return t!=null&&Math.abs(tot-t)>=2;});
     if(!names.length)return;
-    h+=`<tr class="cat-row"><td colspan="${keys.length+3}">${cat}</td></tr>`;
+    h+=`<tr class="cat-row"><td colspan="${keys.length+4}">${cat}</td></tr>`;
     names.forEach(name=>{
       const ym=g[cat][name];const k=`${cat}_${name}`;const t=TEISU[k];
-      const tot=Object.values(ym).flat().length;const diff=t!=null?tot-t:null;
-      let bdg='';if(diff!=null){if(diff<=-3)bdg=`<span class="ab abr">${diff}</span>`;else if(diff<0)bdg=`<span class="ab aby">${diff}</span>`;else if(diff>=3)bdg=`<span class="ab abg">+${diff}</span>`;}
-      const diff_str=t!=null?t:'—';
-      const diff_cls=diff!=null&&diff<=-3?'abr':diff!=null&&diff<0?'aby':diff!=null&&diff>=3?'abg':'';
-      h+=`<tr><td>${name}${bdg}</td><td class="tcol">${tot}</td><td class="dcol">${diff_str}</td>`;
+      const tot=Object.values(ym).flat().filter(i=>!i.unlisted).length;
+      const diff=t!=null?tot-t:null;
+      // 過不足バッジ（過不足列のみ）
+      let diffBadge='—';
+      if(diff!=null){
+        const cls=diff<=-3?'abr':diff<0?'aby':diff>=3?'abg':'';
+        const sign=diff>0?'+':'';
+        diffBadge=cls?`<span class="ab ${cls}">${sign}${diff}</span>`:`<span style="font-family:var(--mono);font-size:11px">${sign}${diff}</span>`;
+      }
+      h+=`<tr>
+        <td>${name}</td>
+        <td class="tcol">${tot}</td>
+        <td class="dcol">${t!=null?t:'—'}</td>
+        <td style="text-align:center">${diffBadge}</td>`;
       keys.forEach(key=>{
         const its=ym[key]||[];const li=its.filter(i=>!i.unlisted);const ul=its.filter(i=>i.unlisted);
         if(!its.length){h+='<td></td>';return;}
@@ -466,7 +495,12 @@ function renderMatrix(){
       h+=`</tr>`;
     });
   });
-  h+='</tbody>';document.getElementById('MT').innerHTML=h;
+
+  // ① 縦軸合計行
+
+
+  h+='</tbody>';
+  document.getElementById('MT').innerHTML=h;
 }
 
 function showCell(cat,name,key,type,su){
