@@ -273,22 +273,24 @@ async function submitForm() {
     if (!data.success) throw new Error(data.error);
     vehicleId = data.id;
 
-    // 2. 写真アップロード
-    for (const [type, file] of Object.entries(photos)) {
-      if (!file) continue;
-      const base64 = await toBase64(file);
-      await fetch(GAS_URL, {
-        method: 'POST',
-        body: JSON.stringify({
-          action:    'uploadPhoto',
-          vehicleId,
-          photoType: type,
-          base64,
-          mimeType:  file.type,
-          fileName:  `${vehicleId}_${type}.jpg`,
-        })
+    // 2. 写真アップロード（並列処理）
+    const uploadTasks = Object.entries(photos)
+      .filter(([, file]) => file !== null)
+      .map(async ([type, file]) => {
+        const base64 = await toBase64(file);
+        return fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action:    'uploadPhoto',
+            vehicleId,
+            photoType: type,
+            base64,
+            mimeType:  'image/jpeg',
+            fileName:  `${vehicleId}_${type}.jpg`,
+          })
+        });
       });
-    }
+    await Promise.all(uploadTasks);
 
     // 完了
     document.getElementById('formWrap').style.display  = 'none';
