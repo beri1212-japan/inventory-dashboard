@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>廃車入力フォーム - INDIO</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#f0f4f8;font-family:'Hiragino Sans','Meiryo',sans-serif;font-size:14px;color:#1a2332;min-height:100vh}
+.hdr{background:#1e3a5f;padding:14px 16px;text-align:center;position:sticky;top:0;z-index:10}
+.hdr-title{font-size:15px;font-weight:700;color:#fff}
+.hdr-sub{font-size:11px;color:rgba(255,255,255,.7);margin-top:2px}
+.wrap{max-width:480px;margin:0 auto;padding:12px}
+.card{background:#fff;border-radius:10px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.sec-title{font-size:12px;font-weight:700;color:#1e3a5f;margin-bottom:10px;padding-left:8px;border-left:3px solid #2979d4}
+.field{margin-bottom:12px}
+.lbl{font-size:11px;color:#4a6070;margin-bottom:4px;font-weight:500}
+.req{color:#dc2626;margin-left:2px}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid #d8e2ec;border-radius:8px;font-size:13px;color:#1a2332;background:#fff;font-family:inherit;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#2979d4;box-shadow:0 0 0 2px rgba(41,121,212,.1)}
+textarea{resize:none;line-height:1.5}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.photo-item{position:relative}
+.photo-lbl{font-size:10px;color:#4a6070;text-align:center;margin-bottom:4px}
+.photo-box{width:100%;aspect-ratio:4/3;border:2px dashed #d8e2ec;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;background:#f7f9fc;overflow:hidden}
+.photo-box:hover{border-color:#2979d4;background:#e8f0fb}
+.photo-box img{width:100%;height:100%;object-fit:cover;border-radius:6px}
+.photo-box.has-photo{border:2px solid #16a34a;background:#f0fdf4}
+.photo-icon{font-size:24px;margin-bottom:4px}
+.photo-text{font-size:10px;color:#8a9aaa}
+.photo-input{display:none}
+.photo-del{position:absolute;top:22px;right:4px;background:rgba(220,38,38,.85);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:2}
+.photo-box.has-photo ~ .photo-del{display:flex}
+.btn-submit{width:100%;background:#2979d4;color:#fff;border:none;padding:14px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:8px;font-family:inherit}
+.btn-submit:active{opacity:.85}
+.btn-submit:disabled{background:#9ca3af;cursor:not-allowed}
+.note{font-size:11px;color:#8a9aaa;text-align:center;line-height:1.5}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a2332;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:100;display:none;white-space:nowrap}
+.toast.show{display:block}
+.spinner{display:none;width:20px;height:20px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.success-screen{display:none;text-align:center;padding:40px 20px}
+.success-icon{font-size:60px;margin-bottom:16px}
+.success-title{font-size:18px;font-weight:700;color:#16a34a;margin-bottom:8px}
+.success-id{font-size:13px;color:#4a6070;margin-bottom:24px;font-family:monospace}
+.btn-new{background:#f0f4f8;color:#2979d4;border:1px solid #2979d4;padding:12px 24px;border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-title">INDIO 廃車入力フォーム</div>
+  <div class="hdr-sub">廃車・下取り車両登録</div>
+</div>
+
+<div class="wrap" id="formWrap">
+
+  <!-- 車両情報 -->
+  <div class="card">
+    <div class="sec-title">車両情報</div>
+
+    <div class="field">
+      <div class="lbl">メーカー<span class="req">*</span></div>
+      <select id="maker" onchange="updateCarList()">
+        <option value="">選択してください</option>
+        <option>トヨタ</option><option>ホンダ</option><option>日産</option>
+        <option>スズキ</option><option>ダイハツ</option><option>マツダ</option>
+        <option>スバル</option><option>三菱</option><option>その他</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <div class="lbl">車種名<span class="req">*</span></div>
+      <select id="carName">
+        <option value="">メーカーを先に選択</option>
+      </select>
+    </div>
+
+    <div class="grid2">
+      <div class="field">
+        <div class="lbl">走行距離(km)<span class="req">*</span></div>
+        <input type="number" id="mileage" placeholder="例: 82000">
+      </div>
+      <div class="field">
+        <div class="lbl">原価(万円)</div>
+        <input type="number" id="cost" placeholder="例: 5">
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="lbl">備考</div>
+      <textarea id="memo" rows="3" placeholder="損傷状況・特記事項など"></textarea>
+    </div>
+  </div>
+
+  <!-- 写真 -->
+  <div class="card">
+    <div class="sec-title">車両写真（4枚）</div>
+    <div class="photo-grid">
+      <div class="photo-item">
+        <div class="photo-lbl">前</div>
+        <div class="photo-box" id="box-front" onclick="document.getElementById('photo-front').click()">
+          <div class="photo-icon">📷</div>
+          <div class="photo-text">タップして撮影</div>
+        </div>
+        <button class="photo-del" onclick="removePhoto('front')">×</button>
+        <input type="file" id="photo-front" class="photo-input" accept="image/*" capture="environment" onchange="previewPhoto(this,'front')">
+      </div>
+      <div class="photo-item">
+        <div class="photo-lbl">後</div>
+        <div class="photo-box" id="box-rear" onclick="document.getElementById('photo-rear').click()">
+          <div class="photo-icon">📷</div>
+          <div class="photo-text">タップして撮影</div>
+        </div>
+        <button class="photo-del" onclick="removePhoto('rear')">×</button>
+        <input type="file" id="photo-rear" class="photo-input" accept="image/*" capture="environment" onchange="previewPhoto(this,'rear')">
+      </div>
+      <div class="photo-item">
+        <div class="photo-lbl">室内</div>
+        <div class="photo-box" id="box-interior" onclick="document.getElementById('photo-interior').click()">
+          <div class="photo-icon">📷</div>
+          <div class="photo-text">タップして撮影</div>
+        </div>
+        <button class="photo-del" onclick="removePhoto('interior')">×</button>
+        <input type="file" id="photo-interior" class="photo-input" accept="image/*" capture="environment" onchange="previewPhoto(this,'interior')">
+      </div>
+      <div class="photo-item">
+        <div class="photo-lbl">コーション</div>
+        <div class="photo-box" id="box-caution" onclick="document.getElementById('photo-caution').click()">
+          <div class="photo-icon">📷</div>
+          <div class="photo-text">タップして撮影</div>
+        </div>
+        <button class="photo-del" onclick="removePhoto('caution')">×</button>
+        <input type="file" id="photo-caution" class="photo-input" accept="image/*" capture="environment" onchange="previewPhoto(this,'caution')">
+      </div>
+    </div>
+  </div>
+
+  <!-- 送信 -->
+  <div class="card">
+    <button class="btn-submit" id="submitBtn" onclick="submitForm()">
+      <span id="btnText">登録する</span>
+      <div class="spinner" id="spinner"></div>
+    </button>
+    <div class="note">登録後、スプレッドシートに自動保存されます<br>写真はGoogle Driveに保存されます</div>
+  </div>
+</div>
+
+<!-- 完了画面 -->
+<div class="wrap" id="successWrap" style="display:none">
+  <div class="card success-screen" style="display:block">
+    <div class="success-icon">✅</div>
+    <div class="success-title">登録完了！</div>
+    <div class="success-id" id="successId"></div>
+    <div style="font-size:13px;color:#4a6070;margin-bottom:24px">管理画面で業者に通知してください</div>
+    <button class="btn-new" onclick="resetForm()">続けて登録する</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// GAS WebApp URL（デプロイ後に更新）
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbz1F9RX3jy6JyDNYwdDT3AZnGmMqZNSp2wMsLw9MTezePvnzaCB-J2U-gmDcDi38FOhUg/exec';
+
+const CAR_LIST = {
+  'トヨタ':  ['ヴォクシー80系','ヴォクシー90系','ノア80系','ノア90系','シエンタ','アクア前期','アクア後期','プリウス50前期','プリウス50後期','ハリアー80','ランクル','その他'],
+  'ホンダ':  ['N-BOX','N-BOXカスタム','フリード','ステップワゴン','ヴェゼル','フィット','その他'],
+  '日産':    ['デイズ','ノートEpower','セレナ28','エクストレイル32','ルークス','その他'],
+  'スズキ':  ['ワゴンR','スペーシア','ハスラー','ジムニー','アルト','その他'],
+  'ダイハツ':['タント','ミライース','キャスト','ムーヴ','ハイゼット','その他'],
+  'マツダ':  ['CX-5','CX-30','デミオ','ロードスター','その他'],
+  'スバル':  ['フォレスター','インプレッサ','アウトバック','その他'],
+  '三菱':    ['デリカD5','エクリプスクロス','その他'],
+  'その他':  ['その他'],
+};
+
+const photos = { front: null, rear: null, interior: null, caution: null };
+let vehicleId = null;
+
+function updateCarList() {
+  const maker = document.getElementById('maker').value;
+  const sel   = document.getElementById('carName');
+  sel.innerHTML = '<option value="">選択してください</option>';
+  if (CAR_LIST[maker]) {
+    CAR_LIST[maker].forEach(c => {
+      const o = document.createElement('option');
+      o.value = o.textContent = c;
+      sel.appendChild(o);
+    });
+  }
+}
+
+function previewPhoto(input, type) {
+  if (!input.files || !input.files[0]) return;
+  const file   = input.files[0];
+  photos[type] = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const box = document.getElementById('box-' + type);
+    box.innerHTML = `<img src="${e.target.result}">`;
+    box.classList.add('has-photo');
+  };
+  reader.readAsDataURL(file);
+}
+
+function removePhoto(type) {
+  photos[type] = null;
+  const box = document.getElementById('box-' + type);
+  box.innerHTML = '<div class="photo-icon">📷</div><div class="photo-text">タップして撮影</div>';
+  box.classList.remove('has-photo');
+  document.getElementById('photo-' + type).value = '';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+async function toBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+async function submitForm() {
+  const maker   = document.getElementById('maker').value;
+  const carName = document.getElementById('carName').value;
+  const mileage = document.getElementById('mileage').value;
+
+  if (!maker || !carName || carName === '選択してください') { showToast('メーカーと車種を選択してください'); return; }
+  if (!mileage) { showToast('走行距離を入力してください'); return; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  document.getElementById('btnText').style.display = 'none';
+  document.getElementById('spinner').style.display = 'block';
+
+  try {
+    // 1. 車両登録
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action:  'registerVehicle',
+        maker,
+        carName,
+        mileage: Number(mileage),
+        cost:    Number(document.getElementById('cost').value) || 0,
+        memo:    document.getElementById('memo').value,
+      })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    vehicleId = data.id;
+
+    // 2. 写真アップロード
+    for (const [type, file] of Object.entries(photos)) {
+      if (!file) continue;
+      const base64 = await toBase64(file);
+      await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action:    'uploadPhoto',
+          vehicleId,
+          photoType: type,
+          base64,
+          mimeType:  file.type,
+          fileName:  `${vehicleId}_${type}.jpg`,
+        })
+      });
+    }
+
+    // 完了
+    document.getElementById('formWrap').style.display  = 'none';
+    document.getElementById('successWrap').style.display = 'block';
+    document.getElementById('successId').textContent = '車両ID: ' + vehicleId;
+
+  } catch(e) {
+    showToast('エラー: ' + e.message);
+    btn.disabled = false;
+    document.getElementById('btnText').style.display = 'block';
+    document.getElementById('spinner').style.display = 'none';
+  }
+}
+
+function resetForm() {
+  document.getElementById('formWrap').style.display  = 'block';
+  document.getElementById('successWrap').style.display = 'none';
+  document.getElementById('maker').value    = '';
+  document.getElementById('carName').innerHTML = '<option value="">メーカーを先に選択</option>';
+  document.getElementById('mileage').value  = '';
+  document.getElementById('cost').value     = '';
+  document.getElementById('memo').value     = '';
+  ['front','rear','interior','caution'].forEach(t => removePhoto(t));
+  vehicleId = null;
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = false;
+  document.getElementById('btnText').style.display = 'block';
+  document.getElementById('spinner').style.display = 'none';
+}
+</script>
+</body>
+</html>

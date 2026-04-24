@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>廃車見積もり管理 - INDIO</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#f0f4f8;font-family:'Hiragino Sans','Meiryo',sans-serif;font-size:13px;color:#1a2332}
+.hdr{background:#1e3a5f;padding:0 16px;height:48px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.hdr-title{font-size:14px;font-weight:700;color:#fff}
+.hdr-right{display:flex;align-items:center;gap:10px}
+.hdr-count{font-size:11px;color:rgba(255,255,255,.6)}
+.btn-add{background:#dc2626;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500}
+.main{max-width:800px;margin:0 auto;padding:12px 16px}
+.card{background:#fff;border-radius:10px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden}
+.card-hdr{padding:10px 14px;border-bottom:1px solid #f0f4f8;display:flex;justify-content:space-between;align-items:center}
+.car-name{font-size:14px;font-weight:700}
+.car-sub{font-size:11px;color:#4a6070;margin-top:1px}
+.status-badge{font-size:10px;font-weight:600;padding:2px 10px;border-radius:10px;white-space:nowrap}
+.s-unnotified{background:#fee2e2;color:#dc2626}
+.s-notified{background:#fef3c7;color:#d97706}
+.s-answered{background:#dcfce7;color:#16a34a}
+.s-transferred{background:#e8f0fb;color:#2979d4}
+.card-body{padding:10px 14px}
+/* 見積もり表示 */
+.estimates{margin-bottom:10px}
+.est-row{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border-radius:6px;margin-bottom:4px}
+.est-row.best{background:#dcfce7;border:1px solid #86efac}
+.est-row.normal{background:#f7f9fc}
+.est-row.pending{background:#fff;border:1px dashed #d8e2ec}
+.est-vendor{font-size:12px;font-weight:500}
+.est-amount{font-size:14px;font-weight:700}
+.est-best{font-size:11px;color:#16a34a}
+.est-pending{font-size:11px;color:#8a9aaa}
+/* 業者選択 */
+.vendor-select{background:#f7f9fc;border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.vendor-select-title{font-size:11px;font-weight:600;color:#4a6070;margin-bottom:8px}
+.radio-group{display:flex;flex-direction:column;gap:5px;margin-bottom:8px}
+.radio-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;cursor:pointer;border:0.5px solid #d8e2ec;background:#fff;transition:all .15s}
+.radio-item.selected{background:#dbeafe;border-color:#2979d4}
+.radio-item input{accent-color:#2979d4;width:14px;height:14px;cursor:pointer}
+.radio-item label{font-size:12px;cursor:pointer;flex:1}
+.btn-notify{width:100%;background:#059669;color:#fff;border:none;padding:8px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:500}
+.btn-notify:hover{opacity:.9}
+/* アクションボタン */
+.btn-row{display:flex;gap:6px}
+.btn-transfer{flex:1;background:#2979d4;color:#fff;border:none;padding:7px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:500}
+.btn-detail{flex:1;background:#f0f4f8;color:#4a6070;border:0.5px solid #d8e2ec;padding:7px;border-radius:7px;cursor:pointer;font-size:11px}
+/* 写真モーダル */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:90}
+.modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:12px;padding:16px;width:90%;max-width:480px;max-height:85vh;overflow-y:auto;z-index:100}
+.modal.show,.modal-ov.show{display:block}
+.modal-title{font-size:14px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between}
+.modal-close{cursor:pointer;color:#8a9aaa;font-size:20px;line-height:1}
+.photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.photo-img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;cursor:pointer}
+.photo-placeholder{width:100%;aspect-ratio:4/3;background:#f0f4f8;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#d8e2ec}
+.photo-lbl{font-size:10px;color:#4a6070;margin-bottom:3px;text-align:center}
+/* 写真拡大 */
+.photo-zoom{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:110;align-items:center;justify-content:center}
+.photo-zoom.show{display:flex}
+.photo-zoom img{max-width:95vw;max-height:90vh;object-fit:contain;border-radius:6px}
+.photo-zoom-close{position:absolute;top:16px;right:16px;color:#fff;font-size:28px;cursor:pointer}
+.empty{text-align:center;padding:40px;color:#8a9aaa}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a2332;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:200;display:none;white-space:nowrap}
+.toast.show{display:block}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-left:4px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-title">廃車見積もり管理</div>
+  <div class="hdr-right">
+    <span class="hdr-count" id="vehicleCount">—件</span>
+    <button class="btn-add" onclick="location.href='salvage-input.html'">＋ 新規登録</button>
+    <button style="background:rgba(255,255,255,.15);color:#fff;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px" onclick="loadData()">🔄 更新</button>
+  </div>
+</div>
+
+<div class="main" id="mainContent">
+  <div class="empty">読み込み中...</div>
+</div>
+
+<!-- 写真モーダル -->
+<div class="modal-ov" id="modalOv" onclick="closeModal()"></div>
+<div class="modal" id="photoModal">
+  <div class="modal-title">
+    <span id="modalTitle">車両写真</span>
+    <span class="modal-close" onclick="closeModal()">×</span>
+  </div>
+  <div class="photo-grid" id="modalPhotos"></div>
+</div>
+
+<!-- 写真拡大 -->
+<div class="photo-zoom" id="photoZoom" onclick="closeZoom()">
+  <span class="photo-zoom-close">×</span>
+  <img id="zoomImg" src="">
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbz1F9RX3jy6JyDNYwdDT3AZnGmMqZNSp2wMsLw9MTezePvnzaCB-J2U-gmDcDi38FOhUg/exec';
+let VEHICLES  = [];
+let VENDORS   = [];
+
+async function loadData() {
+  try {
+    const [vRes, vendorRes] = await Promise.all([
+      fetch(`${GAS_URL}?action=getVehicles`),
+      fetch(`${GAS_URL}?action=getVendors`)
+    ]);
+    VEHICLES = await vRes.json();
+    VENDORS  = await vendorRes.json();
+    renderAll();
+  } catch(e) {
+    document.getElementById('mainContent').innerHTML = `<div class="empty">読み込みエラー: ${e.message}</div>`;
+  }
+}
+
+function renderAll() {
+  document.getElementById('vehicleCount').textContent = VEHICLES.length + '件';
+  if (!VEHICLES.length) {
+    document.getElementById('mainContent').innerHTML = '<div class="empty">登録された車両がありません</div>';
+    return;
+  }
+
+  document.getElementById('mainContent').innerHTML = VEHICLES
+    .sort((a,b) => b.id.localeCompare(a.id))
+    .map(v => renderCard(v)).join('');
+}
+
+function getStatusInfo(v) {
+  const s = v.status || '未通知';
+  if (s === '移送済') return { label:'移送済', cls:'s-transferred' };
+  if (v.estimates.some(e => e.amount > 0)) return { label:'回答済', cls:'s-answered' };
+  if (s.startsWith('通知済')) return { label:s, cls:'s-notified' };
+  return { label:'未通知', cls:'s-unnotified' };
+}
+
+function renderCard(v) {
+  const si = getStatusInfo(v);
+  const isTransferred = v.status === '移送済';
+
+  // 見積もり表示
+  const notifiedVendor = (v.status || '').replace('通知済（','').replace('）','');
+  let estHtml = '';
+  if (v.estimates.length > 0) {
+    estHtml = `<div class="estimates">` +
+      v.estimates.map(e => {
+        const isBest = e.vendor === v.bestVendor && v.bestAmount > 0;
+        return `<div class="est-row ${isBest ? 'best' : 'normal'}">
+          <span class="est-vendor">${e.vendor} ${isBest ? '🏆' : ''}</span>
+          <div style="text-align:right">
+            <div class="est-amount ${isBest ? 'est-best' : ''}">¥${Number(e.amount).toLocaleString()}</div>
+            ${e.comment ? `<div style="font-size:10px;color:#8a9aaa">${e.comment}</div>` : ''}
+          </div>
+        </div>`;
+      }).join('') + `</div>`;
+  }
+
+  // 業者選択（未移送のみ）
+  const vendorSelectHtml = !isTransferred ? `
+    <div class="vendor-select">
+      <div class="vendor-select-title">通知する業者を選択（1社のみ）</div>
+      <div class="radio-group" id="rg-${v.id}">
+        ${VENDORS.map((vd,i) => `
+          <div class="radio-item ${notifiedVendor === vd.name ? 'selected' : ''}" id="ri-${v.id}-${i}" onclick="selectVendor('${v.id}',${i})">
+            <input type="radio" name="v-${v.id}" id="r-${v.id}-${i}" value="${vd.name}" ${notifiedVendor === vd.name ? 'checked' : ''}>
+            <label for="r-${v.id}-${i}">${vd.name}</label>
+            ${v.estimates.find(e => e.vendor === vd.name)
+              ? `<span style="font-size:10px;color:#16a34a">回答済</span>`
+              : v.status?.includes(vd.name) ? `<span style="font-size:10px;color:#d97706">通知済</span>` : ''}
+          </div>`).join('')}
+      </div>
+      <button class="btn-notify" onclick="notifyVendor('${v.id}')">✉ 選択業者にChatwork通知</button>
+    </div>` : '';
+
+  const actionHtml = !isTransferred
+    ? `<div class="btn-row">
+        ${v.bestAmount > 0 ? `<button class="btn-transfer" onclick="transferVehicle('${v.id}')">在庫管理表へ移送</button>` : ''}
+        <button class="btn-detail" onclick="showPhotos('${v.id}')">写真・詳細</button>
+       </div>`
+    : `<div style="text-align:center;font-size:11px;color:#2979d4;padding:4px">✅ 在庫管理表へ移送済み</div>`;
+
+  return `<div class="card">
+    <div class="card-hdr">
+      <div>
+        <div class="car-name">${v.maker} ${v.carName}</div>
+        <div class="car-sub">${Number(v.mileage).toLocaleString()}km ／ 登録: ${v.createdAt}</div>
+      </div>
+      <span class="status-badge ${si.cls}">${si.label}</span>
+    </div>
+    <div class="card-body">
+      ${estHtml}
+      ${vendorSelectHtml}
+      ${actionHtml}
+    </div>
+  </div>`;
+}
+
+function selectVendor(vehicleId, idx) {
+  const rg = document.getElementById(`rg-${vehicleId}`);
+  rg.querySelectorAll('.radio-item').forEach(el => el.classList.remove('selected'));
+  document.getElementById(`ri-${vehicleId}-${idx}`).classList.add('selected');
+  document.getElementById(`r-${vehicleId}-${idx}`).checked = true;
+}
+
+async function notifyVendor(vehicleId) {
+  const checked = document.querySelector(`input[name="v-${vehicleId}"]:checked`);
+  if (!checked) { showToast('業者を選択してください'); return; }
+  const vendorName = checked.value;
+  if (!confirm(`「${vendorName}」にChatworkで通知しますか？`)) return;
+
+  showToast('通知中...');
+  try {
+    const res  = await fetch(GAS_URL, {
+      method:'POST',
+      body: JSON.stringify({ action:'notifyVendor', vehicleId, vendorName })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    showToast(`✅ ${vendorName}に通知しました！`);
+    setTimeout(loadData, 1500);
+  } catch(e) {
+    showToast('エラー: ' + e.message);
+  }
+}
+
+async function transferVehicle(vehicleId) {
+  if (!confirm('在庫管理表の未掲載シートへ移送しますか？')) return;
+  showToast('移送中...');
+  try {
+    const res  = await fetch(GAS_URL, {
+      method:'POST',
+      body: JSON.stringify({ action:'transferToInventory', vehicleId })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    showToast(`✅ 移送完了！最高額: ${data.bestVendor} ¥${Number(data.bestAmount).toLocaleString()}`);
+    setTimeout(loadData, 1500);
+  } catch(e) {
+    showToast('エラー: ' + e.message);
+  }
+}
+
+function showPhotos(vehicleId) {
+  const v = VEHICLES.find(x => x.id === vehicleId);
+  if (!v) return;
+  document.getElementById('modalTitle').textContent = `${v.maker} ${v.carName}`;
+  const labels = { front:'前', rear:'後', interior:'室内', caution:'コーション' };
+  document.getElementById('modalPhotos').innerHTML = Object.entries(labels).map(([k,l]) => `
+    <div>
+      <div class="photo-lbl">${l}</div>
+      ${v.photos[k]
+        ? `<img class="photo-img" src="${v.photos[k]}" onclick="openZoom('${v.photos[k]}')" onerror="this.style.display='none'">`
+        : `<div class="photo-placeholder">📷</div>`}
+    </div>`).join('');
+  document.getElementById('photoModal').classList.add('show');
+  document.getElementById('modalOv').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('photoModal').classList.remove('show');
+  document.getElementById('modalOv').classList.remove('show');
+}
+
+function openZoom(url) {
+  document.getElementById('zoomImg').src = url;
+  document.getElementById('photoZoom').classList.add('show');
+}
+function closeZoom() {
+  document.getElementById('photoZoom').classList.remove('show');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+loadData();
+</script>
+</body>
+</html>
