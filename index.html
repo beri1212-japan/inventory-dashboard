@@ -509,7 +509,9 @@ function renderUnlisted(){
   const fmt=(d,pill,lbl)=>{
     const lower4str=d.lower4?` ／ 下4桁${d.lower4}`:'';
     const km=d.km?(d.km/10000).toFixed(1)+'万km':'—';
-    return `<div class="aitem" style="padding:6px 12px;max-width:500px"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex:1"><span style="font-size:12px;font-weight:500">${d.name}${lower4str}</span><span style="font-size:10px;color:var(--text2);font-family:var(--mono)">${d.cat} / ${d.year} / ${km} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'}</span></div><span class="pill ${pill}" style="flex-shrink:0;margin-left:8px">${lbl}</span></div>`;
+    const nameText=`${d.name}${lower4str}`;
+    const detText=`${d.cat} / ${d.year} / ${km} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'}`;
+    return `<div class="aitem" style="padding:6px 12px;max-width:500px" data-name="${nameText.replace(/"/g,'&quot;')}" data-det="${detText.replace(/"/g,'&quot;')}" data-lbl="${lbl}"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex:1"><span class="aname" style="font-size:12px;font-weight:500">${nameText}</span><span class="adet" style="font-size:10px;color:var(--text2);font-family:var(--mono)">${detText}</span></div><span class="pill ${pill}" style="flex-shrink:0;margin-left:8px">${lbl}</span></div>`;
   };
 
   const p1=UNLISTED.filter(d=>d.status==='未入庫');
@@ -1396,9 +1398,9 @@ function exportUnlistedPdf(){
         <div style="border:1px solid #e0e0e0;border-top:none;padding:8px 12px;font-size:11px;color:#999">該当車両なし</div>
       </div>`;
     const items = Array.from(el.children).map(item => {
-      const name = item.querySelector('.aname')?.textContent || '';
-      const det  = item.querySelector('.adet')?.textContent || '';
-      const pill = item.querySelector('.pill')?.textContent || '';
+      const name = item.dataset.name || item.querySelector('.aname')?.textContent || '';
+      const det  = item.dataset.det  || item.querySelector('.adet')?.textContent  || '';
+      const pill = item.dataset.lbl  || item.querySelector('.pill')?.textContent  || '';
       return `<tr>
         <td style="padding:4px 8px;border-bottom:1px solid #eee;font-size:11px;font-weight:500">${name}</td>
         <td style="padding:4px 8px;border-bottom:1px solid #eee;font-size:10px;color:#666">${det}</td>
