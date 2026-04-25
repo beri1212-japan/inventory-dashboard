@@ -12,7 +12,7 @@ body{background:#f0f4f8;font-family:'Hiragino Sans','Meiryo',sans-serif;font-siz
 .hdr-right{display:flex;align-items:center;gap:10px}
 .hdr-count{font-size:11px;color:rgba(255,255,255,.6)}
 .btn-add{background:#dc2626;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500}
-.main{max-width:800px;margin:0 auto;padding:12px 16px}
+.main{max-width:1200px;margin:0 auto;padding:12px 16px}
 .card{background:#fff;border-radius:10px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden}
 .card-hdr{padding:10px 14px;border-bottom:1px solid #f0f4f8;display:flex;justify-content:space-between;align-items:center}
 .car-name{font-size:14px;font-weight:700}
@@ -70,6 +70,32 @@ body{background:#f0f4f8;font-family:'Hiragino Sans','Meiryo',sans-serif;font-siz
 .photo-zoom-close{position:absolute;top:16px;right:16px;color:#fff;font-size:28px;cursor:pointer}
 .empty{text-align:center;padding:40px;color:#8a9aaa}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a2332;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:200;display:none;white-space:nowrap}
+
+/* PC テーブルビュー */
+.tbl-view{display:none}
+.tbl-view table{width:100%;border-collapse:collapse;font-size:12px}
+.tbl-view thead th{background:#1e3a5f;color:#fff;padding:8px 10px;text-align:left;font-size:11px;font-weight:600;white-space:nowrap;border-right:1px solid rgba(255,255,255,.1)}
+.tbl-view tbody tr{border-bottom:1px solid #e8f0f8;transition:background .1s}
+.tbl-view tbody tr:hover{background:#f0f7ff}
+.tbl-view td{padding:8px 10px;vertical-align:middle;border-right:1px solid #e8f0f8}
+.tbl-view td:first-child{font-weight:500}
+.est-cell{display:flex;flex-direction:column;gap:2px}
+.est-row-tbl{display:flex;justify-content:space-between;align-items:center;padding:2px 6px;border-radius:4px;font-size:11px}
+.est-row-tbl.best{background:#dcfce7;color:#16a34a;font-weight:600}
+.est-row-tbl.normal{color:#4a6070}
+.est-row-tbl.pending{color:#d97706}
+.vendor-tbl{display:flex;flex-direction:column;gap:3px}
+.check-tbl{display:flex;align-items:center;gap:5px;padding:3px 6px;border-radius:4px;cursor:pointer;font-size:11px;border:0.5px solid #d8e2ec;background:#fff}
+.check-tbl.selected{background:#dbeafe;border-color:#2979d4;color:#1d4ed8}
+.check-tbl input{accent-color:#2979d4;width:12px;height:12px}
+.btn-notify-sm{background:#059669;color:#fff;border:none;padding:4px 8px;border-radius:5px;cursor:pointer;font-size:10px;font-weight:500;margin-top:3px;width:100%}
+.btn-transfer-sm{background:#2979d4;color:#fff;border:none;padding:4px 8px;border-radius:5px;cursor:pointer;font-size:10px;font-weight:500;width:100%}
+.btn-order-sm{background:#d97706;color:#fff;border:none;padding:4px 8px;border-radius:5px;cursor:pointer;font-size:10px;font-weight:500;width:100%;margin-top:3px}
+.btn-detail-sm{background:#f0f4f8;color:#4a6070;border:0.5px solid #d8e2ec;padding:4px 8px;border-radius:5px;cursor:pointer;font-size:10px;width:100%;margin-top:3px}
+@media(min-width:768px){
+  .tbl-view{display:block}
+  .card-view{display:none}
+}
 .toast.show{display:block}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-left:4px}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -86,9 +112,16 @@ body{background:#f0f4f8;font-family:'Hiragino Sans','Meiryo',sans-serif;font-siz
   </div>
 </div>
 
-<div class="main" id="mainContent">
+<div class="main">
+  <!-- PC: テーブルビュー -->
+  <div class="tbl-view" id="tblContent"></div>
+  <!-- スマホ: カードビュー -->
+  <div class="card-view" id="mainContent">
   <div class="empty">読み込み中...</div>
 </div>
+
+  </div><!-- /card-view -->
+</div><!-- /main -->
 
 <!-- 写真モーダル -->
 <div class="modal-ov" id="modalOv" onclick="closeModal()"></div>
@@ -131,12 +164,72 @@ function renderAll() {
   document.getElementById('vehicleCount').textContent = VEHICLES.length + '件';
   if (!VEHICLES.length) {
     document.getElementById('mainContent').innerHTML = '<div class="empty">登録された車両がありません</div>';
+    document.getElementById('tblContent').innerHTML = '<div class="empty" style="padding:20px">登録された車両がありません</div>';
     return;
   }
+  const sorted = VEHICLES.sort((a,b) => b.id.localeCompare(a.id));
+  document.getElementById('mainContent').innerHTML = sorted.map(v => renderCard(v)).join('');
+  document.getElementById('tblContent').innerHTML = renderTable(sorted);
+}
 
-  document.getElementById('mainContent').innerHTML = VEHICLES
-    .sort((a,b) => b.id.localeCompare(a.id))
-    .map(v => renderCard(v)).join('');
+function renderTable(vehicles) {
+  const rows = vehicles.map(v => {
+    const si = getStatusInfo(v);
+    const isTransferred = v.status === '移送済';
+    const notifiedVendor = (v.status||'').replace('通知済（','').replace('）','');
+
+    // 見積もりセル
+    const estCells = VENDORS.map(vd => {
+      const est = v.estimates.find(e => e.vendor === vd.name && e.amount > 0);
+      const isBest = est && est.vendor === v.bestVendor;
+      if (est) return `<div class="est-row-tbl ${isBest?'best':'normal'}">${vd.name}: ¥${Number(est.amount).toLocaleString()} ${isBest?'🏆':''}</div>`;
+      const notified = (v.status||'').includes(vd.name);
+      return `<div class="est-row-tbl pending">${vd.name}: ${notified?'通知済・未回答':'—'}</div>`;
+    }).join('');
+
+    // 業者選択セル
+    const vendorChecks = !isTransferred ? VENDORS.map((vd,i) => `
+      <div class="check-tbl ${(v.status||'').includes(vd.name)?'selected':''}" id="tri-${v.id}-${i}" onclick="toggleVendorTbl('${v.id}',${i})">
+        <input type="checkbox" id="tr-${v.id}-${i}" value="${vd.name}" ${(v.status||'').includes(vd.name)?'checked':''}>
+        <label for="tr-${v.id}-${i}">${vd.name}</label>
+      </div>`).join('') + `<button class="btn-notify-sm" onclick="notifyVendors('${v.id}','tbl')">✉ 通知</button>` : '';
+
+    // アクションセル
+    const actions = isTransferred
+      ? `<div style="font-size:10px;color:#2979d4;text-align:center">✅移送済</div>`
+      : `${v.bestAmount>0?`<button class="btn-transfer-sm" onclick="transferVehicle('${v.id}')">在庫へ移送</button>`:``}
+         ${v.bestAmount>0?`<button class="btn-order-sm" onclick="sendOrderNotice('${v.id}','${v.bestVendor}',${v.bestAmount})">✉ 発注通知</button>`:''}
+         <button class="btn-detail-sm" onclick="showPhotos('${v.id}')">📷 写真</button>`;
+
+    return `<tr>
+      <td><div style="font-weight:600">${v.maker} ${v.carName}</div><div style="font-size:10px;color:#8a9aaa">下4桁:${v.lower4||'—'} ／ ${Number(v.mileage).toLocaleString()}km</div><div style="font-size:10px;color:#4a6070">${v.createdAt}</div></td>
+      <td><span class="status-badge ${si.cls}">${si.label}</span></td>
+      <td><div class="est-cell">${estCells}</div></td>
+      <td><div class="vendor-tbl">${vendorChecks}</div></td>
+      <td><div style="display:flex;flex-direction:column;gap:3px;min-width:90px">${actions}</div></td>
+    </tr>`;
+  }).join('');
+
+  return `<table>
+    <thead>
+      <tr>
+        <th>車両情報</th>
+        <th>状態</th>
+        <th>見積もり状況</th>
+        <th>業者選択・通知</th>
+        <th>アクション</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function toggleVendorTbl(vehicleId, idx) {
+  const item = document.getElementById(`tri-${vehicleId}-${idx}`);
+  const cb   = document.getElementById(`tr-${vehicleId}-${idx}`);
+  if (!item || !cb) return;
+  cb.checked = !cb.checked;
+  item.classList.toggle('selected', cb.checked);
 }
 
 function getStatusInfo(v) {
@@ -218,9 +311,15 @@ function toggleVendor(vehicleId, idx) {
   item.classList.toggle('selected', cb.checked);
 }
 
-async function notifyVendors(vehicleId) {
-  const rg       = document.getElementById(`rg-${vehicleId}`);
-  const checked  = Array.from(rg.querySelectorAll('input[type=checkbox]:checked')).map(c => c.value);
+async function notifyVendors(vehicleId, mode) {
+  let checked;
+  if (mode === 'tbl') {
+    checked = VENDORS.map((vd,i) => document.getElementById(`tr-${vehicleId}-${i}`))
+      .filter(cb => cb && cb.checked).map(cb => cb.value);
+  } else {
+    const rg = document.getElementById(`rg-${vehicleId}`);
+    checked  = Array.from(rg.querySelectorAll('input[type=checkbox]:checked')).map(c => c.value);
+  }
   if (!checked.length) { showToast('業者を1社以上選択してください'); return; }
   if (!confirm(`「${checked.join('・')}」にChatworkで通知しますか？`)) return;
 
