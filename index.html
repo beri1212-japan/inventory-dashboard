@@ -306,58 +306,72 @@ tbody tr:hover td{background:var(--accent-bg)!important;}
 
 <!-- PAGE 5: 車種バランス -->
 <div class="page" id="page-balance">
-  <!-- フィルタ -->
-  <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
-    <select id="balCat" onchange="renderBalance()" style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg2);color:var(--text)">
-      <option value="">全ジャンル</option>
-      <option>ミニバン</option><option>SUV</option><option>HVCP</option><option>軽</option>
-    </select>
-    <select id="balName" onchange="renderBalanceDetail()" style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg2);color:var(--text);flex:1;min-width:160px">
-      <option value="">▼ 車種を選択して詳細表示</option>
-    </select>
-    <span style="font-size:11px;color:var(--text3)">カードをクリックでも詳細表示</span>
+  <!-- ツールバー -->
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+    <button id="bv-diff" onclick="setBalView('diff')" style="padding:5px 12px;border-radius:6px;font-size:11px;cursor:pointer;border:1px solid var(--border);background:#1e3a5f;color:#fff">過不足</button>
+    <button id="bv-days" onclick="setBalView('days')" style="padding:5px 12px;border-radius:6px;font-size:11px;cursor:pointer;border:1px solid var(--border);background:var(--bg2);color:var(--text3)">在庫日数</button>
+    <button id="bv-profit" onclick="setBalView('profit')" style="padding:5px 12px;border-radius:6px;font-size:11px;cursor:pointer;border:1px solid var(--border);background:var(--bg2);color:var(--text3)">想定利益</button>
+    <div style="display:flex;align-items:center;gap:4px;margin-left:auto">
+      <span style="font-size:10px;color:var(--text3)" id="balLgMin">過剰</span>
+      <div id="balLgCells" style="display:flex;gap:2px"></div>
+      <span style="font-size:10px;color:var(--text3)" id="balLgMax">不足</span>
+    </div>
   </div>
 
-  <!-- 車種カード一覧 -->
-  <div id="balanceOverview" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:16px"></div>
+  <!-- ツリーマップ -->
+  <div id="balanceOverview" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px"></div>
 
-  <!-- 詳細分析パネル -->
+  <!-- サマリー -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+    <div style="background:#fee2e2;border-radius:8px;padding:10px;text-align:center">
+      <div style="font-size:10px;color:#991b1b;font-weight:700;margin-bottom:4px">過剰</div>
+      <div style="font-size:22px;font-weight:700;color:#dc2626" id="balSurplusVal">—</div>
+      <div style="font-size:10px;color:#dc2626;margin-top:3px" id="balSurplusNames"></div>
+    </div>
+    <div style="background:#dcfce7;border-radius:8px;padding:10px;text-align:center">
+      <div style="font-size:10px;color:#166534;font-weight:700;margin-bottom:4px">適正</div>
+      <div style="font-size:22px;font-weight:700;color:#16a34a" id="balNormalVal">—</div>
+      <div style="font-size:10px;color:#16a34a;margin-top:3px" id="balNormalNames"></div>
+    </div>
+    <div style="background:#fef3c7;border-radius:8px;padding:10px;text-align:center">
+      <div style="font-size:10px;color:#92400e;font-weight:700;margin-bottom:4px">不足</div>
+      <div style="font-size:22px;font-weight:700;color:#d97706" id="balShortageVal">—</div>
+      <div style="font-size:10px;color:#d97706;margin-top:3px" id="balShortageNames"></div>
+    </div>
+  </div>
+
+  <!-- 詳細分析パネル（セルクリック時） -->
   <div id="balanceDetail" style="display:none">
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px">
-      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px" id="balDetailTitle">詳細分析</div>
-
-      <!-- KPIサマリー -->
-      <div id="balKpiRow" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px"></div>
-
-      <!-- チャート 2列 -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:700;color:var(--text)" id="balDetailTitle">詳細分析</div>
+        <button onclick="document.getElementById('balanceDetail').style.display='none'" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px">×</button>
+      </div>
+      <div id="balKpiRow" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:14px"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
         <div style="background:var(--bg);border-radius:8px;padding:10px">
-          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">📅 年式分布</div>
+          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">年式分布</div>
           <div id="balYearChart"></div>
         </div>
         <div style="background:var(--bg);border-radius:8px;padding:10px">
-          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">💰 価格帯分布</div>
+          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">価格帯分布</div>
           <div id="balPriceChart"></div>
         </div>
         <div style="background:var(--bg);border-radius:8px;padding:10px">
-          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">🚗 走行距離分布</div>
+          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">走行距離分布</div>
           <div id="balKmChart"></div>
         </div>
         <div style="background:var(--bg);border-radius:8px;padding:10px">
-          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">🎨 色分布</div>
+          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">色分布</div>
           <div id="balColorChart"></div>
         </div>
       </div>
-
-      <!-- 在庫日数分布 -->
       <div style="background:var(--bg);border-radius:8px;padding:10px;margin-bottom:10px">
-        <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">⏰ 在庫日数分布</div>
+        <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">在庫日数分布</div>
         <div id="balDaysChart"></div>
       </div>
-
-      <!-- 在庫vs売約比較 -->
       <div style="background:var(--bg);border-radius:8px;padding:10px">
-        <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px" id="balCompareTitle">📊 在庫 vs 売約 年式比較</div>
+        <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px" id="balCompareTitle">在庫 vs 売約 年式比較</div>
         <div style="display:flex;gap:8px;margin-bottom:6px">
           <span style="font-size:10px;display:flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:2px;background:#2979d4;display:inline-block"></span>在庫</span>
           <span style="font-size:10px;display:flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:2px;background:#16a34a;display:inline-block"></span>売約</span>
@@ -366,6 +380,9 @@ tbody tr:hover td{background:var(--accent-bg)!important;}
       </div>
     </div>
   </div>
+
+  <!-- ツールチップ -->
+  <div id="balTip" style="position:fixed;background:#1a2332;color:#fff;font-size:11px;padding:8px 12px;border-radius:8px;pointer-events:none;display:none;z-index:100;line-height:1.7;box-shadow:0 2px 8px rgba(0,0,0,.3)"></div>
 </div>
 
 <!-- PAGE 6: 売約分析 -->
@@ -878,46 +895,166 @@ async function loadAll(){
   }finally{btn.textContent='🔄 更新';sp.style.display='none';}
 }
 
-// ─── 車種バランス ───
-let BAL_CHARTS={};
+// ─── 車種バランス（ツリーマップ）───
+const BAL_CAT_BG={ミニバン:'#1e3a5f',SUV:'#065f46',HVCP:'#4c1d95',軽:'#7c2d12'};
+const BAL_PALETTES={
+  diff:[
+    {min:-99,max:-3,bg:'#b91c1c',tc:'#fff'},
+    {min:-3,max:-2,bg:'#dc2626',tc:'#fff'},
+    {min:-2,max:-1,bg:'#fca5a5',tc:'#7f1d1d'},
+    {min:-1,max:1, bg:'#d1fae5',tc:'#065f46'},
+    {min:1, max:2, bg:'#6ee7b7',tc:'#065f46'},
+    {min:2, max:3, bg:'#10b981',tc:'#fff'},
+    {min:3, max:99,bg:'#059669',tc:'#fff'},
+  ],
+  days:[
+    {min:0,  max:30, bg:'#d1fae5',tc:'#065f46'},
+    {min:30, max:60, bg:'#6ee7b7',tc:'#065f46'},
+    {min:60, max:90, bg:'#fbbf24',tc:'#78350f'},
+    {min:90, max:120,bg:'#f97316',tc:'#fff'},
+    {min:120,max:999,bg:'#dc2626',tc:'#fff'},
+  ],
+  profit:[
+    {min:-999,max:10, bg:'#fef3c7',tc:'#78350f'},
+    {min:10,  max:25, bg:'#6ee7b7',tc:'#065f46'},
+    {min:25,  max:50, bg:'#10b981',tc:'#fff'},
+    {min:50,  max:999,bg:'#059669',tc:'#fff'},
+  ],
+};
+let BAL_VIEW='diff';
+
+function getBalColor(val,view){
+  const pal=BAL_PALETTES[view];
+  for(const p of pal){if(val>=p.min&&val<p.max)return{bg:p.bg,tc:p.tc};}
+  return{bg:'#d1d5db',tc:'#374151'};
+}
+
+function setBalView(v){
+  BAL_VIEW=v;
+  ['diff','days','profit'].forEach(id=>{
+    const b=document.getElementById('bv-'+id);
+    if(!b)return;
+    b.style.background=id===v?'#1e3a5f':'var(--bg2)';
+    b.style.color=id===v?'#fff':'var(--text3)';
+  });
+  renderBalance();
+}
+
 function renderBalance(){
-  const cf=document.getElementById('balCat').value;
-  const data=cf?STOCK.filter(d=>d.cat===cf):STOCK;
-  const cnt={};data.forEach(d=>{cnt[d.name]=(cnt[d.name]||0)+1;});
-  const names=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).map(([n])=>n);
-  const sel=document.getElementById('balName');
-  const cur=sel.value;
-  sel.innerHTML='<option value="">▼ 車種を選択して詳細表示</option>'+
-    names.map(n=>`<option value="${n}"${n===cur?' selected':''}>${n}（${cnt[n]}台）</option>`).join('');
-  const COLS=['#2979d4','#16a34a','#d97706','#7c3aed','#0891b2','#dc2626','#059669','#9333ea','#0f766e','#92400e','#1d4ed8','#065f46'];
-  document.getElementById('balanceOverview').innerHTML=names.slice(0,48).map((name,i)=>{
-    const items=data.filter(d=>d.name===name);
-    const hv=items.filter(d=>d.hv==='〇').length;
-    const fwd=items.filter(d=>d.fwd==='〇').length;
-    const avgP=items.filter(d=>d.price!=null).reduce((s,d,_,a)=>s+d.price/a.length,0)||0;
-    const col=COLS[i%COLS.length];
-    return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px;cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='${col}'" onmouseout="this.style.borderColor='var(--border)'" onclick="selectBalVehicle('${name}')">
-      <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:5px">${name}</div>
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
-        <div style="font-size:22px;font-weight:700;color:${col};font-family:var(--mono)">${items.length}</div>
-        <div style="font-size:10px;color:var(--text3)">台<br>${avgP>0?'平均'+avgP.toFixed(0)+'万':''}</div>
-      </div>
-      <div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:5px">
-        ${hv>0?`<span style="font-size:9px;font-weight:600;padding:1px 5px;border-radius:8px;background:#dbeafe;color:#1d4ed8">HV ${hv}</span>`:''}
-        ${fwd>0?`<span style="font-size:9px;font-weight:600;padding:1px 5px;border-radius:8px;background:#d1fae5;color:#065f46">4WD ${fwd}</span>`:''}
-      </div>
-      <div style="height:3px;background:var(--bg4);border-radius:2px;overflow:hidden"><div style="height:100%;width:${Math.min(items.length/20*100,100)}%;background:${col}"></div></div>
+  const cats=[...new Set(STOCK.map(d=>d.cat))].filter(Boolean);
+  const MASTER=getMasterData();
+
+  let html='';
+  cats.forEach(cat=>{
+    const items=STOCK.filter(d=>d.cat===cat);
+    const names=[...new Set(items.map(d=>d.name))].filter(Boolean);
+    const catBg=BAL_CAT_BG[cat]||'#374151';
+    const total=items.length;
+    const catDiff=names.reduce((s,n)=>{
+      const stock=items.filter(d=>d.name===n).length;
+      const target=MASTER[n]||0;
+      return s+(stock-target);
+    },0);
+    const diffStr=(catDiff>0?'+':'')+catDiff;
+
+    html+=`<div style="border-radius:8px;overflow:hidden;flex:${Math.max(total,3)};min-width:120px;background:${catBg}18;border:1px solid ${catBg}44">`;
+    html+=`<div style="padding:4px 8px;background:${catBg};display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:10px;font-weight:700;color:#fff">${cat}</span>
+      <span style="font-size:9px;color:rgba(255,255,255,.75)">${total}台 ${diffStr}</span>
     </div>`;
-  }).join('');
+    html+=`<div style="display:flex;flex-wrap:wrap;gap:2px;padding:3px">`;
+
+    names.sort((a,b)=>items.filter(d=>d.name===b).length-items.filter(d=>d.name===a).length)
+    .forEach(name=>{
+      const its=items.filter(d=>d.name===name);
+      const stock=its.length;
+      const target=MASTER[name]||0;
+      const avgDays=its.filter(d=>d.days!=null).reduce((s,d,_,a)=>s+d.days/a.length,0)||0;
+      const avgProfit=its.filter(d=>d.profit!=null).reduce((s,d,_,a)=>s+d.profit/a.length,0)||0;
+      const diff=stock-target;
+
+      let val,valStr,sub;
+      if(BAL_VIEW==='diff'){val=diff;valStr=(diff>0?'+':'')+diff+'台';sub='目標'+target+'台';}
+      else if(BAL_VIEW==='days'){val=Math.round(avgDays);valStr=Math.round(avgDays)+'日';sub=stock+'台';}
+      else{val=Math.round(avgProfit);valStr=Math.round(avgProfit)+'万';sub=stock+'台';}
+
+      const {bg,tc}=getBalColor(val,BAL_VIEW);
+      const sz=Math.max(stock*13,52);
+
+      html+=`<div style="border-radius:4px;background:${bg};width:${sz}px;height:${sz}px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:3px;overflow:hidden;transition:filter .15s"
+        onmouseover="this.style.filter='brightness(1.1)';showBalTip(event,'${name}',${stock},${target},${Math.round(avgDays)},${Math.round(avgProfit)})"
+        onmouseout="this.style.filter='';hideBalTip()"
+        onclick="selectBalVehicle('${name}')">
+        <div style="font-size:9px;font-weight:500;color:${tc};text-align:center;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">${name}</div>
+        <div style="font-size:${sz>70?14:11}px;font-weight:700;color:${tc};line-height:1;margin:2px 0">${valStr}</div>
+        <div style="font-size:8px;color:${tc};opacity:.8">${sub}</div>
+      </div>`;
+    });
+    html+='</div></div>';
+  });
+
+  document.getElementById('balanceOverview').innerHTML=html;
+
+  // サマリー更新
+  const allNames=[...new Set(STOCK.map(d=>d.name))].filter(Boolean);
+  const surplus=[],shortage=[],normal=[];
+  allNames.forEach(n=>{
+    const stock=STOCK.filter(d=>d.name===n).length;
+    const target=MASTER[n]||0;
+    const diff=stock-target;
+    if(diff>1)surplus.push(n);
+    else if(diff<-1)shortage.push(n);
+    else normal.push(n);
+  });
+  document.getElementById('balSurplusVal').textContent=surplus.length+'車種';
+  document.getElementById('balNormalVal').textContent=normal.length+'車種';
+  document.getElementById('balShortageVal').textContent=shortage.length+'車種';
+  document.getElementById('balSurplusNames').textContent=surplus.slice(0,3).join('・')+(surplus.length>3?'他':'');
+  document.getElementById('balNormalNames').textContent='';
+  document.getElementById('balShortageNames').textContent=shortage.slice(0,3).join('・')+(shortage.length>3?'他':'');
+
+  // 凡例
+  const lgDefs={
+    diff:{cells:['#b91c1c','#fca5a5','#d1fae5','#10b981','#059669'],min:'過剰（−2以上）',max:'不足（+2以上）'},
+    days:{cells:['#d1fae5','#6ee7b7','#fbbf24','#f97316','#dc2626'],min:'短期（〜30日）',max:'長期（120日〜）'},
+    profit:{cells:['#fef3c7','#6ee7b7','#10b981','#059669'],min:'低利益',max:'高利益'},
+  };
+  const lg=lgDefs[BAL_VIEW];
+  const lgEl=document.getElementById('balLgCells');
+  if(lgEl)lgEl.innerHTML=lg.cells.map(c=>`<div style="width:18px;height:11px;border-radius:2px;background:${c}"></div>`).join('');
+  if(document.getElementById('balLgMin'))document.getElementById('balLgMin').textContent=lg.min;
+  if(document.getElementById('balLgMax'))document.getElementById('balLgMax').textContent=lg.max;
+}
+
+function getMasterData(){
+  const master={};
+  if(typeof MASTER_SHEET!=='undefined'){
+    MASTER_SHEET.forEach(r=>{if(r.name)master[r.name]=Number(r.target)||0;});
+  }
+  return master;
+}
+
+function showBalTip(e,name,stock,target,days,profit){
+  const tip=document.getElementById('balTip');
+  if(!tip)return;
+  const diff=stock-target;
+  const status=diff>1?'過剰 ▲':diff<-1?'不足 ▼':'適正 ✓';
+  tip.innerHTML=`<b>${name}</b><br>在庫: ${stock}台 ／ 目標: ${target}台 ／ 過不足: ${diff>0?'+':''}${diff} ${status}<br>平均在庫日数: ${days}日 ／ 平均利益: ${profit}万`;
+  tip.style.display='block';
+  tip.style.left=Math.min(e.clientX+14,window.innerWidth-200)+'px';
+  tip.style.top=(e.clientY-60)+'px';
+}
+function hideBalTip(){
+  const tip=document.getElementById('balTip');
+  if(tip)tip.style.display='none';
 }
 
 function selectBalVehicle(name){
-  document.getElementById('balName').value=name;
-  renderBalanceDetail();
+  renderBalanceDetail(name);
 }
 
-function renderBalanceDetail(){
-  const name=document.getElementById('balName').value;
+function renderBalanceDetail(nameArg){
+  const name=nameArg||'';
   if(!name){document.getElementById('balanceDetail').style.display='none';return;}
   document.getElementById('balanceDetail').style.display='block';
   document.getElementById('balDetailTitle').textContent=`📊 ${name} 在庫構成分析`;
