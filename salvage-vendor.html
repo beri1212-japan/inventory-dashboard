@@ -6,65 +6,97 @@
 <title>廃車見積もり - INDIO</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#f0f4f8;font-family:'Hiragino Sans','Meiryo',sans-serif;font-size:14px;color:#1a2332;min-height:100vh}
-.hdr{background:#dc2626;padding:12px 16px;text-align:center;position:sticky;top:0;z-index:10}
-.hdr-title{font-size:14px;font-weight:700;color:#fff}
-.hdr-sub{font-size:10px;color:rgba(255,255,255,.75);margin-top:2px}
-.wrap{max-width:420px;margin:0 auto;padding:12px}
-.card{background:#fff;border-radius:10px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
-.sec-title{font-size:12px;font-weight:700;color:#1e3a5f;margin-bottom:10px;padding-left:8px;border-left:3px solid #dc2626}
+body{background:#f0f4f8;font-family:'Hiragino Sans','Meiryo',sans-serif;font-size:13px;color:#1a2332;min-height:100vh}
+.hdr{background:#dc2626;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10}
+.hdr-title{font-size:13px;font-weight:700;color:#fff}
+.hdr-sub{font-size:10px;color:rgba(255,255,255,.75)}
+.hdr-count{font-size:10px;color:rgba(255,255,255,.8);background:rgba(255,255,255,.2);padding:2px 8px;border-radius:10px}
+.wrap{max-width:480px;margin:0 auto;padding:8px 10px}
+/* サマリーバー */
+.summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px}
+.sum-item{background:#fff;border-radius:7px;padding:7px 10px;text-align:center;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.sum-val{font-size:18px;font-weight:700;font-family:monospace}
+.sum-lbl{font-size:9px;color:#8a9aaa;margin-top:1px}
 /* 案件カード */
-.job-card{background:#fff;border-radius:10px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden;border:0.5px solid #e0e8f0}
-.job-hdr{padding:10px 14px;border-bottom:0.5px solid #f0f4f8;display:flex;justify-content:space-between;align-items:center}
-.job-name{font-size:13px;font-weight:700}
-.job-sub{font-size:11px;color:#4a6070;margin-top:1px}
-.job-body{padding:12px 14px}
-.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
-.info-item{background:#f7f9fc;border-radius:6px;padding:6px 8px}
-.info-lbl{font-size:9px;color:#8a9aaa;margin-bottom:1px}
-.info-val{font-size:12px;font-weight:500}
-.memo-box{background:#fff8e1;border-radius:6px;padding:7px 10px;font-size:11px;color:#92400e;margin-bottom:10px}
-.photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
-.photo-lbl{font-size:9px;color:#4a6070;text-align:center;margin-bottom:3px}
-.photo-img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:7px;border:0.5px solid #d8e2ec;cursor:pointer}
-.photo-placeholder{width:100%;aspect-ratio:4/3;background:#f0f4f8;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#d8e2ec}
-/* 回答済み表示 */
-.answered-box{background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
-.answered-amount{font-size:18px;font-weight:700;color:#16a34a}
-.answered-lbl{font-size:11px;color:#16a34a}
-/* 見積もり入力 */
-.input-box{background:#f7f9fc;border-radius:8px;padding:10px 12px}
-.lbl{font-size:11px;color:#4a6070;margin-bottom:4px;font-weight:500}
+.job{background:#fff;border-radius:8px;margin-bottom:6px;box-shadow:0 1px 2px rgba(0,0,0,.05);overflow:hidden;border-left:3px solid #e0e0e0}
+.job.unanswered{border-left-color:#dc2626}
+.job.answered{border-left-color:#16a34a}
+.job.decided{border-left-color:#2979d4;opacity:.75}
+.job-main{padding:8px 10px;display:flex;align-items:center;gap:8px;cursor:pointer}
+.job-info{flex:1;min-width:0}
+.job-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.job-meta{font-size:10px;color:#8a9aaa;margin-top:2px;display:flex;gap:6px;flex-wrap:wrap}
+.job-meta span{white-space:nowrap}
+.job-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0}
+.badge{font-size:9px;font-weight:600;padding:2px 7px;border-radius:8px;white-space:nowrap}
+.badge-un{background:#fee2e2;color:#dc2626}
+.badge-an{background:#dcfce7;color:#16a34a}
+.badge-de{background:#dbeafe;color:#2979d4}
+.my-amount{font-size:13px;font-weight:700;color:#16a34a;font-family:monospace}
+.notified-time{font-size:9px;color:#8a9aaa}
+/* 展開パネル */
+.job-detail{display:none;padding:0 10px 10px;border-top:1px solid #f0f4f8}
+.job-detail.open{display:block}
+.memo-box{background:#fff8e1;border-radius:6px;padding:6px 8px;font-size:11px;color:#92400e;margin-bottom:8px}
+/* 入力フォーム */
+.input-box{background:#f7f9fc;border-radius:7px;padding:8px 10px}
+.lbl{font-size:10px;color:#4a6070;margin-bottom:3px;font-weight:500}
 .req{color:#dc2626}
-.amount-wrap{display:flex;align-items:center;gap:6px;margin-bottom:8px}
-.amount-wrap input{flex:1;padding:10px;border:1px solid #d8e2ec;border-radius:8px;font-size:16px;font-weight:500;text-align:right;background:#fff;color:#1a2332}
-.amount-wrap input:focus{outline:none;border-color:#dc2626}
-textarea{width:100%;padding:8px 10px;border:1px solid #d8e2ec;border-radius:8px;font-size:12px;color:#1a2332;font-family:inherit;resize:none;background:#fff}
+.amount-row{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.amount-row input{flex:1;padding:9px 10px;border:1px solid #d8e2ec;border-radius:7px;font-size:15px;font-weight:600;text-align:right;background:#fff;color:#1a2332}
+.amount-row input:focus{outline:none;border-color:#dc2626}
+.amount-unit{font-size:12px;color:#4a6070}
+textarea{width:100%;padding:7px 9px;border:1px solid #d8e2ec;border-radius:7px;font-size:11px;color:#1a2332;font-family:inherit;resize:none;background:#fff}
 textarea:focus{outline:none;border-color:#dc2626}
-.btn-submit{width:100%;background:#dc2626;color:#fff;border:none;padding:11px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;margin-top:8px;font-family:inherit}
+.btn-submit{width:100%;background:#dc2626;color:#fff;border:none;padding:9px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:700;margin-top:6px;font-family:inherit}
+.btn-submit.modify{background:#d97706}
 .btn-submit:disabled{background:#9ca3af}
-.badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px}
-.badge-unanswered{background:#fef3c7;color:#d97706}
-.badge-answered{background:#dcfce7;color:#16a34a}
-.empty{text-align:center;padding:40px;color:#8a9aaa;font-size:13px}
-/* 写真拡大 */
-.photo-zoom{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:100;align-items:center;justify-content:center}
+/* 写真ボタン */
+.btn-photo{background:#f0f4f8;color:#4a6070;border:0.5px solid #d8e2ec;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:10px;width:100%;margin-bottom:6px}
+/* 写真モーダル */
+.photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.photo-item-lbl{font-size:9px;color:#4a6070;text-align:center;margin-bottom:2px}
+.photo-img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px;border:0.5px solid #d8e2ec;cursor:pointer}
+.photo-placeholder{width:100%;aspect-ratio:4/3;background:#f0f4f8;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#d8e2ec}
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:90}
+.modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:10px;padding:14px;width:92%;max-width:400px;z-index:100}
+.modal.show,.modal-ov.show{display:block}
+.photo-zoom{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:110;align-items:center;justify-content:center}
 .photo-zoom.show{display:flex}
 .photo-zoom img{max-width:95vw;max-height:90vh;object-fit:contain;border-radius:6px}
-.photo-zoom-close{position:absolute;top:16px;right:16px;color:#fff;font-size:28px;cursor:pointer}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a2332;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:200;display:none}
+.photo-zoom-close{position:absolute;top:14px;right:14px;color:#fff;font-size:26px;cursor:pointer}
+.empty{text-align:center;padding:30px;color:#8a9aaa;font-size:12px}
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#1a2332;color:#fff;padding:8px 18px;border-radius:16px;font-size:12px;z-index:200;display:none;white-space:nowrap}
 .toast.show{display:block}
 </style>
 </head>
 <body>
 
 <div class="hdr">
-  <div class="hdr-title">廃車見積もり依頼</div>
-  <div class="hdr-sub" id="vendorLabel">株式会社INDIO</div>
+  <div>
+    <div class="hdr-title">廃車見積もり</div>
+    <div class="hdr-sub" id="vendorLabel">株式会社INDIO</div>
+  </div>
+  <span class="hdr-count" id="jobCount">—件</span>
 </div>
 
-<div class="wrap" id="mainWrap">
-  <div class="empty">読み込み中...</div>
+<div class="wrap">
+  <div class="summary">
+    <div class="sum-item"><div class="sum-val" id="s-total" style="color:#1e3a5f">—</div><div class="sum-lbl">依頼合計</div></div>
+    <div class="sum-item"><div class="sum-val" id="s-un" style="color:#dc2626">—</div><div class="sum-lbl">未回答</div></div>
+    <div class="sum-item"><div class="sum-val" id="s-an" style="color:#16a34a">—</div><div class="sum-lbl">回答済</div></div>
+  </div>
+  <div id="jobList"><div class="empty">読み込み中...</div></div>
+</div>
+
+<!-- 写真モーダル -->
+<div class="modal-ov" id="modalOv" onclick="closePhotoModal()"></div>
+<div class="modal" id="photoModal">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <span style="font-size:12px;font-weight:600" id="photoModalTitle">車両写真</span>
+    <span onclick="closePhotoModal()" style="cursor:pointer;color:#8a9aaa;font-size:18px">×</span>
+  </div>
+  <div class="photo-grid" id="photoGrid"></div>
 </div>
 
 <!-- 写真拡大 -->
@@ -76,124 +108,165 @@ textarea:focus{outline:none;border-color:#dc2626}
 <div class="toast" id="toast"></div>
 
 <script>
-const GAS_URL   = 'https://script.google.com/macros/s/AKfycbz1F9RX3jy6JyDNYwdDT3AZnGmMqZNSp2wMsLw9MTezePvnzaCB-J2U-gmDcDi38FOhUg/exec';
-const params    = new URLSearchParams(location.search);
-const vehicleId = params.get('id');    // 単一案件の場合
-const vendorKey = params.get('vendor');
-const VENDOR_MAP= { vendor_a:'業者A', vendor_b:'業者B', vendor_c:'業者C' };
-const vendorName= VENDOR_MAP[vendorKey] || vendorKey || '業者';
+const GAS_URL    = 'https://script.google.com/macros/s/AKfycbz1F9RX3jy6JyDNYwdDT3AZnGmMqZNSp2wMsLw9MTezePvnzaCB-J2U-gmDcDi38FOhUg/exec';
+const params     = new URLSearchParams(location.search);
+const vendorKey  = params.get('vendor');
+const VENDOR_MAP = { vendor_a:'業者A', vendor_b:'業者B', vendor_c:'業者C' };
+const vendorName = VENDOR_MAP[vendorKey] || vendorKey || '業者';
 
 document.getElementById('vendorLabel').textContent = `株式会社INDIO ｜ ${vendorName} 専用`;
 
+let ALL_VEHICLES = [];
+
 async function init() {
   if (!vendorKey) {
-    document.getElementById('mainWrap').innerHTML = '<div class="empty">URLが無効です</div>';
+    document.getElementById('jobList').innerHTML = '<div class="empty">URLが無効です</div>';
     return;
   }
   try {
-    // 全車両データを取得
-    const res      = await fetch(`${GAS_URL}?action=getVehicles`);
-    const vehicles = await res.json();
+    const res = await fetch(`${GAS_URL}?action=getVehicles`);
+    ALL_VEHICLES = await res.json();
 
-    if (vehicleId) {
-      // 単一案件モード（旧来の通知URLからのアクセス）
-      const v = vehicles.find(x => x.id === vehicleId);
-      if (!v) throw new Error('案件が見つかりません');
-      renderSingle(v);
-    } else {
-      // 業者専用一覧モード
-      // この業者に通知された案件のみ表示
-      const myJobs = vehicles.filter(v =>
-        (v.status || '').includes(vendorName) || v.estimates?.some(e => e.vendor === vendorName)
-      );
-      renderList(myJobs);
+    // この業者に通知された案件のみ
+    const myJobs = ALL_VEHICLES.filter(v =>
+      (v.status||'').includes(vendorName) || v.estimates?.some(e => e.vendor === vendorName)
+    );
+
+    // 未回答→回答済→移送済の順
+    myJobs.sort((a,b) => {
+      const aAns = a.estimates?.some(e => e.vendor===vendorName && e.amount>0);
+      const bAns = b.estimates?.some(e => e.vendor===vendorName && e.amount>0);
+      if (aAns !== bAns) return aAns - bAns;
+      return b.id.localeCompare(a.id);
+    });
+
+    const total = myJobs.length;
+    const un    = myJobs.filter(v => !v.estimates?.some(e => e.vendor===vendorName && e.amount>0)).length;
+    const an    = total - un;
+
+    document.getElementById('s-total').textContent = total;
+    document.getElementById('s-un').textContent    = un;
+    document.getElementById('s-an').textContent    = an;
+    document.getElementById('jobCount').textContent = total + '件';
+
+    if (!myJobs.length) {
+      document.getElementById('jobList').innerHTML = '<div class="empty">現在依頼中の案件はありません</div>';
+      return;
     }
+
+    document.getElementById('jobList').innerHTML = myJobs.map(v => renderJob(v)).join('');
   } catch(e) {
-    document.getElementById('mainWrap').innerHTML = `<div class="empty">エラー: ${e.message}</div>`;
+    document.getElementById('jobList').innerHTML = `<div class="empty">エラー: ${e.message}</div>`;
   }
 }
 
-function renderList(vehicles) {
-  const wrap = document.getElementById('mainWrap');
-  if (!vehicles.length) {
-    wrap.innerHTML = '<div class="card"><div class="empty">現在依頼中の案件はありません</div></div>';
-    return;
-  }
+function renderJob(v) {
+  const myEst     = v.estimates?.find(e => e.vendor === vendorName && e.amount > 0);
+  const answered  = !!myEst;
+  const decided   = v.status === '移送済';
 
-  // 未回答を上に
-  const sorted = [...vehicles].sort((a,b) => {
-    const aAns = a.estimates?.some(e => e.vendor === vendorName && e.amount > 0);
-    const bAns = b.estimates?.some(e => e.vendor === vendorName && e.amount > 0);
-    return aAns - bAns;
-  });
+  // 通知日時を見積もりシートから取得
+  const notifyEst = v.estimates?.find(e => e.vendor === vendorName);
+  const notifiedAt = notifyEst?.notifiedAt || '';
 
-  wrap.innerHTML = `
-    <div style="font-size:12px;color:#4a6070;margin-bottom:10px;text-align:center">
-      依頼案件: ${vehicles.length}件 ／ 未回答: ${vehicles.filter(v => !v.estimates?.some(e => e.vendor===vendorName && e.amount>0)).length}件
-    </div>
-    ${sorted.map(v => renderJobCard(v)).join('')}`;
-}
+  const cls    = decided ? 'decided' : answered ? 'answered' : 'unanswered';
+  const badge  = decided
+    ? `<span class="badge badge-de">移送済</span>`
+    : answered
+    ? `<span class="badge badge-an">回答済</span>`
+    : `<span class="badge badge-un">未回答</span>`;
 
-function renderJobCard(v) {
-  const myEst    = v.estimates?.find(e => e.vendor === vendorName && e.amount > 0);
-  const answered = !!myEst;
-  const photoHtml= ['front','rear','interior','caution'].map((t,i) => {
-    const labels = ['前','後','室内','コーション'];
-    const url    = v.photos?.[t];
-    return `<div>
-      <div class="photo-lbl">${labels[i]}</div>
-      ${url
-        ? `<img class="photo-img" src="${url}" onclick="openZoom('${url}')" onerror="this.parentElement.innerHTML='<div class=photo-placeholder>📷</div>'">`
-        : `<div class="photo-placeholder">📷</div>`}
+  const amountDisp = answered
+    ? `<span class="my-amount">¥${Number(myEst.amount).toLocaleString()}</span>`
+    : '';
+
+  const inputBox = `
+    <div class="input-box">
+      <div class="lbl">${answered ? '見積もり金額（修正可）' : '見積もり金額'}<span class="req">*</span></div>
+      <div class="amount-row">
+        <input type="number" id="amt-${v.id}" placeholder="35000" inputmode="numeric" value="${answered ? myEst.amount : ''}">
+        <span class="amount-unit">円</span>
+      </div>
+      <div class="lbl">コメント（任意）</div>
+      <textarea id="cmt-${v.id}" rows="2" placeholder="パーツ状態など">${answered ? (myEst.comment||'') : ''}</textarea>
+      <button class="btn-submit ${answered?'modify':''}" id="btn-${v.id}" onclick="submitEstimate('${v.id}')">${answered ? '金額を修正する' : '送信する'}</button>
     </div>`;
-  }).join('');
 
-  return `<div class="job-card">
-    <div class="job-hdr">
-      <div>
-        <div class="job-name">${v.maker} ${v.carName} <span style="font-size:10px;color:#8a9aaa">下4桁:${v.lower4||'—'}</span></div>
-        <div class="job-sub">${Number(v.mileage).toLocaleString()}km</div>
-      </div>
-      <span class="badge ${answered ? 'badge-answered' : 'badge-unanswered'}">${answered ? '回答済' : '未回答'}</span>
-    </div>
-    <div class="job-body">
-      ${v.memo ? `<div class="memo-box">${v.memo}</div>` : ''}
-      <div class="photo-grid">${photoHtml}</div>
-      <div class="input-box">
-        <div class="lbl">${answered ? '見積もり金額（修正可）' : '見積もり金額'}<span class="req">*</span></div>
-        <div class="amount-wrap">
-          <input type="number" id="amt-${v.id}" placeholder="35000" inputmode="numeric" value="${answered ? myEst.amount : ''}">
-          <span style="font-size:12px;color:#4a6070">円</span>
+  const memoHtml = v.memo ? `<div class="memo-box">${v.memo}</div>` : '';
+
+  return `<div class="job ${cls}" id="job-${v.id}">
+    <div class="job-main" onclick="toggleDetail('${v.id}')">
+      <div class="job-info">
+        <div class="job-name">${v.maker} ${v.carName}　下4桁:${v.lower4||'—'}</div>
+        <div class="job-meta">
+          <span>🚗 ${Number(v.mileage).toLocaleString()}km</span>
+          <span>📅 依頼: ${notifiedAt||v.createdAt||'—'}</span>
         </div>
-        <div class="lbl">コメント（任意）</div>
-        <textarea id="cmt-${v.id}" rows="2" placeholder="パーツ状態など">${answered ? (myEst.comment||'') : ''}</textarea>
-        <button class="btn-submit" id="btn-${v.id}" onclick="submitEstimate('${v.id}','${v.id}')">${answered ? '金額を修正する' : '送信する'}</button>
       </div>
+      <div class="job-right">
+        ${badge}
+        ${amountDisp}
+      </div>
+    </div>
+    <div class="job-detail" id="det-${v.id}">
+      ${memoHtml}
+      <button class="btn-photo" onclick="showPhotos('${v.id}');event.stopPropagation()">📷 写真を確認する</button>
+      ${!decided ? inputBox : '<div style="text-align:center;font-size:11px;color:#2979d4;padding:6px">✅ この案件は移送済みです</div>'}
     </div>
   </div>`;
 }
 
-function renderSingle(v) {
-  document.getElementById('mainWrap').innerHTML = renderJobCard(v);
+function toggleDetail(id) {
+  const det = document.getElementById(`det-${id}`);
+  det.classList.toggle('open');
 }
 
-async function submitEstimate(vehicleId, elemId) {
-  const amount = document.getElementById(`amt-${elemId}`).value;
+function showPhotos(vehicleId) {
+  const v = ALL_VEHICLES.find(x => x.id === vehicleId);
+  if (!v) return;
+  document.getElementById('photoModalTitle').textContent = `${v.maker} ${v.carName}`;
+  const labels = { front:'前', rear:'後', interior:'室内', caution:'コーション' };
+  document.getElementById('photoGrid').innerHTML = Object.entries(labels).map(([k,l]) => `
+    <div>
+      <div class="photo-item-lbl">${l}</div>
+      ${v.photos?.[k]
+        ? `<img class="photo-img" src="${v.photos[k]}" onclick="openZoom('${v.photos[k]}')" onerror="this.parentElement.innerHTML='<div class=photo-placeholder>📷</div>'">`
+        : `<div class="photo-placeholder">📷</div>`}
+    </div>`).join('');
+  document.getElementById('photoModal').classList.add('show');
+  document.getElementById('modalOv').classList.add('show');
+}
+
+function closePhotoModal() {
+  document.getElementById('photoModal').classList.remove('show');
+  document.getElementById('modalOv').classList.remove('show');
+}
+
+function openZoom(url) {
+  document.getElementById('zoomImg').src = url;
+  document.getElementById('photoZoom').classList.add('show');
+}
+function closeZoom() {
+  document.getElementById('photoZoom').classList.remove('show');
+}
+
+async function submitEstimate(vehicleId) {
+  const amount = document.getElementById(`amt-${vehicleId}`).value;
   if (!amount || Number(amount) <= 0) { showToast('金額を入力してください'); return; }
 
-  const btn = document.getElementById(`btn-${elemId}`);
+  const btn = document.getElementById(`btn-${vehicleId}`);
   btn.disabled = true;
   btn.textContent = '送信中...';
 
   try {
     const res  = await fetch(GAS_URL, {
-      method:'POST',
+      method: 'POST',
       body: JSON.stringify({
         action:     'submitEstimate',
         vehicleId,
         vendorName,
         amount:     Number(amount),
-        comment:    document.getElementById(`cmt-${elemId}`).value,
+        comment:    document.getElementById(`cmt-${vehicleId}`).value,
       })
     });
     const data = await res.json();
@@ -207,13 +280,6 @@ async function submitEstimate(vehicleId, elemId) {
   }
 }
 
-function openZoom(url) {
-  document.getElementById('zoomImg').src = url;
-  document.getElementById('photoZoom').classList.add('show');
-}
-function closeZoom() {
-  document.getElementById('photoZoom').classList.remove('show');
-}
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
