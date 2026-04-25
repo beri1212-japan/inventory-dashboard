@@ -428,7 +428,7 @@ function showPhotos(vehicleId) {
   const v = VEHICLES.find(x => x.id === vehicleId);
   if (!v) return;
   document.getElementById('modalTitle').textContent = `${v.maker} ${v.carName}`;
-  const labels = { front:'前', rear:'後', interior:'室内', caution:'コーション' };
+  const labels = { front:'前', rear:'後', interior:'室内', caution:'コーション', shakken:'車検証' };
   document.getElementById('modalPhotos').innerHTML = Object.entries(labels).map(([k,l]) => `
     <div>
       <div class="photo-lbl">${l}</div>
