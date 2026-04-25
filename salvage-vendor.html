@@ -230,7 +230,7 @@ function showPhotos(vehicleId) {
     <div>
       <div class="photo-item-lbl">${l}</div>
       ${v.photos?.[k]
-        ? `<img class="photo-img" src="${v.photos[k]}" onclick="openZoom('${v.photos[k]}')" onerror="this.parentElement.innerHTML='<div class=photo-placeholder>📷</div>'">`
+        ? `<img class="photo-img" src="${v.photos[k]}" onclick="openZoom('${v.photos[k]}')" onerror="this.src=this.src.includes('lh3')?'https://drive.google.com/uc?export=view&id='+this.src.split('/d/')[1].split('=')[0]:this.parentElement.innerHTML='<div class=photo-placeholder>📷</div>'">`
         : `<div class="photo-placeholder">📷</div>`}
     </div>`).join('');
   document.getElementById('photoModal').classList.add('show');
