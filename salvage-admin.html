@@ -41,12 +41,18 @@ body{background:#f0f4f8;font-family:'Hiragino Sans','Meiryo',sans-serif;font-siz
 .radio-item.selected{background:#dbeafe;border-color:#2979d4}
 .radio-item input{accent-color:#2979d4;width:14px;height:14px;cursor:pointer}
 .radio-item label{font-size:12px;cursor:pointer;flex:1}
+.check-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;cursor:pointer;border:0.5px solid #d8e2ec;background:#fff;transition:all .15s}
+.check-item.selected{background:#dbeafe;border-color:#2979d4}
+.check-item input{accent-color:#2979d4;width:14px;height:14px;cursor:pointer}
+.check-item label{font-size:12px;cursor:pointer;flex:1}
 .btn-notify{width:100%;background:#059669;color:#fff;border:none;padding:8px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:500}
 .btn-notify:hover{opacity:.9}
 /* アクションボタン */
 .btn-row{display:flex;gap:6px}
 .btn-transfer{flex:1;background:#2979d4;color:#fff;border:none;padding:7px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:500}
 .btn-detail{flex:1;background:#f0f4f8;color:#4a6070;border:0.5px solid #d8e2ec;padding:7px;border-radius:7px;cursor:pointer;font-size:11px}
+.btn-order{flex:1;background:#d97706;color:#fff;border:none;padding:7px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:500}
+.btn-order:hover{opacity:.9}
 /* 写真モーダル */
 .modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:90}
 .modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:12px;padding:16px;width:90%;max-width:480px;max-height:85vh;overflow-y:auto;z-index:100}
@@ -168,20 +174,23 @@ function renderCard(v) {
       <div class="vendor-select-title">通知する業者を選択（1社のみ）</div>
       <div class="radio-group" id="rg-${v.id}">
         ${VENDORS.map((vd,i) => `
-          <div class="radio-item ${notifiedVendor === vd.name ? 'selected' : ''}" id="ri-${v.id}-${i}" onclick="selectVendor('${v.id}',${i})">
-            <input type="radio" name="v-${v.id}" id="r-${v.id}-${i}" value="${vd.name}" ${notifiedVendor === vd.name ? 'checked' : ''}>
+          <div class="check-item ${v.status?.includes(vd.name)?'selected':''}" id="ri-${v.id}-${i}" onclick="toggleVendor('${v.id}',${i})">
+            <input type="checkbox" id="r-${v.id}-${i}" value="${vd.name}" ${v.status?.includes(vd.name)?'checked':''}>
             <label for="r-${v.id}-${i}">${vd.name}</label>
-            ${v.estimates.find(e => e.vendor === vd.name)
+            ${v.estimates.find(e=>e.vendor===vd.name)
               ? `<span style="font-size:10px;color:#16a34a">回答済</span>`
               : v.status?.includes(vd.name) ? `<span style="font-size:10px;color:#d97706">通知済</span>` : ''}
           </div>`).join('')}
       </div>
-      <button class="btn-notify" onclick="notifyVendor('${v.id}')">✉ 選択業者にChatwork通知</button>
+      <button class="btn-notify" onclick="notifyVendors('${v.id}')">✉ 選択業者に一括Chatwork通知</button>
     </div>` : '';
 
   const actionHtml = !isTransferred
     ? `<div class="btn-row">
-        ${v.bestAmount > 0 ? `<button class="btn-transfer" onclick="transferVehicle('${v.id}')">在庫管理表へ移送</button>` : ''}
+        ${v.bestAmount > 0 ? `
+          <button class="btn-transfer" onclick="transferVehicle('${v.id}')">在庫管理表へ移送</button>
+          <button class="btn-order" onclick="sendOrderNotice('${v.id}','${v.bestVendor}',${v.bestAmount})">✉ 発注通知</button>
+        ` : ''}
         <button class="btn-detail" onclick="showPhotos('${v.id}')">写真・詳細</button>
        </div>`
     : `<div style="text-align:center;font-size:11px;color:#2979d4;padding:4px">✅ 在庫管理表へ移送済み</div>`;
@@ -202,28 +211,28 @@ function renderCard(v) {
   </div>`;
 }
 
-function selectVendor(vehicleId, idx) {
-  const rg = document.getElementById(`rg-${vehicleId}`);
-  rg.querySelectorAll('.radio-item').forEach(el => el.classList.remove('selected'));
-  document.getElementById(`ri-${vehicleId}-${idx}`).classList.add('selected');
-  document.getElementById(`r-${vehicleId}-${idx}`).checked = true;
+function toggleVendor(vehicleId, idx) {
+  const item = document.getElementById(`ri-${vehicleId}-${idx}`);
+  const cb   = document.getElementById(`r-${vehicleId}-${idx}`);
+  cb.checked = !cb.checked;
+  item.classList.toggle('selected', cb.checked);
 }
 
-async function notifyVendor(vehicleId) {
-  const checked = document.querySelector(`input[name="v-${vehicleId}"]:checked`);
-  if (!checked) { showToast('業者を選択してください'); return; }
-  const vendorName = checked.value;
-  if (!confirm(`「${vendorName}」にChatworkで通知しますか？`)) return;
+async function notifyVendors(vehicleId) {
+  const rg       = document.getElementById(`rg-${vehicleId}`);
+  const checked  = Array.from(rg.querySelectorAll('input[type=checkbox]:checked')).map(c => c.value);
+  if (!checked.length) { showToast('業者を1社以上選択してください'); return; }
+  if (!confirm(`「${checked.join('・')}」にChatworkで通知しますか？`)) return;
 
   showToast('通知中...');
   try {
     const res  = await fetch(GAS_URL, {
       method:'POST',
-      body: JSON.stringify({ action:'notifyVendor', vehicleId, vendorName })
+      body: JSON.stringify({ action:'notifyVendors', vehicleId, vendorNames: checked })
     });
     const data = await res.json();
     if (!data.success) throw new Error(data.error);
-    showToast(`✅ ${vendorName}に通知しました！`);
+    showToast(`✅ ${checked.join('・')}に通知しました！`);
     setTimeout(loadData, 1500);
   } catch(e) {
     showToast('エラー: ' + e.message);
@@ -274,6 +283,30 @@ function openZoom(url) {
 }
 function closeZoom() {
   document.getElementById('photoZoom').classList.remove('show');
+}
+
+async function sendOrderNotice(vehicleId, vendorName, amount) {
+  if (!vendorName) { showToast('見積もり回答がありません'); return; }
+  if (!confirm(`「${vendorName}」に発注通知を送りますか？\n金額: ¥${Number(amount).toLocaleString()}`)) return;
+
+  showToast('送信中...');
+  try {
+    const res  = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action:      'notifyVendor',
+        vehicleId,
+        vendorName,
+        orderNotice: true,
+        bestAmount:  amount
+      })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    showToast(`✅ ${vendorName}に発注通知を送りました！`);
+  } catch(e) {
+    showToast('エラー: ' + e.message);
+  }
 }
 
 function showToast(msg) {
