@@ -116,7 +116,7 @@ textarea{resize:none;line-height:1.5}
           <div class="photo-text">タップして撮影</div>
         </div>
         <button class="photo-del" onclick="removePhoto('front')">×</button>
-        <input type="file" id="photo-front" class="photo-input" accept="image/*" capture="environment" onchange="previewPhoto(this,'front')">
+        <input type="file" id="photo-front" class="photo-input" accept="image/*" onchange="previewPhoto(this,'front')">
       </div>
       <div class="photo-item">
         <div class="photo-lbl">後</div>
@@ -125,7 +125,7 @@ textarea{resize:none;line-height:1.5}
           <div class="photo-text">タップして撮影</div>
         </div>
         <button class="photo-del" onclick="removePhoto('rear')">×</button>
-        <input type="file" id="photo-rear" class="photo-input" accept="image/*" capture="environment" onchange="previewPhoto(this,'rear')">
+        <input type="file" id="photo-rear" class="photo-input" accept="image/*" onchange="previewPhoto(this,'rear')">
       </div>
       <div class="photo-item">
         <div class="photo-lbl">室内</div>
@@ -134,7 +134,7 @@ textarea{resize:none;line-height:1.5}
           <div class="photo-text">タップして撮影</div>
         </div>
         <button class="photo-del" onclick="removePhoto('interior')">×</button>
-        <input type="file" id="photo-interior" class="photo-input" accept="image/*" capture="environment" onchange="previewPhoto(this,'interior')">
+        <input type="file" id="photo-interior" class="photo-input" accept="image/*" onchange="previewPhoto(this,'interior')">
       </div>
       <div class="photo-item">
         <div class="photo-lbl">コーション</div>
@@ -143,7 +143,16 @@ textarea{resize:none;line-height:1.5}
           <div class="photo-text">タップして撮影</div>
         </div>
         <button class="photo-del" onclick="removePhoto('caution')">×</button>
-        <input type="file" id="photo-caution" class="photo-input" accept="image/*" capture="environment" onchange="previewPhoto(this,'caution')">
+        <input type="file" id="photo-caution" class="photo-input" accept="image/*" onchange="previewPhoto(this,'caution')">
+      </div>
+      <div class="photo-item">
+        <div class="photo-lbl">車検証</div>
+        <div class="photo-box" id="box-shakken" onclick="document.getElementById('photo-shakken').click()">
+          <div class="photo-icon">📷</div>
+          <div class="photo-text">タップして撮影</div>
+        </div>
+        <button class="photo-del" onclick="removePhoto('shakken')">×</button>
+        <input type="file" id="photo-shakken" class="photo-input" accept="image/*" onchange="previewPhoto(this,'shakken')">
       </div>
     </div>
   </div>
@@ -211,7 +220,7 @@ const CAR_LIST = {
   'その他':  ['その他'],
 };
 
-const photos = { front: null, rear: null, interior: null, caution: null };
+const photos = { front: null, rear: null, interior: null, caution: null, shakken: null };
 let vehicleId = null;
 
 loadStaff();
@@ -355,7 +364,7 @@ function resetForm() {
   document.getElementById('mileage').value  = '';
   document.getElementById('cost').value     = '';
   document.getElementById('memo').value     = '';
-  ['front','rear','interior','caution'].forEach(t => removePhoto(t));
+  ['front','rear','interior','caution','shakken'].forEach(t => removePhoto(t));
   vehicleId = null;
   const btn = document.getElementById('submitBtn');
   btn.disabled = false;
