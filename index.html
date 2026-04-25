@@ -304,7 +304,71 @@ tbody tr:hover td{background:var(--accent-bg)!important;}
   
 </div>
 
-<!-- PAGE 5: 売約分析 -->
+<!-- PAGE 5: 車種バランス -->
+<div class="page" id="page-balance">
+  <!-- フィルタ -->
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+    <select id="balCat" onchange="renderBalance()" style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg2);color:var(--text)">
+      <option value="">全ジャンル</option>
+      <option>ミニバン</option><option>SUV</option><option>HVCP</option><option>軽</option>
+    </select>
+    <select id="balName" onchange="renderBalanceDetail()" style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg2);color:var(--text);flex:1;min-width:160px">
+      <option value="">▼ 車種を選択して詳細表示</option>
+    </select>
+    <span style="font-size:11px;color:var(--text3)">カードをクリックでも詳細表示</span>
+  </div>
+
+  <!-- 車種カード一覧 -->
+  <div id="balanceOverview" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:16px"></div>
+
+  <!-- 詳細分析パネル -->
+  <div id="balanceDetail" style="display:none">
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px" id="balDetailTitle">詳細分析</div>
+
+      <!-- KPIサマリー -->
+      <div id="balKpiRow" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px"></div>
+
+      <!-- チャート 2列 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div style="background:var(--bg);border-radius:8px;padding:10px">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">📅 年式分布</div>
+          <div id="balYearChart"></div>
+        </div>
+        <div style="background:var(--bg);border-radius:8px;padding:10px">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">💰 価格帯分布</div>
+          <div id="balPriceChart"></div>
+        </div>
+        <div style="background:var(--bg);border-radius:8px;padding:10px">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">🚗 走行距離分布</div>
+          <div id="balKmChart"></div>
+        </div>
+        <div style="background:var(--bg);border-radius:8px;padding:10px">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">🎨 色分布</div>
+          <div id="balColorChart"></div>
+        </div>
+      </div>
+
+      <!-- 在庫日数分布 -->
+      <div style="background:var(--bg);border-radius:8px;padding:10px;margin-bottom:10px">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">⏰ 在庫日数分布</div>
+        <div id="balDaysChart"></div>
+      </div>
+
+      <!-- 在庫vs売約比較 -->
+      <div style="background:var(--bg);border-radius:8px;padding:10px">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px" id="balCompareTitle">📊 在庫 vs 売約 年式比較</div>
+        <div style="display:flex;gap:8px;margin-bottom:6px">
+          <span style="font-size:10px;display:flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:2px;background:#2979d4;display:inline-block"></span>在庫</span>
+          <span style="font-size:10px;display:flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:2px;background:#16a34a;display:inline-block"></span>売約</span>
+        </div>
+        <div id="balCompareChart"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 6: 売約分析 -->
 <div class="page" id="page-sold">
   <div class="four-col">
     <div class="kpi"><div class="kpi-lbl">総売約台数</div><div class="kpi-val" id="kpi-total" style="color:var(--green)">—</div><div class="kpi-sub">全期間</div></div>
@@ -856,9 +920,58 @@ function renderBalanceDetail(){
   const name=document.getElementById('balName').value;
   if(!name){document.getElementById('balanceDetail').style.display='none';return;}
   document.getElementById('balanceDetail').style.display='block';
+  document.getElementById('balDetailTitle').textContent=`📊 ${name} 在庫構成分析`;
   document.getElementById('balCompareTitle').textContent=`📊 ${name}: 在庫 vs 売約 年式比較`;
   const items=STOCK.filter(d=>d.name===name);
   const soldItems=SOLD.filter(d=>d.name===name);
+
+  // KPIサマリー
+  const avgP=items.filter(d=>d.price!=null).reduce((s,d,_,a)=>s+d.price/a.length,0)||0;
+  const avgKm=items.filter(d=>d.km!=null).reduce((s,d,_,a)=>s+d.km/a.length,0)||0;
+  const avgDays=items.filter(d=>d.days!=null).reduce((s,d,_,a)=>s+d.days/a.length,0)||0;
+  const hvCnt=items.filter(d=>d.hv==='〇').length;
+  const fwdCnt=items.filter(d=>d.fwd==='〇').length;
+  document.getElementById('balKpiRow').innerHTML=`
+    <div style="background:var(--bg2);border-radius:7px;padding:8px;text-align:center">
+      <div style="font-size:10px;color:var(--text3)">在庫台数</div>
+      <div style="font-size:20px;font-weight:700;color:#2979d4">${items.length}</div>
+      <div style="font-size:10px;color:var(--text3)">台</div>
+    </div>
+    <div style="background:var(--bg2);border-radius:7px;padding:8px;text-align:center">
+      <div style="font-size:10px;color:var(--text3)">平均価格</div>
+      <div style="font-size:20px;font-weight:700;color:#7c3aed">${avgP>0?avgP.toFixed(0):'—'}</div>
+      <div style="font-size:10px;color:var(--text3)">万円</div>
+    </div>
+    <div style="background:var(--bg2);border-radius:7px;padding:8px;text-align:center">
+      <div style="font-size:10px;color:var(--text3)">平均走行</div>
+      <div style="font-size:20px;font-weight:700;color:#d97706">${avgKm>0?(avgKm/10000).toFixed(1):'—'}</div>
+      <div style="font-size:10px;color:var(--text3)">万km</div>
+    </div>
+    <div style="background:var(--bg2);border-radius:7px;padding:8px;text-align:center">
+      <div style="font-size:10px;color:var(--text3)">平均在庫日数</div>
+      <div style="font-size:20px;font-weight:700;color:#dc2626">${avgDays>0?Math.round(avgDays):'—'}</div>
+      <div style="font-size:10px;color:var(--text3)">日</div>
+    </div>
+    <div style="background:var(--bg2);border-radius:7px;padding:8px;text-align:center">
+      <div style="font-size:10px;color:var(--text3)">HV台数</div>
+      <div style="font-size:20px;font-weight:700;color:#1d4ed8">${hvCnt}</div>
+      <div style="font-size:10px;color:var(--text3)">台</div>
+    </div>
+    <div style="background:var(--bg2);border-radius:7px;padding:8px;text-align:center">
+      <div style="font-size:10px;color:var(--text3)">4WD台数</div>
+      <div style="font-size:20px;font-weight:700;color:#065f46">${fwdCnt}</div>
+      <div style="font-size:10px;color:var(--text3)">台</div>
+    </div>
+    <div style="background:var(--bg2);border-radius:7px;padding:8px;text-align:center">
+      <div style="font-size:10px;color:var(--text3)">売約実績</div>
+      <div style="font-size:20px;font-weight:700;color:#16a34a">${soldItems.length}</div>
+      <div style="font-size:10px;color:var(--text3)">台</div>
+    </div>
+    <div style="background:var(--bg2);border-radius:7px;padding:8px;text-align:center">
+      <div style="font-size:10px;color:var(--text3)">回転率</div>
+      <div style="font-size:20px;font-weight:700;color:#0891b2">${items.length>0?(soldItems.length/items.length).toFixed(1):'—'}</div>
+      <div style="font-size:10px;color:var(--text3)">倍</div>
+    </div>`;
 
   // 年式分布
   const yc={};items.forEach(d=>{yc[d.year]=(yc[d.year]||0)+1;});
@@ -877,6 +990,17 @@ function renderBalanceDetail(){
   const cc={};items.forEach(d=>{if(d.color&&d.color!='nan'&&d.color.length>0)cc[d.color]=(cc[d.color]||0)+1;});
   balBarChart('balColorChart',Object.entries(cc).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([k,v])=>({l:k,v})),'#0891b2');
 
+  // 在庫日数分布
+  const dc={'~30日':0,'31~60日':0,'61~100日':0,'101~150日':0,'151日~':0};
+  items.filter(d=>d.days!=null).forEach(d=>{
+    if(d.days<=30)dc['~30日']++;
+    else if(d.days<=60)dc['31~60日']++;
+    else if(d.days<=100)dc['61~100日']++;
+    else if(d.days<=150)dc['101~150日']++;
+    else dc['151日~']++;
+  });
+  balBarChart('balDaysChart',Object.entries(dc).filter(([,v])=>v>0).map(([l,v])=>({l,v,color:l==='151日~'?'#dc2626':l==='101~150日'?'#d97706':'#2979d4'})),'#2979d4',true);
+
   // 在庫vs売約
   const syc={};items.forEach(d=>{syc[d.year]=(syc[d.year]||0)+1;});
   const sdyc={};soldItems.forEach(d=>{sdyc[d.year]=(sdyc[d.year]||0)+1;});
@@ -888,13 +1012,19 @@ function renderBalanceDetail(){
     if(sdyc[y])cmpData.push({l:`売${y}`,v:sdyc[y],color:'#16a34a'});
   });
   balBarChart2('balCompareChart',cmpData);
+
+  // スクロール
+  document.getElementById('balanceDetail').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
-function balBarChart(id,items,color){
+function balBarChart(id,items,color,useItemColor){
   const el=document.getElementById(id);if(!el)return;
   if(!items.length){el.innerHTML='<div style="color:var(--text3);font-size:11px;padding:8px">データなし</div>';return;}
   const max=Math.max(...items.map(i=>i.v),1);
-  el.innerHTML=items.map(({l,v})=>`<div class="brow"><div class="blbl" title="${l}">${l}</div><div class="btrack"><div class="bfill" style="width:${Math.round(v/max*100)}%;background:${color}">${v}</div></div></div>`).join('');
+  el.innerHTML=items.map(({l,v,color:ic})=>{
+    const c=useItemColor&&ic?ic:color;
+    return `<div class="brow"><div class="blbl" title="${l}">${l}</div><div class="btrack"><div class="bfill" style="width:${Math.round(v/max*100)}%;background:${c}">${v}</div></div></div>`;
+  }).join('');
 }
 
 function balBarChart2(id,items){
