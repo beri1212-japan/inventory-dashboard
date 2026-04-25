@@ -225,7 +225,7 @@ function showPhotos(vehicleId) {
   const v = ALL_VEHICLES.find(x => x.id === vehicleId);
   if (!v) return;
   document.getElementById('photoModalTitle').textContent = `${v.maker} ${v.carName}`;
-  const labels = { front:'前', rear:'後', interior:'室内', caution:'コーション' };
+  const labels = { front:'前', rear:'後', interior:'室内', caution:'コーション', shakken:'車検証' };
   document.getElementById('photoGrid').innerHTML = Object.entries(labels).map(([k,l]) => `
     <div>
       <div class="photo-item-lbl">${l}</div>
