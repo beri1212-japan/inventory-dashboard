@@ -111,7 +111,7 @@ textarea:focus{outline:none;border-color:#dc2626}
 const GAS_URL    = 'https://script.google.com/macros/s/AKfycbz1F9RX3jy6JyDNYwdDT3AZnGmMqZNSp2wMsLw9MTezePvnzaCB-J2U-gmDcDi38FOhUg/exec';
 const params     = new URLSearchParams(location.search);
 const vendorKey  = params.get('vendor');
-const VENDOR_MAP = { vendor_a:'業者A', vendor_b:'業者B', vendor_c:'業者C' };
+const VENDOR_MAP = { vendor_a:'ハセガワ自動車', vendor_b:'オートリサイクル', vendor_c:'**' };
 const vendorName = VENDOR_MAP[vendorKey] || vendorKey || '業者';
 
 document.getElementById('vendorLabel').textContent = `株式会社INDIO ｜ ${vendorName} 専用`;
