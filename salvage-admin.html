@@ -389,7 +389,7 @@ function toggleVendor(vehicleId, idx) {
   item.classList.toggle('selected', cb.checked);
 }
 
-async async function notifyVendors(vehicleId, mode) {
+async function notifyVendors(vehicleId, mode) {
   let checked;
   if (mode === 'tbl') {
     checked = VENDORS.map((vd,i) => document.getElementById(`tr-${vehicleId}-${i}`))
