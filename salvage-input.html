@@ -168,6 +168,30 @@ textarea{resize:none;line-height:1.5}
 // GAS WebApp URL（デプロイ後に更新）
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbz1F9RX3jy6JyDNYwdDT3AZnGmMqZNSp2wMsLw9MTezePvnzaCB-J2U-gmDcDi38FOhUg/exec';
 
+// 担当者リストをスプシから読み込み
+async function loadStaff() {
+  try {
+    const res  = await fetch(`${GAS_URL}?action=getStaff`);
+    const data = await res.json();
+    const sel  = document.getElementById('staff');
+    sel.innerHTML = '<option value="">選択してください</option>';
+    data.forEach(s => {
+      const o = document.createElement('option');
+      o.value = o.textContent = s.name;
+      sel.appendChild(o);
+    });
+  } catch(e) {
+    // フォールバック：ハードコード
+    const sel = document.getElementById('staff');
+    sel.innerHTML = '<option value="">選択してください</option>';
+    ['川縁','担当者B','担当者C'].forEach(n => {
+      const o = document.createElement('option');
+      o.value = o.textContent = n;
+      sel.appendChild(o);
+    });
+  }
+}
+
 const CAR_LIST = {
   'トヨタ':  ['ヴォクシー80系','ヴォクシー90系','ノア80系','ノア90系','シエンタ','アクア前期','アクア後期','プリウス50前期','プリウス50後期','ハリアー80','ランクル','その他'],
   'ホンダ':  ['N-BOX','N-BOXカスタム','フリード','ステップワゴン','ヴェゼル','フィット','その他'],
@@ -182,6 +206,8 @@ const CAR_LIST = {
 
 const photos = { front: null, rear: null, interior: null, caution: null };
 let vehicleId = null;
+
+loadStaff();
 
 function updateCarList() {
   const maker = document.getElementById('maker').value;
@@ -252,6 +278,8 @@ async function submitForm() {
   const carName = document.getElementById('carName').value;
   const mileage = document.getElementById('mileage').value;
 
+  const staff = document.getElementById('staff').value;
+  if (!staff) { showToast('担当者を選択してください'); return; }
   if (!maker || !carName || carName === '選択してください') { showToast('メーカーと車種を選択してください'); return; }
   if (!mileage) { showToast('走行距離を入力してください'); return; }
 
@@ -272,6 +300,7 @@ async function submitForm() {
         cost:    Number(document.getElementById('cost').value) || 0,
         memo:    document.getElementById('memo').value,
         lower4:  document.getElementById('lower4').value.trim(),
+        staff:   document.getElementById('staff').value,
       })
     });
     const data = await res.json();
@@ -311,6 +340,7 @@ async function submitForm() {
 }
 
 function resetForm() {
+  loadStaff();
   document.getElementById('formWrap').style.display  = 'block';
   document.getElementById('successWrap').style.display = 'none';
   document.getElementById('maker').value    = '';
