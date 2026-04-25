@@ -342,12 +342,81 @@ function notifyVendor(data) {
 //  複数業者への一括通知
 // ============================================================
 function notifyVendors(data) {
-  const results = [];
-  const vendors = data.vendorNames || [];
-  for (const vendorName of vendors) {
-    const result = notifyVendor({ ...data, vendorName });
-    results.push({ vendorName, ...result });
+  const ss     = SpreadsheetApp.openById(SALVAGE_SS_ID);
+  const vSheet = ss.getSheetByName(SHEET_VEHICLES);
+  const vendors= ss.getSheetByName(SHEET_VENDORS);
+  const eSheet = ss.getSheetByName(SHEET_ESTIMATES);
+
+  // 車両情報取得
+  const vData = vSheet.getDataRange().getValues();
+  let vehicle = null;
+  let vRow    = -1;
+  for (let i = 1; i < vData.length; i++) {
+    if (vData[i][0] === data.vehicleId) {
+      vehicle = vData[i];
+      vRow    = i + 1;
+      break;
+    }
   }
+  if (!vehicle) return { success: false, error: '車両が見つかりません' };
+
+  // 業者マスタ取得
+  const vendorData = vendors.getDataRange().getValues();
+  const targetVendors = data.vendorNames || [];
+  const now = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm');
+  const eData = eSheet.getDataRange().getValues();
+  const results = [];
+
+  // 各業者にChatwork通知＋見積もりシートに通知日時を記録
+  for (const vendorName of targetVendors) {
+    let vendor = null;
+    for (let i = 1; i < vendorData.length; i++) {
+      if (vendorData[i][0] === vendorName) { vendor = vendorData[i]; break; }
+    }
+    if (!vendor) { results.push({ vendorName, success:false, error:'業者なし' }); continue; }
+
+    const vendorUrl = 'https://beri1212-japan.github.io/inventory-dashboard/salvage-vendor.html?id=' + data.vehicleId + '&vendor=' + vendor[2];
+    const roomId    = vendor[1] || CW_ROOM_ID;
+    const msg       = data.orderNotice
+      ? '＜決定通知＞\n車名：' + vehicle[3] + '\n下4桁：' + (vehicle[12]||'—') + '\n買取金額：¥' + Number(data.bestAmount).toLocaleString()
+      : '＜廃車見積もり依頼＞\n車種：' + vehicle[3] + '\n下4桁：' + (vehicle[12]||'—') + '\n\n【見積もり入力はこちら】\n' + vendorUrl;
+
+    notifyChatwork(roomId, msg);
+
+    // 見積もりシート更新
+    let found = false;
+    for (let i = 1; i < eData.length; i++) {
+      if (eData[i][0] === data.vehicleId && eData[i][1] === vendorName) {
+        eSheet.getRange(i + 1, 6).setValue(now);
+        found = true;
+        break;
+      }
+    }
+    if (!found) eSheet.appendRow([data.vehicleId, vendorName, '', '', '', now]);
+
+    results.push({ vendorName, success: true });
+  }
+
+  // 状態を一括更新（全業者まとめて）
+  const currentStatus = String(vSheet.getRange(vRow, 14).getValue() || '');
+  let existingVendors = [];
+  if (currentStatus.startsWith('通知済')) {
+    const m = currentStatus.match(/通知済（(.+)）/);
+    if (m) existingVendors = m[1].split('・');
+  }
+  // 新業者を追加（重複排除）
+  targetVendors.forEach(v => {
+    if (!existingVendors.includes(v)) existingVendors.push(v);
+  });
+
+  let newStatus;
+  if (currentStatus === '回答済' || currentStatus === '移送済') {
+    newStatus = currentStatus;
+  } else {
+    newStatus = '通知済（' + existingVendors.join('・') + '）';
+  }
+  vSheet.getRange(vRow, 14).setValue(newStatus);
+
   return { success: true, results };
 }
 
