@@ -1,514 +1,616 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>廃車見積もり管理 - INDIO</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:#f0f4f8;font-family:'Hiragino Sans','Meiryo',sans-serif;font-size:13px;color:#1a2332}
-.hdr{background:#1e3a5f;padding:0 16px;height:48px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
-.hdr-title{font-size:14px;font-weight:700;color:#fff}
-.hdr-right{display:flex;align-items:center;gap:10px}
-.hdr-count{font-size:11px;color:rgba(255,255,255,.6)}
-.btn-add{background:#dc2626;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500}
-.main{max-width:1200px;margin:0 auto;padding:12px 16px}
-.card{background:#fff;border-radius:10px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden}
-.card-hdr{padding:10px 14px;border-bottom:1px solid #f0f4f8;display:flex;justify-content:space-between;align-items:center}
-.car-name{font-size:14px;font-weight:700}
-.car-sub{font-size:11px;color:#4a6070;margin-top:1px}
-.status-badge{font-size:10px;font-weight:600;padding:2px 10px;border-radius:10px;white-space:nowrap}
-.s-unnotified{background:#fee2e2;color:#dc2626}
-.s-notified{background:#fef3c7;color:#d97706}
-.s-answered{background:#dcfce7;color:#16a34a}
-.s-transferred{background:#e8f0fb;color:#2979d4}
-.card-body{padding:10px 14px}
-/* 見積もり表示 */
-.estimates{margin-bottom:10px}
-.est-row{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border-radius:6px;margin-bottom:4px}
-.est-row.best{background:#dcfce7;border:1px solid #86efac}
-.est-row.normal{background:#f7f9fc}
-.est-row.pending{background:#fff;border:1px dashed #d8e2ec}
-.est-vendor{font-size:12px;font-weight:500}
-.est-amount{font-size:14px;font-weight:700}
-.est-best{font-size:11px;color:#16a34a}
-.est-pending{font-size:11px;color:#8a9aaa}
-/* 業者選択 */
-.vendor-select{background:#f7f9fc;border-radius:8px;padding:10px 12px;margin-bottom:8px}
-.vendor-select-title{font-size:11px;font-weight:600;color:#4a6070;margin-bottom:8px}
-.radio-group{display:flex;flex-direction:column;gap:5px;margin-bottom:8px}
-.radio-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;cursor:pointer;border:0.5px solid #d8e2ec;background:#fff;transition:all .15s}
-.radio-item.selected{background:#dbeafe;border-color:#2979d4}
-.radio-item input{accent-color:#2979d4;width:14px;height:14px;cursor:pointer}
-.radio-item label{font-size:12px;cursor:pointer;flex:1}
-.check-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;cursor:pointer;border:0.5px solid #d8e2ec;background:#fff;transition:all .15s}
-.check-item.selected{background:#dbeafe;border-color:#2979d4}
-.check-item input{accent-color:#2979d4;width:14px;height:14px;cursor:pointer}
-.check-item label{font-size:12px;cursor:pointer;flex:1}
-.btn-notify{width:100%;background:#059669;color:#fff;border:none;padding:8px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:500}
-.btn-notify:hover{opacity:.9}
-/* アクションボタン */
-.btn-row{display:flex;gap:6px}
-.btn-transfer{flex:1;background:#2979d4;color:#fff;border:none;padding:7px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:500}
-.btn-detail{flex:1;background:#f0f4f8;color:#4a6070;border:0.5px solid #d8e2ec;padding:7px;border-radius:7px;cursor:pointer;font-size:11px}
-.btn-order{flex:1;background:#d97706;color:#fff;border:none;padding:7px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:500}
-.btn-order:hover{opacity:.9}
-/* 写真モーダル */
-.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:90}
-.modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:12px;padding:16px;width:90%;max-width:480px;max-height:85vh;overflow-y:auto;z-index:100}
-.modal.show,.modal-ov.show{display:block}
-.modal-title{font-size:14px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between}
-.modal-close{cursor:pointer;color:#8a9aaa;font-size:20px;line-height:1}
-.photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.photo-img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;cursor:pointer}
-.photo-placeholder{width:100%;aspect-ratio:4/3;background:#f0f4f8;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#d8e2ec}
-.photo-lbl{font-size:10px;color:#4a6070;margin-bottom:3px;text-align:center}
-/* 写真拡大 */
-.photo-zoom{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:110;align-items:center;justify-content:center}
-.photo-zoom.show{display:flex}
-.photo-zoom img{max-width:95vw;max-height:90vh;object-fit:contain;border-radius:6px}
-.photo-zoom-close{position:absolute;top:16px;right:16px;color:#fff;font-size:28px;cursor:pointer}
-.empty{text-align:center;padding:40px;color:#8a9aaa}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a2332;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:200;display:none;white-space:nowrap}
+// ============================================================
+//  廃車見積もりシステム GASスクリプト
+// ============================================================
 
-/* PC テーブルビュー */
-.tbl-view{display:none}
-.tbl-view table{width:100%;border-collapse:collapse;font-size:12px}
-.tbl-view thead th{background:#1e3a5f;color:#fff;padding:8px 10px;text-align:left;font-size:11px;font-weight:600;white-space:nowrap;border-right:1px solid rgba(255,255,255,.1)}
-.tbl-view tbody tr{border-bottom:1px solid #e8f0f8;transition:background .1s}
-.tbl-view tbody tr:hover{background:#f0f7ff}
-.tbl-view td{padding:8px 10px;vertical-align:middle;border-right:1px solid #e8f0f8}
-.tbl-view td:first-child{font-weight:500}
-.est-cell{display:flex;flex-direction:column;gap:2px}
-.est-row-tbl{display:flex;justify-content:space-between;align-items:center;padding:2px 6px;border-radius:4px;font-size:11px}
-.est-row-tbl.best{background:#dcfce7;color:#16a34a;font-weight:600}
-.est-row-tbl.normal{color:#4a6070}
-.est-row-tbl.pending{color:#d97706}
-.vendor-tbl{display:flex;flex-direction:column;gap:3px}
-.check-tbl{display:flex;align-items:center;gap:5px;padding:3px 6px;border-radius:4px;cursor:pointer;font-size:11px;border:0.5px solid #d8e2ec;background:#fff}
-.check-tbl.selected{background:#dbeafe;border-color:#2979d4;color:#1d4ed8}
-.check-tbl input{accent-color:#2979d4;width:12px;height:12px}
-.btn-notify-sm{background:#059669;color:#fff;border:none;padding:4px 8px;border-radius:5px;cursor:pointer;font-size:10px;font-weight:500;margin-top:3px;width:100%}
-.btn-transfer-sm{background:#2979d4;color:#fff;border:none;padding:4px 8px;border-radius:5px;cursor:pointer;font-size:10px;font-weight:500;width:100%}
-.btn-order-sm{background:#d97706;color:#fff;border:none;padding:4px 8px;border-radius:5px;cursor:pointer;font-size:10px;font-weight:500;width:100%;margin-top:3px}
-.btn-detail-sm{background:#f0f4f8;color:#4a6070;border:0.5px solid #d8e2ec;padding:4px 8px;border-radius:5px;cursor:pointer;font-size:10px;width:100%;margin-top:3px}
-@media(min-width:768px){
-  .tbl-view{display:block}
-  .card-view{display:none}
-}
-.toast.show{display:block}
-.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-left:4px}
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:16px}
-.stats-card{background:#fff;border-radius:10px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
-.stats-name{font-size:13px;font-weight:700;color:#1e3a5f;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #e8f0f8}
-.stats-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px;border-bottom:0.5px solid #f0f4f8}
-.stats-row:last-child{border-bottom:none}
-.stats-lbl{color:#4a6070}
-.stats-val{font-weight:600;font-family:monospace}
-.stats-val.green{color:#16a34a}
-.stats-val.blue{color:#2979d4}
-.stats-val.amber{color:#d97706}
-.rate-bar{height:6px;background:#f0f4f8;border-radius:3px;overflow:hidden;margin-top:4px}
-.rate-fill{height:100%;background:#16a34a;border-radius:3px;transition:width .3s}
-@keyframes spin{to{transform:rotate(360deg)}}
-</style>
-</head>
-<body>
+const SALVAGE_SS_ID     = '15BY3fvVXoriNPMhP4xL4gAboVuRCVo72cjvDVdB5Vlc';
+const DRIVE_FOLDER_ID   = '1AKJR6RwAqgvCddCfFF4zI8FFhQPEjxbo';
+const CW_TOKEN          = '06939e888744b5916e60ac56bc892730';
+const CW_ROOM_ID        = '330229752';
 
-<div class="hdr">
-  <div class="hdr-title">廃車見積もり管理</div>
-  <div class="hdr-right">
-    <div style="display:flex;gap:4px;margin-right:8px">
-      <button id="tab-list" onclick="switchTab('list')" style="background:rgba(255,255,255,.3);color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:600">案件一覧</button>
-      <button id="tab-stats" onclick="switchTab('stats')" style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:11px">業者実績</button>
-    </div>
-    <span class="hdr-count" id="vehicleCount">—件</span>
-    <button class="btn-add" onclick="location.href='salvage-input.html'">＋ 新規登録</button>
-    <button style="background:rgba(255,255,255,.15);color:#fff;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px" onclick="loadData()">🔄 更新</button>
-  </div>
-</div>
+// シート名
+const SHEET_VEHICLES    = '廃車台帳';
+const SHEET_ESTIMATES   = '見積もり';
+const SHEET_VENDORS     = '業者マスタ';
 
-<div class="main">
-  <!-- PC: テーブルビュー -->
-  <div class="tbl-view" id="tblContent"></div>
-  <!-- スマホ: カードビュー -->
-  <div class="card-view" id="mainContent">
-  <div class="empty">読み込み中...</div>
-</div>
+// ============================================================
+//  初期設定：シートとヘッダーを作成
+// ============================================================
+function setupSheets() {
+  const ss = SpreadsheetApp.openById(SALVAGE_SS_ID);
 
-  </div><!-- /card-view -->
-
-  <!-- 業者実績パネル -->
-  <div id="statsPanel" style="display:none">
-    <div id="statsContent"></div>
-  </div>
-</div><!-- /main -->
-
-<!-- 写真モーダル -->
-<div class="modal-ov" id="modalOv" onclick="closeModal()"></div>
-<div class="modal" id="photoModal">
-  <div class="modal-title">
-    <span id="modalTitle">車両写真</span>
-    <span class="modal-close" onclick="closeModal()">×</span>
-  </div>
-  <div class="photo-grid" id="modalPhotos"></div>
-</div>
-
-<!-- 写真拡大 -->
-<div class="photo-zoom" id="photoZoom" onclick="closeZoom()">
-  <span class="photo-zoom-close">×</span>
-  <img id="zoomImg" src="">
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbz1F9RX3jy6JyDNYwdDT3AZnGmMqZNSp2wMsLw9MTezePvnzaCB-J2U-gmDcDi38FOhUg/exec';
-let VEHICLES  = [];
-let VENDORS   = [];
-
-function switchTab(tab) {
-  const isStats = tab === 'stats';
-  document.getElementById('tab-list').style.background  = isStats ? 'rgba(255,255,255,.1)' : 'rgba(255,255,255,.3)';
-  document.getElementById('tab-stats').style.background = isStats ? 'rgba(255,255,255,.3)' : 'rgba(255,255,255,.1)';
-  document.getElementById('tab-list').style.color  = isStats ? 'rgba(255,255,255,.7)' : '#fff';
-  document.getElementById('tab-stats').style.color = isStats ? '#fff' : 'rgba(255,255,255,.7)';
-  document.getElementById('tblContent').style.display   = isStats ? 'none' : '';
-  document.getElementById('mainContent').style.display  = isStats ? 'none' : '';
-  document.getElementById('statsPanel').style.display   = isStats ? 'block' : 'none';
-  if (isStats) renderStats();
-}
-
-function renderStats() {
-  if (!VEHICLES.length || !VENDORS.length) {
-    document.getElementById('statsContent').innerHTML = '<div class="empty">データがありません</div>';
-    return;
+  // 廃車台帳
+  let ws = ss.getSheetByName(SHEET_VEHICLES) || ss.insertSheet(SHEET_VEHICLES);
+  if (ws.getLastRow() === 0) {
+    ws.getRange(1, 1, 1, 18).setValues([[
+      'ID', '登録日時', 'メーカー', '車種名', '走行距離(km)', '原価(万)',
+      '備考', '写真_前', '写真_後', '写真_室内', '写真_コーション', '写真_車検証', '下4桁', '状態', '担当者',
+      '業者A金額', '業者B金額', '業者C金額'
+    ]]);
+    ws.getRange(1, 1, 1, 18).setFontWeight('bold').setBackground('#1e3a5f').setFontColor('#ffffff');
+    ws.setFrozenRows(1);
   }
 
-  const cards = VENDORS.map(vd => {
-    const name     = vd.name;
-    // この業者に通知した案件
-    const notified = VEHICLES.filter(v => (v.status||'').includes(name) || v.estimates?.some(e=>e.vendor===name));
-    const answered = notified.filter(v => v.estimates?.some(e=>e.vendor===name && e.amount>0));
-    const won      = VEHICLES.filter(v => v.bestVendor === name && v.bestAmount > 0);
-    const amounts  = answered.map(v => v.estimates.find(e=>e.vendor===name)?.amount || 0).filter(a=>a>0);
-    const avg      = amounts.length ? Math.round(amounts.reduce((a,b)=>a+b,0)/amounts.length) : 0;
-    const max      = amounts.length ? Math.max(...amounts) : 0;
-    const min      = amounts.length ? Math.min(...amounts) : 0;
-    const rate     = notified.length ? Math.round(answered.length/notified.length*100) : 0;
+  // 見積もりシート
+  let es = ss.getSheetByName(SHEET_ESTIMATES) || ss.insertSheet(SHEET_ESTIMATES);
+  if (es.getLastRow() === 0) {
+    es.getRange(1, 1, 1, 6).setValues([[
+      '車両ID', '業者名', '見積もり金額(円)', 'コメント', '回答日時', '通知日時'
+    ]]);
+    es.getRange(1, 1, 1, 6).setFontWeight('bold').setBackground('#1e3a5f').setFontColor('#ffffff');
+    es.setFrozenRows(1);
+  }
 
-    return `<div class="stats-card">
-      <div class="stats-name">🏢 ${name}</div>
-      <div class="stats-row"><span class="stats-lbl">依頼数</span><span class="stats-val">${notified.length}件</span></div>
-      <div class="stats-row"><span class="stats-lbl">回答数</span><span class="stats-val blue">${answered.length}件</span></div>
-      <div class="stats-row"><span class="stats-lbl">回答率</span><span class="stats-val ${rate>=80?'green':rate>=50?'amber':''}">    ${rate}%</span></div>
-      <div class="rate-bar"><div class="rate-fill" style="width:${rate}%"></div></div>
-      <div class="stats-row" style="margin-top:6px"><span class="stats-lbl">落札数</span><span class="stats-val green">${won.length}件</span></div>
-      <div class="stats-row"><span class="stats-lbl">平均金額</span><span class="stats-val">¥${avg.toLocaleString()}</span></div>
-      <div class="stats-row"><span class="stats-lbl">最高額</span><span class="stats-val green">¥${max.toLocaleString()}</span></div>
-      <div class="stats-row"><span class="stats-lbl">最低額</span><span class="stats-val amber">¥${min.toLocaleString()}</span></div>
-    </div>`;
-  }).join('');
-
-  document.getElementById('statsContent').innerHTML = `
-    <div style="font-size:11px;color:#4a6070;margin-bottom:10px">全${VEHICLES.length}件 / 業者${VENDORS.length}社の実績</div>
-    <div class="stats-grid">${cards}</div>`;
-}
-
-async function loadData() {
-  try {
-    const [vRes, vendorRes] = await Promise.all([
-      fetch(`${GAS_URL}?action=getVehicles`),
-      fetch(`${GAS_URL}?action=getVendors`)
+  // 業者マスタ
+  let vs = ss.getSheetByName(SHEET_VENDORS) || ss.insertSheet(SHEET_VENDORS);
+  if (vs.getLastRow() === 0) {
+    vs.getRange(1, 1, 1, 3).setValues([['業者名', 'ChatworkルームID', '専用URLキー']]);
+    vs.getRange(1, 1, 1, 3).setFontWeight('bold').setBackground('#1e3a5f').setFontColor('#ffffff');
+    vs.getRange(2, 1, 3, 3).setValues([
+      ['ハセガワ自動車',       '360729544', 'vendor_a'],
+      ['オートリサイクル',     '360302925', 'vendor_b'],
+      ['**',                   '',           'vendor_c'],
     ]);
-    VEHICLES = await vRes.json();
-    VENDORS  = await vendorRes.json();
-    renderAll();
-  } catch(e) {
-    document.getElementById('mainContent').innerHTML = `<div class="empty">読み込みエラー: ${e.message}</div>`;
+  }
+
+  // 車種マスタ（別途Excelからインポート）
+  let cm = ss.getSheetByName('車種マスタ') || ss.insertSheet('車種マスタ');
+  if (cm.getLastRow() === 0) {
+    cm.getRange(1, 1, 1, 3).setValues([['メーカー', '車種名', '排気量区分']]);
+    cm.getRange(1, 1, 1, 3).setFontWeight('bold').setBackground('#1e3a5f').setFontColor('#ffffff');
+  }
+
+  // 担当者マスタ
+  let ms = ss.getSheetByName('担当者マスタ') || ss.insertSheet('担当者マスタ');
+  if (ms.getLastRow() === 0) {
+    ms.getRange(1, 1, 1, 2).setValues([['担当者名', '備考']]);
+    ms.getRange(1, 1, 1, 2).setFontWeight('bold').setBackground('#1e3a5f').setFontColor('#ffffff');
+    ms.getRange(2, 1, 3, 1).setValues([['担当者A'],['担当者B'],['担当者C']]);
+  }
+
+  SpreadsheetApp.getUi().alert('✅ シート初期設定完了！');
+}
+
+// ============================================================
+//  Web API：doPost / doGet
+// ============================================================
+function doGet(e) {
+  const action = e.parameter.action || '';
+
+  if (action === 'getVehicles') {
+    return jsonResponse(getVehicles());
+  }
+  if (action === 'getVehicle') {
+    return jsonResponse(getVehicle(e.parameter.id));
+  }
+  if (action === 'getEstimates') {
+    return jsonResponse(getEstimates(e.parameter.vehicleId));
+  }
+  if (action === 'getVendors') {
+    return jsonResponse(getVendors());
+  }
+  if (action === 'getStaff') {
+    return jsonResponse(getStaff());
+  }
+  if (action === 'getCarMaster') {
+    return jsonResponse(getCarMaster());
+  }
+  return jsonResponse({error: 'Unknown action'});
+}
+
+function doPost(e) {
+  const data = JSON.parse(e.postData.contents);
+  const action = data.action || '';
+
+  if (action === 'registerVehicle') {
+    return jsonResponse(registerVehicle(data));
+  }
+  if (action === 'uploadPhoto') {
+    return jsonResponse(uploadPhoto(data));
+  }
+  if (action === 'submitEstimate') {
+    return jsonResponse(submitEstimate(data));
+  }
+  if (action === 'notifyVendor') {
+    return jsonResponse(notifyVendor(data));
+  }
+  if (action === 'notifyVendors') {
+    return jsonResponse(notifyVendors(data));
+  }
+  if (action === 'transferToInventory') {
+    return jsonResponse(transferToInventory(data));
+  }
+  return jsonResponse({error: 'Unknown action'});
+}
+
+// ============================================================
+//  車両登録
+// ============================================================
+function registerVehicle(data) {
+  const ss    = SpreadsheetApp.openById(SALVAGE_SS_ID);
+  const sheet = ss.getSheetByName(SHEET_VEHICLES);
+  const now   = new Date();
+  const id    = 'S' + Utilities.formatDate(now, 'Asia/Tokyo', 'yyyyMMddHHmmss');
+
+  sheet.appendRow([
+    id,
+    Utilities.formatDate(now, 'Asia/Tokyo', 'yyyy/MM/dd HH:mm'),
+    data.maker   || '',
+    data.carName || '',
+    data.mileage || '',
+    data.cost    || '',
+    data.memo    || '',
+    '', '', '', '', '',  // 写真URL（後でuploadPhotoで更新）
+    data.lower4  || '',
+    '未通知',
+    data.staff   || '',
+  ]);
+
+  return { success: true, id: id };
+}
+
+// ============================================================
+//  写真アップロード（Base64 → Google Drive）
+// ============================================================
+function uploadPhoto(data) {
+  const folder  = DriveApp.getFolderById(DRIVE_FOLDER_ID);
+  const bytes   = Utilities.base64Decode(data.base64);
+  const blob    = Utilities.newBlob(bytes, data.mimeType, data.fileName);
+  const file    = folder.createFile(blob);
+  // ファイルとフォルダの両方を公開設定
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  folder.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  // 直接表示用URLとサムネイルURL両方を試す形式
+  const fileId = file.getId();
+  const url = 'https://lh3.googleusercontent.com/d/' + fileId + '=s800';
+
+  // 廃車台帳の写真列を更新
+  const ss    = SpreadsheetApp.openById(SALVAGE_SS_ID);
+  const sheet = ss.getSheetByName(SHEET_VEHICLES);
+  const colMap = { 'front': 8, 'rear': 9, 'interior': 10, 'caution': 11, 'shakken': 12 };
+  const col   = colMap[data.photoType] || 8;
+
+  const values = sheet.getDataRange().getValues();
+  for (let i = 1; i < values.length; i++) {
+    if (values[i][0] === data.vehicleId) {
+      sheet.getRange(i + 1, col).setValue(url);
+      break;
+    }
+  }
+
+  return { success: true, url: url };
+}
+
+// ============================================================
+//  見積もり提出（業者から）
+// ============================================================
+function submitEstimate(data) {
+  const ss    = SpreadsheetApp.openById(SALVAGE_SS_ID);
+  const sheet = ss.getSheetByName(SHEET_ESTIMATES);
+  const now   = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm');
+
+  // 既存の見積もりを更新 or 新規追加
+  const values = sheet.getDataRange().getValues();
+  let updated  = false;
+  for (let i = 1; i < values.length; i++) {
+    if (values[i][0] === data.vehicleId && values[i][1] === data.vendorName) {
+      sheet.getRange(i + 1, 3, 1, 3).setValues([[data.amount, data.comment, now]]);
+      updated = true;
+      break;
+    }
+  }
+  if (!updated) {
+    sheet.appendRow([data.vehicleId, data.vendorName, data.amount, data.comment || '', now, '']);
+  }
+
+  // 廃車台帳の状態を更新
+  const vSheet = ss.getSheetByName(SHEET_VEHICLES);
+  const vData  = vSheet.getDataRange().getValues();
+  for (let i = 1; i < vData.length; i++) {
+    if (vData[i][0] === data.vehicleId) {
+      vSheet.getRange(i + 1, 14).setValue('回答済');
+      break;
+    }
+  }
+
+  // 廃車台帳のN列以降に業者金額を反映
+  updateVehicleEstimateCell(ss, data.vehicleId, data.vendorName, data.amount);
+
+  // Chatworkで担当者に通知
+  notifyChatwork(
+    CW_ROOM_ID,
+    `[info][title]廃車見積もり 回答あり[/title]` +
+    `車両ID: ${data.vehicleId}\n業者: ${data.vendorName}\n金額: ¥${Number(data.amount).toLocaleString()}\n` +
+    `コメント: ${data.comment || 'なし'}[/info]`
+  );
+
+  return { success: true };
+}
+
+// 廃車台帳のN列以降に業者金額を反映
+function updateVehicleEstimateCell(ss, vehicleId, vendorName, amount) {
+  const vSheet  = ss.getSheetByName(SHEET_VEHICLES);
+  const vendors = ss.getSheetByName(SHEET_VENDORS);
+
+  // 業者マスタから列番号を取得（N列=14列目から）
+  const vendorData = vendors.getDataRange().getValues();
+  let colIndex = -1;
+  for (let i = 1; i < vendorData.length; i++) {
+    if (vendorData[i][0] === vendorName) {
+      colIndex = 16 + (i - 1); // P列=16（車検証追加により+1）
+      break;
+    }
+  }
+  if (colIndex < 0) return;
+
+  // 車両行を探して金額をセット
+  const vData = vSheet.getDataRange().getValues();
+  for (let i = 1; i < vData.length; i++) {
+    if (vData[i][0] === vehicleId) {
+      vSheet.getRange(i + 1, colIndex).setValue(Number(amount));
+      // 数値書式を設定
+      vSheet.getRange(i + 1, colIndex).setNumberFormat('#,##0');
+      break;
+    }
   }
 }
 
-function renderAll() {
-  document.getElementById('vehicleCount').textContent = VEHICLES.length + '件';
-  if (!VEHICLES.length) {
-    document.getElementById('mainContent').innerHTML = '<div class="empty">登録された車両がありません</div>';
-    document.getElementById('tblContent').innerHTML = '<div class="empty" style="padding:20px">登録された車両がありません</div>';
-    return;
+// ============================================================
+//  業者への通知
+// ============================================================
+function notifyVendor(data) {
+  const ss     = SpreadsheetApp.openById(SALVAGE_SS_ID);
+  const vSheet = ss.getSheetByName(SHEET_VEHICLES);
+  const vendors= ss.getSheetByName(SHEET_VENDORS);
+
+  // 車両情報取得
+  const vData = vSheet.getDataRange().getValues();
+  let vehicle = null;
+  let vRow    = -1;
+  for (let i = 1; i < vData.length; i++) {
+    if (vData[i][0] === data.vehicleId) {
+      vehicle = vData[i];
+      vRow    = i + 1;
+      break;
+    }
   }
-  const sorted = VEHICLES.sort((a,b) => b.id.localeCompare(a.id));
-  document.getElementById('mainContent').innerHTML = sorted.map(v => renderCard(v)).join('');
-  document.getElementById('tblContent').innerHTML = renderTable(sorted);
-}
+  if (!vehicle) return { success: false, error: '車両が見つかりません' };
 
-function renderTable(vehicles) {
-  const rows = vehicles.map(v => {
-    const si = getStatusInfo(v);
-    const isTransferred = v.status === '移送済';
-    const notifiedVendor = (v.status||'').replace('通知済（','').replace('）','');
+  // 業者情報取得
+  const vendorData = vendors.getDataRange().getValues();
+  let vendor = null;
+  for (let i = 1; i < vendorData.length; i++) {
+    if (vendorData[i][0] === data.vendorName) {
+      vendor = vendorData[i];
+      break;
+    }
+  }
+  if (!vendor) return { success: false, error: '業者が見つかりません' };
 
-    // 見積もりセル
-    const estCells = VENDORS.map(vd => {
-      const est = v.estimates.find(e => e.vendor === vd.name && e.amount > 0);
-      const isBest = est && est.vendor === v.bestVendor;
-      if (est) return `<div class="est-row-tbl ${isBest?'best':'normal'}">${vd.name}: ¥${Number(est.amount).toLocaleString()} ${isBest?'🏆':''}</div>`;
-      const notified = (v.status||'').includes(vd.name);
-      return `<div class="est-row-tbl pending">${vd.name}: ${notified?'通知済・未回答':'—'}</div>`;
-    }).join('');
+  // 業者専用URL
+  const vendorUrl = `https://beri1212-japan.github.io/inventory-dashboard/salvage-vendor.html?id=${data.vehicleId}&vendor=${vendor[2]}`;
 
-    // 業者選択セル
-    const vendorChecks = !isTransferred ? VENDORS.map((vd,i) => `
-      <div class="check-tbl ${(v.status||'').includes(vd.name)?'selected':''}" id="tri-${v.id}-${i}" onclick="toggleVendorTbl('${v.id}',${i})">
-        <input type="checkbox" id="tr-${v.id}-${i}" value="${vd.name}" ${(v.status||'').includes(vd.name)?'checked':''}>
-        <label for="tr-${v.id}-${i}">${vd.name}</label>
-      </div>`).join('') + `<button class="btn-notify-sm" onclick="notifyVendors('${v.id}','tbl')">✉ 通知</button>` : '';
+  // 発注通知 or 見積もり依頼
+  const roomId = vendor[1] || CW_ROOM_ID;
+  const msg = data.orderNotice
+    ? `＜決定通知＞\n車名：${vehicle[3]}\n下4桁：${vehicle[11]||'—'}\n買取金額：¥${Number(data.bestAmount).toLocaleString()}`
+    : `＜廃車見積もり依頼＞\n車種：${vehicle[3]}\n下4桁：${vehicle[11]||'—'}\n\n【見積もり入力はこちら】\n${vendorUrl}`;
 
-    // アクションセル
-    const actions = isTransferred
-      ? `<div style="font-size:10px;color:#2979d4;text-align:center">✅移送済</div>`
-      : `${v.bestAmount>0?`<button class="btn-transfer-sm" onclick="transferVehicle('${v.id}')">在庫へ移送</button>`:``}
-         ${v.bestAmount>0?`<button class="btn-order-sm" onclick="sendOrderNotice('${v.id}','${v.bestVendor}',${v.bestAmount})">✉ 発注通知</button>`:''}
-         <button class="btn-detail-sm" onclick="showPhotos('${v.id}')">📷 写真</button>`;
+  notifyChatwork(roomId, msg);
 
-    return `<tr>
-      <td>
-        <div style="font-weight:700;font-size:15px;color:#1a2332;margin-bottom:4px">${v.maker} ${v.carName}</div>
-        <div style="font-size:12px;color:#1a2332;margin-bottom:3px">下4桁:${v.lower4||'—'} ／ ${Number(v.mileage).toLocaleString()}km</div>
-        <div style="font-size:12px;color:#1a2332;margin-bottom:3px">${formatDateTime(v.createdAt)}</div>
-        ${v.staff?`<div style="font-size:12px;color:#1a2332;margin-bottom:3px">👤 担当:${v.staff}</div>`:''}
-        ${v.memo?`<div style="font-size:12px;color:#4a6070;background:#fff8e1;padding:4px 6px;border-radius:4px;margin-top:5px">📝 ${v.memo}</div>`:''}
-      </td>
-      <td><span class="status-badge ${si.cls}">${si.label}</span></td>
-      <td><div class="est-cell">${estCells}</div></td>
-      <td><div class="vendor-tbl">${vendorChecks}</div></td>
-      <td><div style="display:flex;flex-direction:column;gap:3px;min-width:90px">${actions}</div></td>
-    </tr>`;
-  }).join('');
-
-  return `<table>
-    <thead>
-      <tr>
-        <th>車両情報</th>
-        <th>状態</th>
-        <th>見積もり状況</th>
-        <th>業者選択・通知</th>
-        <th>アクション</th>
-      </tr>
-    </thead>
-    <tbody>${rows}</tbody>
-  </table>`;
-}
-
-function toggleVendorTbl(vehicleId, idx) {
-  const item = document.getElementById(`tri-${vehicleId}-${idx}`);
-  const cb   = document.getElementById(`tr-${vehicleId}-${idx}`);
-  if (!item || !cb) return;
-  cb.checked = !cb.checked;
-  item.classList.toggle('selected', cb.checked);
-}
-
-function getStatusInfo(v) {
-  const s = v.status || '未通知';
-  if (s === '移送済') return { label:'移送済', cls:'s-transferred' };
-  if (v.estimates.some(e => e.amount > 0)) return { label:'回答済', cls:'s-answered' };
-  if (s.startsWith('通知済')) return { label:s, cls:'s-notified' };
-  return { label:'未通知', cls:'s-unnotified' };
-}
-
-function renderCard(v) {
-  const si = getStatusInfo(v);
-  const isTransferred = v.status === '移送済';
-
-  // 見積もり表示
-  const notifiedVendor = (v.status || '').replace('通知済（','').replace('）','');
-  let estHtml = '';
-  if (v.estimates.length > 0) {
-    estHtml = `<div class="estimates">` +
-      v.estimates.map(e => {
-        const isBest = e.vendor === v.bestVendor && v.bestAmount > 0;
-        return `<div class="est-row ${isBest ? 'best' : 'normal'}">
-          <span class="est-vendor">${e.vendor} ${isBest ? '🏆' : ''}</span>
-          <div style="text-align:right">
-            <div class="est-amount ${isBest ? 'est-best' : ''}">¥${Number(e.amount).toLocaleString()}</div>
-            ${e.comment ? `<div style="font-size:10px;color:#8a9aaa">${e.comment}</div>` : ''}
-          </div>
-        </div>`;
-      }).join('') + `</div>`;
+  // 通知日時を見積もりシートに記録
+  const eSheet = ss.getSheetByName(SHEET_ESTIMATES);
+  const eData  = eSheet.getDataRange().getValues();
+  const now    = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm');
+  let found    = false;
+  for (let i = 1; i < eData.length; i++) {
+    if (eData[i][0] === data.vehicleId && eData[i][1] === data.vendorName) {
+      eSheet.getRange(i + 1, 6).setValue(now);
+      found = true;
+      break;
+    }
+  }
+  if (!found) {
+    eSheet.appendRow([data.vehicleId, data.vendorName, '', '', '', now]);
   }
 
-  // 業者選択（未移送のみ）
-  const vendorSelectHtml = !isTransferred ? `
-    <div class="vendor-select">
-      <div class="vendor-select-title">通知する業者を選択（1社のみ）</div>
-      <div class="radio-group" id="rg-${v.id}">
-        ${VENDORS.map((vd,i) => `
-          <div class="check-item ${v.status?.includes(vd.name)?'selected':''}" id="ri-${v.id}-${i}" onclick="toggleVendor('${v.id}',${i})">
-            <input type="checkbox" id="r-${v.id}-${i}" value="${vd.name}" ${v.status?.includes(vd.name)?'checked':''}>
-            <label for="r-${v.id}-${i}">${vd.name}</label>
-            ${v.estimates.find(e=>e.vendor===vd.name)
-              ? `<span style="font-size:10px;color:#16a34a">回答済</span>`
-              : v.status?.includes(vd.name) ? `<span style="font-size:10px;color:#d97706">通知済</span>` : ''}
-          </div>`).join('')}
-      </div>
-      <button class="btn-notify" onclick="notifyVendors('${v.id}')">✉ 選択業者に一括Chatwork通知</button>
-    </div>` : '';
-
-  const actionHtml = !isTransferred
-    ? `<div class="btn-row">
-        ${v.bestAmount > 0 ? `
-          <button class="btn-transfer" onclick="transferVehicle('${v.id}')">在庫管理表へ移送</button>
-          <button class="btn-order" onclick="sendOrderNotice('${v.id}','${v.bestVendor}',${v.bestAmount})">✉ 発注通知</button>
-        ` : ''}
-        <button class="btn-detail" onclick="showPhotos('${v.id}')">写真・詳細</button>
-       </div>`
-    : `<div style="text-align:center;font-size:11px;color:#2979d4;padding:4px">✅ 在庫管理表へ移送済み</div>`;
-
-  return `<div class="card">
-    <div class="card-hdr">
-      <div style="flex:1">
-        <div class="car-name" style="font-size:16px;color:#1a2332;font-weight:700">${v.maker} ${v.carName}</div>
-        <div style="font-size:13px;color:#1a2332;margin-top:3px">下4桁:${v.lower4||'—'} ／ ${Number(v.mileage).toLocaleString()}km</div>
-        <div style="font-size:12px;color:#1a2332;margin-top:2px">${formatDateTime(v.createdAt)}</div>
-        ${v.staff?`<div style="font-size:13px;color:#1a2332;margin-top:3px">👤 担当:${v.staff}</div>`:''}
-        ${v.memo?`<div style="font-size:12px;color:#4a6070;background:#fff8e1;padding:5px 8px;border-radius:5px;margin-top:6px">📝 ${v.memo}</div>`:''}
-      </div>
-      <span class="status-badge ${si.cls}">${si.label}</span>
-    </div>
-    <div class="card-body">
-      ${estHtml}
-      ${vendorSelectHtml}
-      ${actionHtml}
-    </div>
-  </div>`;
-}
-
-function toggleVendor(vehicleId, idx) {
-  const item = document.getElementById(`ri-${vehicleId}-${idx}`);
-  const cb   = document.getElementById(`r-${vehicleId}-${idx}`);
-  cb.checked = !cb.checked;
-  item.classList.toggle('selected', cb.checked);
-}
-
-async function notifyVendors(vehicleId, mode) {
-  let checked;
-  if (mode === 'tbl') {
-    checked = VENDORS.map((vd,i) => document.getElementById(`tr-${vehicleId}-${i}`))
-      .filter(cb => cb && cb.checked).map(cb => cb.value);
+  // 廃車台帳の状態更新（既存の通知済を保持して追記）
+  const currentStatus = String(vSheet.getRange(vRow, 14).getValue() || '');
+  let newStatus;
+  if (currentStatus.startsWith('通知済')) {
+    // 既存の業者名を抽出して新業者を追加
+    const m = currentStatus.match(/通知済（(.+)）/);
+    if (m) {
+      const existing = m[1].split('・');
+      if (!existing.includes(data.vendorName)) existing.push(data.vendorName);
+      newStatus = '通知済（' + existing.join('・') + '）';
+    } else {
+      newStatus = '通知済（' + data.vendorName + '）';
+    }
+  } else if (currentStatus === '回答済' || currentStatus === '移送済') {
+    // 回答済・移送済はそのまま
+    newStatus = currentStatus;
   } else {
-    const rg = document.getElementById(`rg-${vehicleId}`);
-    checked  = Array.from(rg.querySelectorAll('input[type=checkbox]:checked')).map(c => c.value);
+    newStatus = '通知済（' + data.vendorName + '）';
   }
-  if (!checked.length) { showToast('業者を1社以上選択してください'); return; }
-  if (!confirm(`「${checked.join('・')}」にChatworkで通知しますか？`)) return;
+  vSheet.getRange(vRow, 14).setValue(newStatus);
 
-  showToast('通知中...');
-  try {
-    const res  = await fetch(GAS_URL, {
-      method:'POST',
-      body: JSON.stringify({ action:'notifyVendors', vehicleId, vendorNames: checked })
+  return { success: true };
+}
+
+// ============================================================
+//  複数業者への一括通知
+// ============================================================
+function notifyVendors(data) {
+  const results = [];
+  const vendors = data.vendorNames || [];
+  for (const vendorName of vendors) {
+    const result = notifyVendor({ ...data, vendorName });
+    results.push({ vendorName, ...result });
+  }
+  return { success: true, results };
+}
+
+// ============================================================
+//  日次未回答アラート（トリガーで毎朝9時に実行）
+// ============================================================
+function sendDailyAlert() {
+  const ss     = SpreadsheetApp.openById(SALVAGE_SS_ID);
+  const vSheet = ss.getSheetByName(SHEET_VEHICLES);
+  const eSheet = ss.getSheetByName(SHEET_ESTIMATES);
+  const vendors= ss.getSheetByName(SHEET_VENDORS);
+
+  const vData  = vSheet.getDataRange().getValues();
+  const eData  = eSheet.getDataRange().getValues();
+  const vdData = vendors.getDataRange().getValues();
+
+  // 業者ごとに未回答案件を収集
+  for (let vi = 1; vi < vdData.length; vi++) {
+    const vendorName = vdData[vi][0];
+    const roomId     = vdData[vi][1] || CW_ROOM_ID;
+    const vendorKey  = vdData[vi][2];
+
+    // この業者に通知済みで未回答の案件を探す
+    const unanswered = [];
+    for (let i = 1; i < vData.length; i++) {
+      const vehicleId = vData[i][0];
+      const status    = vData[i][12] || '';
+      if (!status.includes(vendorName)) continue; // この業者に通知していない
+
+      // 見積もり回答があるか確認
+      const hasAnswer = eData.some(r =>
+        r[0] === vehicleId && r[1] === vendorName && r[2] && Number(r[2]) > 0
+      );
+      if (!hasAnswer) {
+        const vendorUrl = `https://beri1212-japan.github.io/inventory-dashboard/salvage-vendor.html?vendor=${vendorKey}`;
+        unanswered.push(`・${vData[i][3]}（下4桁：${vData[i][11] || '—'}）`);
+      }
+    }
+
+    if (unanswered.length === 0) continue;
+
+    const vendorUrl = `https://beri1212-japan.github.io/inventory-dashboard/salvage-vendor.html?vendor=${vendorKey}`;
+    const msg = `＜未回答案件のお知らせ＞\n以下の案件が未回答です。\n\n${unanswered.join('\n')}\n\n【見積もり入力はこちら】\n${vendorUrl}`;
+
+    notifyChatwork(roomId, msg);
+    Logger.log(`${vendorName}に未回答アラート送信: ${unanswered.length}件`);
+  }
+}
+
+// 日次アラートのトリガー設定（毎朝9時）
+function setupDailyAlertTrigger() {
+  // 既存の日次アラートトリガーを削除
+  ScriptApp.getProjectTriggers()
+    .filter(t => t.getHandlerFunction() === 'sendDailyAlert')
+    .forEach(t => ScriptApp.deleteTrigger(t));
+
+  ScriptApp.newTrigger('sendDailyAlert')
+    .timeBased()
+    .everyDays(1)
+    .atHour(9)
+    .create();
+
+  Logger.log('✅ 日次アラートトリガー設定完了（毎朝9時）');
+}
+
+// ============================================================
+//  在庫管理表へ移送
+// ============================================================
+function transferToInventory(data) {
+  const INVENTORY_SS_ID = '1KxdpaSswIjEdZGewD-yUK2zjp7ppDeKrJ5Cwfu8yl1o';
+  const ss     = SpreadsheetApp.openById(SALVAGE_SS_ID);
+  const vSheet = ss.getSheetByName(SHEET_VEHICLES);
+  const eSheet = ss.getSheetByName(SHEET_ESTIMATES);
+
+  // 車両情報取得
+  const vData = vSheet.getDataRange().getValues();
+  let vehicle = null;
+  for (let i = 1; i < vData.length; i++) {
+    if (vData[i][0] === data.vehicleId) { vehicle = vData[i]; break; }
+  }
+  if (!vehicle) return { success: false, error: '車両が見つかりません' };
+
+  // 見積もり情報（最高額）取得
+  const eData = eSheet.getDataRange().getValues();
+  let bestAmount = 0, bestVendor = '';
+  for (let i = 1; i < eData.length; i++) {
+    if (eData[i][0] === data.vehicleId) {
+      const amt = Number(eData[i][2]) || 0;
+      if (amt > bestAmount) { bestAmount = amt; bestVendor = eData[i][1]; }
+    }
+  }
+
+  // 在庫管理表の未掲載シートへ追加
+  const invSS    = SpreadsheetApp.openById(INVENTORY_SS_ID);
+  const invSheet = invSS.getSheetByName('未掲載');
+  if (!invSheet) return { success: false, error: '未掲載シートが見つかりません' };
+
+  const now = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd');
+  // 未掲載シートの主要列に合わせて追加
+  invSheet.appendRow([
+    '', '', '', '', '未入庫', '',  // A〜F
+    '', now, '',  // G仕入日
+    '', '', '', '',
+    vehicle[3],   // N 車名
+    '', '',       // HV, 4WD
+    '', '', vehicle[4] || '', // 年式, 月, 走行
+    vehicle[2],   // メーカー備考
+    vehicle[7] || '', // 色（写真URL暫定）
+    '', '', '',
+    vehicle[5] || '', // 原価
+    '',
+  ]);
+
+  // 廃車台帳の状態を「移送済」に更新
+  const vVals = vSheet.getDataRange().getValues();
+  for (let i = 1; i < vVals.length; i++) {
+    if (vVals[i][0] === data.vehicleId) {
+      vSheet.getRange(i + 1, 14).setValue('移送済');
+      break;
+    }
+  }
+
+  return { success: true, bestVendor, bestAmount };
+}
+
+// ============================================================
+//  データ取得
+// ============================================================
+function getVehicles() {
+  const ss    = SpreadsheetApp.openById(SALVAGE_SS_ID);
+  const sheet = ss.getSheetByName(SHEET_VEHICLES);
+  const eSheet= ss.getSheetByName(SHEET_ESTIMATES);
+  if (!sheet) return [];
+
+  const data   = sheet.getDataRange().getValues();
+  const eData  = eSheet.getDataRange().getValues();
+  const result = [];
+
+  for (let i = 1; i < data.length; i++) {
+    const id = data[i][0];
+    if (!id) continue;
+
+    // 見積もり情報
+    const estimates = [];
+    let bestAmount = 0, bestVendor = '';
+    for (let j = 1; j < eData.length; j++) {
+      if (eData[j][0] === id) {
+        const amt = Number(eData[j][2]) || 0;
+        estimates.push({ vendor: eData[j][1], amount: amt, comment: eData[j][3], answeredAt: eData[j][4], notifiedAt: eData[j][5] });
+        if (amt > bestAmount) { bestAmount = amt; bestVendor = eData[j][1]; }
+      }
+    }
+
+    result.push({
+      id,
+      createdAt: data[i][1],
+      maker:     data[i][2],
+      carName:   data[i][3],
+      mileage:   data[i][4],
+      cost:      data[i][5],
+      memo:      data[i][6],
+      photos: { front: data[i][7], rear: data[i][8], interior: data[i][9], caution: data[i][10], shakken: data[i][11] },
+      lower4:    data[i][12],
+      status:    data[i][13],
+      staff:     data[i][14],
+      estimates,
+      bestAmount,
+      bestVendor,
     });
-    const data = await res.json();
-    if (!data.success) throw new Error(data.error);
-    showToast(`✅ ${checked.join('・')}に通知しました！`);
-    setTimeout(loadData, 1500);
-  } catch(e) {
-    showToast('エラー: ' + e.message);
   }
+  return result;
 }
 
-async function transferVehicle(vehicleId) {
-  if (!confirm('在庫管理表の未掲載シートへ移送しますか？')) return;
-  showToast('移送中...');
-  try {
-    const res  = await fetch(GAS_URL, {
-      method:'POST',
-      body: JSON.stringify({ action:'transferToInventory', vehicleId })
-    });
-    const data = await res.json();
-    if (!data.success) throw new Error(data.error);
-    showToast(`✅ 移送完了！最高額: ${data.bestVendor} ¥${Number(data.bestAmount).toLocaleString()}`);
-    setTimeout(loadData, 1500);
-  } catch(e) {
-    showToast('エラー: ' + e.message);
+function getVehicle(id) {
+  const vehicles = getVehicles();
+  return vehicles.find(v => v.id === id) || null;
+}
+
+function getEstimates(vehicleId) {
+  const ss    = SpreadsheetApp.openById(SALVAGE_SS_ID);
+  const sheet = ss.getSheetByName(SHEET_ESTIMATES);
+  const data  = sheet.getDataRange().getValues();
+  return data.slice(1).filter(r => r[0] === vehicleId).map(r => ({
+    vehicleId: r[0], vendor: r[1], amount: r[2], comment: r[3], answeredAt: r[4], notifiedAt: r[5]
+  }));
+}
+
+function getVendors() {
+  const ss    = SpreadsheetApp.openById(SALVAGE_SS_ID);
+  const sheet = ss.getSheetByName(SHEET_VENDORS);
+  const data  = sheet.getDataRange().getValues();
+  return data.slice(1).map(r => ({ name: r[0], roomId: r[1], key: r[2] }));
+}
+
+function getCarMaster() {
+  const ss    = SpreadsheetApp.openById(SALVAGE_SS_ID);
+  const sheet = ss.getSheetByName('車種マスタ');
+  if (!sheet) return [];
+  const data  = sheet.getDataRange().getValues();
+  const result = {};
+  for (let i = 1; i < data.length; i++) {
+    const maker = String(data[i][0]).trim();
+    const car   = String(data[i][1]).trim();
+    if (!maker || !car) continue;
+    if (!result[maker]) result[maker] = [];
+    result[maker].push(car);
   }
+  return result;
 }
 
-function showPhotos(vehicleId) {
-  const v = VEHICLES.find(x => x.id === vehicleId);
-  if (!v) return;
-  document.getElementById('modalTitle').textContent = `${v.maker} ${v.carName}`;
-  const labels = { front:'前', rear:'後', interior:'室内', caution:'コーション', shakken:'車検証' };
-  document.getElementById('modalPhotos').innerHTML = Object.entries(labels).map(([k,l]) => `
-    <div>
-      <div class="photo-lbl">${l}</div>
-      ${v.photos[k]
-        ? `<img class="photo-img" src="${v.photos[k]}" onclick="openZoom('${v.photos[k]}')" onerror="this.style.display='none'">`
-        : `<div class="photo-placeholder">📷</div>`}
-    </div>`).join('');
-  document.getElementById('photoModal').classList.add('show');
-  document.getElementById('modalOv').classList.add('show');
+function getStaff() {
+  const ss    = SpreadsheetApp.openById(SALVAGE_SS_ID);
+  const sheet = ss.getSheetByName('担当者マスタ');
+  if (!sheet) return [];
+  const data  = sheet.getDataRange().getValues();
+  return data.slice(1).filter(r => r[0]).map(r => ({ name: r[0] }));
 }
 
-function closeModal() {
-  document.getElementById('photoModal').classList.remove('show');
-  document.getElementById('modalOv').classList.remove('show');
+// ============================================================
+//  Chatwork通知
+// ============================================================
+function notifyChatwork(roomId, message) {
+  const url = `https://api.chatwork.com/v2/rooms/${roomId}/messages`;
+  UrlFetchApp.fetch(url, {
+    method: 'post',
+    headers: { 'X-ChatWorkToken': CW_TOKEN },
+    payload: { body: message }
+  });
 }
 
-function openZoom(url) {
-  document.getElementById('zoomImg').src = url;
-  document.getElementById('photoZoom').classList.add('show');
-}
-function closeZoom() {
-  document.getElementById('photoZoom').classList.remove('show');
+// ============================================================
+//  JSON レスポンス
+// ============================================================
+function jsonResponse(data) {
+  return ContentService
+    .createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
-async function sendOrderNotice(vehicleId, vendorName, amount) {
-  if (!vendorName) { showToast('見積もり回答がありません'); return; }
-  if (!confirm(`「${vendorName}」に発注通知を送りますか？\n金額: ¥${Number(amount).toLocaleString()}`)) return;
-
-  showToast('送信中...');
-  try {
-    const res  = await fetch(GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        action:      'notifyVendor',
-        vehicleId,
-        vendorName,
-        orderNotice: true,
-        bestAmount:  amount
-      })
-    });
-    const data = await res.json();
-    if (!data.success) throw new Error(data.error);
-    showToast(`✅ ${vendorName}に発注通知を送りました！`);
-  } catch(e) {
-    showToast('エラー: ' + e.message);
+// ============================================================
+//  メニュー
+// ============================================================
+// 既存の写真ファイルの共有設定を一括修正
+function fixPhotoSharing() {
+  const folder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
+  folder.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  const files = folder.getFiles();
+  let count = 0;
+  while (files.hasNext()) {
+    const file = files.next();
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    count++;
   }
+  SpreadsheetApp.getUi().alert(`✅ ${count}枚の写真の共有設定を修正しました！`);
 }
 
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
+function onOpen() {
+  SpreadsheetApp.getUi()
+    .createMenu('🚗 廃車システム')
+    .addItem('初期設定（シート作成）', 'setupSheets')
+    .addSeparator()
+    .addItem('🖼 写真の共有設定を一括修正', 'fixPhotoSharing')
+    .addSeparator()
+    .addItem('⏰ 日次アラートを設定（毎朝9時）', 'setupDailyAlertTrigger')
+    .addItem('🔔 今すぐ未回答アラートを送信', 'sendDailyAlert')
+    .addToUi();
 }
-
-loadData();
-
-// 日時フォーマット（ISO → 2026-04-25 08:04）
-function formatDateTime(iso) {
-  if (!iso) return '';
-  try {
-    const d = new Date(iso);
-    if (isNaN(d.getTime())) return iso;
-    const yyyy = d.getFullYear();
-    const mm   = String(d.getMonth()+1).padStart(2,'0');
-    const dd   = String(d.getDate()).padStart(2,'0');
-    const hh   = String(d.getHours()).padStart(2,'0');
-    const mi   = String(d.getMinutes()).padStart(2,'0');
-    return `${yyyy}/${mm}/${dd} ${hh}:${mi}`;
-  } catch(e) { return iso; }
-}
-</script>
-</body>
-</html>
