@@ -1,1 +1,232 @@
-cp ~/Downloads/salvage-vendor.html ~/Downloads/inventory-dashboard/ && cp ~/Downloads/salvage-admin.html ~/Downloads/inventory-dashboard/ && cd ~/Downloads/inventory-dashboard && git add . && git commit -m "Update salvage files" && git push
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>廃車見積もり - INDIO</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#f0f4f8;font-family:'Hiragino Sans','Meiryo',sans-serif;font-size:14px;color:#1a2332;min-height:100vh}
+.hdr{background:#dc2626;padding:12px 16px;text-align:center;position:sticky;top:0;z-index:10}
+.hdr-title{font-size:14px;font-weight:700;color:#fff}
+.hdr-sub{font-size:10px;color:rgba(255,255,255,.75);margin-top:2px}
+.wrap{max-width:420px;margin:0 auto;padding:12px}
+.card{background:#fff;border-radius:10px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.sec-title{font-size:12px;font-weight:700;color:#1e3a5f;margin-bottom:10px;padding-left:8px;border-left:3px solid #dc2626}
+/* 案件カード */
+.job-card{background:#fff;border-radius:10px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden;border:0.5px solid #e0e8f0}
+.job-hdr{padding:10px 14px;border-bottom:0.5px solid #f0f4f8;display:flex;justify-content:space-between;align-items:center}
+.job-name{font-size:13px;font-weight:700}
+.job-sub{font-size:11px;color:#4a6070;margin-top:1px}
+.job-body{padding:12px 14px}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.info-item{background:#f7f9fc;border-radius:6px;padding:6px 8px}
+.info-lbl{font-size:9px;color:#8a9aaa;margin-bottom:1px}
+.info-val{font-size:12px;font-weight:500}
+.memo-box{background:#fff8e1;border-radius:6px;padding:7px 10px;font-size:11px;color:#92400e;margin-bottom:10px}
+.photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.photo-lbl{font-size:9px;color:#4a6070;text-align:center;margin-bottom:3px}
+.photo-img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:7px;border:0.5px solid #d8e2ec;cursor:pointer}
+.photo-placeholder{width:100%;aspect-ratio:4/3;background:#f0f4f8;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#d8e2ec}
+/* 回答済み表示 */
+.answered-box{background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.answered-amount{font-size:18px;font-weight:700;color:#16a34a}
+.answered-lbl{font-size:11px;color:#16a34a}
+/* 見積もり入力 */
+.input-box{background:#f7f9fc;border-radius:8px;padding:10px 12px}
+.lbl{font-size:11px;color:#4a6070;margin-bottom:4px;font-weight:500}
+.req{color:#dc2626}
+.amount-wrap{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.amount-wrap input{flex:1;padding:10px;border:1px solid #d8e2ec;border-radius:8px;font-size:16px;font-weight:500;text-align:right;background:#fff;color:#1a2332}
+.amount-wrap input:focus{outline:none;border-color:#dc2626}
+textarea{width:100%;padding:8px 10px;border:1px solid #d8e2ec;border-radius:8px;font-size:12px;color:#1a2332;font-family:inherit;resize:none;background:#fff}
+textarea:focus{outline:none;border-color:#dc2626}
+.btn-submit{width:100%;background:#dc2626;color:#fff;border:none;padding:11px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;margin-top:8px;font-family:inherit}
+.btn-submit:disabled{background:#9ca3af}
+.badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px}
+.badge-unanswered{background:#fef3c7;color:#d97706}
+.badge-answered{background:#dcfce7;color:#16a34a}
+.empty{text-align:center;padding:40px;color:#8a9aaa;font-size:13px}
+/* 写真拡大 */
+.photo-zoom{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:100;align-items:center;justify-content:center}
+.photo-zoom.show{display:flex}
+.photo-zoom img{max-width:95vw;max-height:90vh;object-fit:contain;border-radius:6px}
+.photo-zoom-close{position:absolute;top:16px;right:16px;color:#fff;font-size:28px;cursor:pointer}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a2332;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:200;display:none}
+.toast.show{display:block}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-title">廃車見積もり依頼</div>
+  <div class="hdr-sub" id="vendorLabel">株式会社INDIO</div>
+</div>
+
+<div class="wrap" id="mainWrap">
+  <div class="empty">読み込み中...</div>
+</div>
+
+<!-- 写真拡大 -->
+<div class="photo-zoom" id="photoZoom" onclick="closeZoom()">
+  <span class="photo-zoom-close">×</span>
+  <img id="zoomImg" src="">
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const GAS_URL   = 'https://script.google.com/macros/s/AKfycbz1F9RX3jy6JyDNYwdDT3AZnGmMqZNSp2wMsLw9MTezePvnzaCB-J2U-gmDcDi38FOhUg/exec';
+const params    = new URLSearchParams(location.search);
+const vehicleId = params.get('id');    // 単一案件の場合
+const vendorKey = params.get('vendor');
+const VENDOR_MAP= { vendor_a:'業者A', vendor_b:'業者B', vendor_c:'業者C' };
+const vendorName= VENDOR_MAP[vendorKey] || vendorKey || '業者';
+
+document.getElementById('vendorLabel').textContent = `株式会社INDIO ｜ ${vendorName} 専用`;
+
+async function init() {
+  if (!vendorKey) {
+    document.getElementById('mainWrap').innerHTML = '<div class="empty">URLが無効です</div>';
+    return;
+  }
+  try {
+    // 全車両データを取得
+    const res      = await fetch(`${GAS_URL}?action=getVehicles`);
+    const vehicles = await res.json();
+
+    if (vehicleId) {
+      // 単一案件モード（旧来の通知URLからのアクセス）
+      const v = vehicles.find(x => x.id === vehicleId);
+      if (!v) throw new Error('案件が見つかりません');
+      renderSingle(v);
+    } else {
+      // 業者専用一覧モード
+      // この業者に通知された案件のみ表示
+      const myJobs = vehicles.filter(v =>
+        (v.status || '').includes(vendorName) || v.estimates?.some(e => e.vendor === vendorName)
+      );
+      renderList(myJobs);
+    }
+  } catch(e) {
+    document.getElementById('mainWrap').innerHTML = `<div class="empty">エラー: ${e.message}</div>`;
+  }
+}
+
+function renderList(vehicles) {
+  const wrap = document.getElementById('mainWrap');
+  if (!vehicles.length) {
+    wrap.innerHTML = '<div class="card"><div class="empty">現在依頼中の案件はありません</div></div>';
+    return;
+  }
+
+  // 未回答を上に
+  const sorted = [...vehicles].sort((a,b) => {
+    const aAns = a.estimates?.some(e => e.vendor === vendorName && e.amount > 0);
+    const bAns = b.estimates?.some(e => e.vendor === vendorName && e.amount > 0);
+    return aAns - bAns;
+  });
+
+  wrap.innerHTML = `
+    <div style="font-size:12px;color:#4a6070;margin-bottom:10px;text-align:center">
+      依頼案件: ${vehicles.length}件 ／ 未回答: ${vehicles.filter(v => !v.estimates?.some(e => e.vendor===vendorName && e.amount>0)).length}件
+    </div>
+    ${sorted.map(v => renderJobCard(v)).join('')}`;
+}
+
+function renderJobCard(v) {
+  const myEst    = v.estimates?.find(e => e.vendor === vendorName && e.amount > 0);
+  const answered = !!myEst;
+  const photoHtml= ['front','rear','interior','caution'].map((t,i) => {
+    const labels = ['前','後','室内','コーション'];
+    const url    = v.photos?.[t];
+    return `<div>
+      <div class="photo-lbl">${labels[i]}</div>
+      ${url
+        ? `<img class="photo-img" src="${url}" onclick="openZoom('${url}')" onerror="this.parentElement.innerHTML='<div class=photo-placeholder>📷</div>'">`
+        : `<div class="photo-placeholder">📷</div>`}
+    </div>`;
+  }).join('');
+
+  return `<div class="job-card">
+    <div class="job-hdr">
+      <div>
+        <div class="job-name">${v.maker} ${v.carName} <span style="font-size:10px;color:#8a9aaa">下4桁:${v.lower4||'—'}</span></div>
+        <div class="job-sub">${Number(v.mileage).toLocaleString()}km</div>
+      </div>
+      <span class="badge ${answered ? 'badge-answered' : 'badge-unanswered'}">${answered ? '回答済' : '未回答'}</span>
+    </div>
+    <div class="job-body">
+      ${v.memo ? `<div class="memo-box">${v.memo}</div>` : ''}
+      <div class="photo-grid">${photoHtml}</div>
+      ${answered
+        ? `<div class="answered-box">
+            <div><div class="answered-lbl">回答済み金額</div><div class="answered-amount">¥${Number(myEst.amount).toLocaleString()}</div></div>
+            <div style="font-size:10px;color:#4a6070">${myEst.answeredAt||''}</div>
+           </div>`
+        : `<div class="input-box">
+            <div class="lbl">見積もり金額<span class="req">*</span></div>
+            <div class="amount-wrap">
+              <input type="number" id="amt-${v.id}" placeholder="35000" inputmode="numeric">
+              <span style="font-size:12px;color:#4a6070">円</span>
+            </div>
+            <div class="lbl">コメント（任意）</div>
+            <textarea id="cmt-${v.id}" rows="2" placeholder="パーツ状態など"></textarea>
+            <button class="btn-submit" id="btn-${v.id}" onclick="submitEstimate('${v.id}','${v.id}')">送信する</button>
+           </div>`}
+    </div>
+  </div>`;
+}
+
+function renderSingle(v) {
+  document.getElementById('mainWrap').innerHTML = renderJobCard(v);
+}
+
+async function submitEstimate(vehicleId, elemId) {
+  const amount = document.getElementById(`amt-${elemId}`).value;
+  if (!amount || Number(amount) <= 0) { showToast('金額を入力してください'); return; }
+
+  const btn = document.getElementById(`btn-${elemId}`);
+  btn.disabled = true;
+  btn.textContent = '送信中...';
+
+  try {
+    const res  = await fetch(GAS_URL, {
+      method:'POST',
+      body: JSON.stringify({
+        action:     'submitEstimate',
+        vehicleId,
+        vendorName,
+        amount:     Number(amount),
+        comment:    document.getElementById(`cmt-${elemId}`).value,
+      })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    showToast('✅ 送信しました！');
+    setTimeout(init, 1500);
+  } catch(e) {
+    showToast('エラー: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = '送信する';
+  }
+}
+
+function openZoom(url) {
+  document.getElementById('zoomImg').src = url;
+  document.getElementById('photoZoom').classList.add('show');
+}
+function closeZoom() {
+  document.getElementById('photoZoom').classList.remove('show');
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+init();
+</script>
+</body>
+</html>
