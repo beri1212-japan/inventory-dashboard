@@ -98,6 +98,18 @@ body{background:#f0f4f8;font-family:'Hiragino Sans','Meiryo',sans-serif;font-siz
 }
 .toast.show{display:block}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-left:4px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:16px}
+.stats-card{background:#fff;border-radius:10px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.stats-name{font-size:13px;font-weight:700;color:#1e3a5f;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #e8f0f8}
+.stats-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px;border-bottom:0.5px solid #f0f4f8}
+.stats-row:last-child{border-bottom:none}
+.stats-lbl{color:#4a6070}
+.stats-val{font-weight:600;font-family:monospace}
+.stats-val.green{color:#16a34a}
+.stats-val.blue{color:#2979d4}
+.stats-val.amber{color:#d97706}
+.rate-bar{height:6px;background:#f0f4f8;border-radius:3px;overflow:hidden;margin-top:4px}
+.rate-fill{height:100%;background:#16a34a;border-radius:3px;transition:width .3s}
 @keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
@@ -106,6 +118,10 @@ body{background:#f0f4f8;font-family:'Hiragino Sans','Meiryo',sans-serif;font-siz
 <div class="hdr">
   <div class="hdr-title">廃車見積もり管理</div>
   <div class="hdr-right">
+    <div style="display:flex;gap:4px;margin-right:8px">
+      <button id="tab-list" onclick="switchTab('list')" style="background:rgba(255,255,255,.3);color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:600">案件一覧</button>
+      <button id="tab-stats" onclick="switchTab('stats')" style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:11px">業者実績</button>
+    </div>
     <span class="hdr-count" id="vehicleCount">—件</span>
     <button class="btn-add" onclick="location.href='salvage-input.html'">＋ 新規登録</button>
     <button style="background:rgba(255,255,255,.15);color:#fff;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px" onclick="loadData()">🔄 更新</button>
@@ -121,6 +137,11 @@ body{background:#f0f4f8;font-family:'Hiragino Sans','Meiryo',sans-serif;font-siz
 </div>
 
   </div><!-- /card-view -->
+
+  <!-- 業者実績パネル -->
+  <div id="statsPanel" style="display:none">
+    <div id="statsContent"></div>
+  </div>
 </div><!-- /main -->
 
 <!-- 写真モーダル -->
@@ -145,6 +166,54 @@ body{background:#f0f4f8;font-family:'Hiragino Sans','Meiryo',sans-serif;font-siz
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbz1F9RX3jy6JyDNYwdDT3AZnGmMqZNSp2wMsLw9MTezePvnzaCB-J2U-gmDcDi38FOhUg/exec';
 let VEHICLES  = [];
 let VENDORS   = [];
+
+function switchTab(tab) {
+  const isStats = tab === 'stats';
+  document.getElementById('tab-list').style.background  = isStats ? 'rgba(255,255,255,.1)' : 'rgba(255,255,255,.3)';
+  document.getElementById('tab-stats').style.background = isStats ? 'rgba(255,255,255,.3)' : 'rgba(255,255,255,.1)';
+  document.getElementById('tab-list').style.color  = isStats ? 'rgba(255,255,255,.7)' : '#fff';
+  document.getElementById('tab-stats').style.color = isStats ? '#fff' : 'rgba(255,255,255,.7)';
+  document.getElementById('tblContent').style.display   = isStats ? 'none' : '';
+  document.getElementById('mainContent').style.display  = isStats ? 'none' : '';
+  document.getElementById('statsPanel').style.display   = isStats ? 'block' : 'none';
+  if (isStats) renderStats();
+}
+
+function renderStats() {
+  if (!VEHICLES.length || !VENDORS.length) {
+    document.getElementById('statsContent').innerHTML = '<div class="empty">データがありません</div>';
+    return;
+  }
+
+  const cards = VENDORS.map(vd => {
+    const name     = vd.name;
+    // この業者に通知した案件
+    const notified = VEHICLES.filter(v => (v.status||'').includes(name) || v.estimates?.some(e=>e.vendor===name));
+    const answered = notified.filter(v => v.estimates?.some(e=>e.vendor===name && e.amount>0));
+    const won      = VEHICLES.filter(v => v.bestVendor === name && v.bestAmount > 0);
+    const amounts  = answered.map(v => v.estimates.find(e=>e.vendor===name)?.amount || 0).filter(a=>a>0);
+    const avg      = amounts.length ? Math.round(amounts.reduce((a,b)=>a+b,0)/amounts.length) : 0;
+    const max      = amounts.length ? Math.max(...amounts) : 0;
+    const min      = amounts.length ? Math.min(...amounts) : 0;
+    const rate     = notified.length ? Math.round(answered.length/notified.length*100) : 0;
+
+    return `<div class="stats-card">
+      <div class="stats-name">🏢 ${name}</div>
+      <div class="stats-row"><span class="stats-lbl">依頼数</span><span class="stats-val">${notified.length}件</span></div>
+      <div class="stats-row"><span class="stats-lbl">回答数</span><span class="stats-val blue">${answered.length}件</span></div>
+      <div class="stats-row"><span class="stats-lbl">回答率</span><span class="stats-val ${rate>=80?'green':rate>=50?'amber':''}">    ${rate}%</span></div>
+      <div class="rate-bar"><div class="rate-fill" style="width:${rate}%"></div></div>
+      <div class="stats-row" style="margin-top:6px"><span class="stats-lbl">落札数</span><span class="stats-val green">${won.length}件</span></div>
+      <div class="stats-row"><span class="stats-lbl">平均金額</span><span class="stats-val">¥${avg.toLocaleString()}</span></div>
+      <div class="stats-row"><span class="stats-lbl">最高額</span><span class="stats-val green">¥${max.toLocaleString()}</span></div>
+      <div class="stats-row"><span class="stats-lbl">最低額</span><span class="stats-val amber">¥${min.toLocaleString()}</span></div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('statsContent').innerHTML = `
+    <div style="font-size:11px;color:#4a6070;margin-bottom:10px">全${VEHICLES.length}件 / 業者${VENDORS.length}社の実績</div>
+    <div class="stats-grid">${cards}</div>`;
+}
 
 async function loadData() {
   try {
