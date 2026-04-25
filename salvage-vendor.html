@@ -159,21 +159,16 @@ function renderJobCard(v) {
     <div class="job-body">
       ${v.memo ? `<div class="memo-box">${v.memo}</div>` : ''}
       <div class="photo-grid">${photoHtml}</div>
-      ${answered
-        ? `<div class="answered-box">
-            <div><div class="answered-lbl">回答済み金額</div><div class="answered-amount">¥${Number(myEst.amount).toLocaleString()}</div></div>
-            <div style="font-size:10px;color:#4a6070">${myEst.answeredAt||''}</div>
-           </div>`
-        : `<div class="input-box">
-            <div class="lbl">見積もり金額<span class="req">*</span></div>
-            <div class="amount-wrap">
-              <input type="number" id="amt-${v.id}" placeholder="35000" inputmode="numeric">
-              <span style="font-size:12px;color:#4a6070">円</span>
-            </div>
-            <div class="lbl">コメント（任意）</div>
-            <textarea id="cmt-${v.id}" rows="2" placeholder="パーツ状態など"></textarea>
-            <button class="btn-submit" id="btn-${v.id}" onclick="submitEstimate('${v.id}','${v.id}')">送信する</button>
-           </div>`}
+      <div class="input-box">
+        <div class="lbl">${answered ? '見積もり金額（修正可）' : '見積もり金額'}<span class="req">*</span></div>
+        <div class="amount-wrap">
+          <input type="number" id="amt-${v.id}" placeholder="35000" inputmode="numeric" value="${answered ? myEst.amount : ''}">
+          <span style="font-size:12px;color:#4a6070">円</span>
+        </div>
+        <div class="lbl">コメント（任意）</div>
+        <textarea id="cmt-${v.id}" rows="2" placeholder="パーツ状態など">${answered ? (myEst.comment||'') : ''}</textarea>
+        <button class="btn-submit" id="btn-${v.id}" onclick="submitEstimate('${v.id}','${v.id}')">${answered ? '金額を修正する' : '送信する'}</button>
+      </div>
     </div>
   </div>`;
 }
