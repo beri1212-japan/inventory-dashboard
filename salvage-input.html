@@ -61,6 +61,13 @@ textarea{resize:none;line-height:1.5}
     <div class="sec-title">車両情報</div>
 
     <div class="field">
+      <div class="lbl">担当者<span class="req">*</span></div>
+      <select id="staff">
+        <option value="">選択してください</option>
+      </select>
+    </div>
+
+    <div class="field">
       <div class="lbl">メーカー<span class="req">*</span></div>
       <select id="maker" onchange="updateCarList()">
         <option value="">選択してください</option>
