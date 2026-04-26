@@ -264,6 +264,24 @@ tbody tr:hover td{background:var(--accent-bg)!important;}
     <div class="kpi"><div class="kpi-lbl">100〜150日</div><div class="kpi-val" id="l-100" style="color:var(--purple)">—</div><div class="kpi-sub">要注意</div></div>
     <div class="kpi"><div class="kpi-lbl">60〜100日</div><div class="kpi-val" id="l-60" style="color:var(--text2)">—</div><div class="kpi-sub">様子見</div></div>
   </div>
+
+  <!-- マトリクス表 -->
+  <div class="sec">
+    <div class="sec-hdr">
+      <span class="sec-title">📊 在庫日数 マトリクス</span>
+    </div>
+    <div class="sec-body" style="display:flex;gap:12px;flex-wrap:wrap">
+      <div style="flex:1;min-width:380px">
+        <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px">ジャンル × 日数</div>
+        <div id="mtxGenre" style="overflow-x:auto"></div>
+      </div>
+      <div style="flex:1;min-width:380px">
+        <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px">原価帯 × 日数</div>
+        <div id="mtxCost" style="overflow-x:auto"></div>
+      </div>
+    </div>
+  </div>
+
   <div class="sec">
     <div class="sec-hdr">
       <span class="sec-title">🕐 長期在庫一覧 <span id="longCount" style="font-size:13px;color:var(--text2);font-weight:600;margin-left:8px"></span></span>
@@ -655,6 +673,81 @@ function renderUnlisted(){
   document.getElementById('phase-p6').innerHTML=p6.map(d=>fmt(d,'pill-b',d.status||'その他')).join('');
 }
 
+
+function renderLongMatrix() {
+  const dayBands = [
+    { lbl:'60〜100日', min:60,  max:100 },
+    { lbl:'100〜150日', min:100, max:150 },
+    { lbl:'150〜300日', min:150, max:300 },
+    { lbl:'300日超',    min:300, max:99999 },
+  ];
+  const genres = ['ミニバン', 'SUV', 'HVCP', '軽'];
+  const costBands = [
+    { lbl:'〜50万',     min:0,    max:50 },
+    { lbl:'50〜100万',  min:50,   max:100 },
+    { lbl:'100〜150万', min:100,  max:150 },
+    { lbl:'150〜200万', min:150,  max:200 },
+    { lbl:'200万〜',    min:200,  max:99999 },
+  ];
+
+  const longItems = STOCK.filter(d => d.days != null && d.days >= 60 && d.days < 10000);
+
+  // ジャンル×日数
+  const buildMatrix = (rows, getCount, totalLbl) => {
+    const cellStyle = 'padding:6px 10px;text-align:center;border:1px solid var(--border);font-size:12px;font-family:var(--mono)';
+    const headerStyle = cellStyle + ';background:var(--bg2);font-weight:700;color:var(--text2);font-family:inherit';
+    const labelStyle = cellStyle + ';background:var(--bg2);font-weight:700;color:var(--text);text-align:left;font-family:inherit';
+    const totalStyle = cellStyle + ';background:#fef3c7;font-weight:700';
+
+    let html = '<table style="border-collapse:collapse;width:100%;table-layout:fixed">';
+    html += '<thead><tr><th style="' + headerStyle + ';width:90px"></th>';
+    dayBands.forEach(b => html += '<th style="' + headerStyle + '">' + b.lbl + '</th>');
+    html += '<th style="' + headerStyle + ';background:#fef3c7">計</th></tr></thead><tbody>';
+
+    let colTotals = dayBands.map(() => 0);
+    let grandTotal = 0;
+
+    rows.forEach(row => {
+      let rowTotal = 0;
+      html += '<tr><td style="' + labelStyle + '">' + row.lbl + '</td>';
+      dayBands.forEach((b, bi) => {
+        const cnt = getCount(row, b);
+        rowTotal += cnt;
+        colTotals[bi] += cnt;
+        const bgColor = cnt > 5 ? '#fee2e2' : cnt > 2 ? '#fef3c7' : cnt > 0 ? '#dcfce7' : '';
+        const color = cnt > 5 ? '#991b1b' : cnt > 2 ? '#92400e' : cnt > 0 ? '#166534' : 'var(--text3)';
+        html += '<td style="' + cellStyle + ';background:' + bgColor + ';color:' + color + ';font-weight:' + (cnt > 0 ? '700' : '400') + '">' + (cnt || '—') + '</td>';
+      });
+      grandTotal += rowTotal;
+      html += '<td style="' + totalStyle + '">' + (rowTotal || '—') + '</td></tr>';
+    });
+
+    html += '<tr><td style="' + totalStyle + '">計</td>';
+    colTotals.forEach(t => html += '<td style="' + totalStyle + '">' + (t || '—') + '</td>');
+    html += '<td style="' + totalStyle + ';background:#dc2626;color:#fff">' + grandTotal + '</td></tr>';
+    html += '</tbody></table>';
+    return html;
+  };
+
+  // ジャンル×日数
+  const genreRows = genres.map(g => ({ lbl: g, key: g }));
+  document.getElementById('mtxGenre').innerHTML = buildMatrix(
+    genreRows,
+    (row, b) => longItems.filter(d => d.cat === row.key && d.days >= b.min && d.days < b.max).length
+  );
+
+  // 原価帯×日数（cost列がない場合はprice列で代用）
+  const costRows = costBands;
+  document.getElementById('mtxCost').innerHTML = buildMatrix(
+    costRows,
+    (row, b) => longItems.filter(d => {
+      const cost = d.cost != null ? d.cost : d.price;
+      if (cost == null) return false;
+      return cost >= row.min && cost < row.max && d.days >= b.min && d.days < b.max;
+    })
+  );
+}
+
 function renderLong(){
   const th=parseInt(document.getElementById('longThresh').value);
   const cf=document.getElementById('longCat').value;
@@ -663,6 +756,7 @@ function renderLong(){
   items.sort((a,b)=>b.days-a.days);
   const cntEl=document.getElementById('longCount');
   if(cntEl)cntEl.textContent=`(${items.length}台${items.length>60?' / 上位60台表示':''})`;
+  renderLongMatrix();
   document.getElementById('l-300').textContent=STOCK.filter(d=>d.days!=null&&d.days>=300&&d.days<10000).length;
   document.getElementById('l-150').textContent=STOCK.filter(d=>d.days!=null&&d.days>=150&&d.days<300).length;
   document.getElementById('l-100').textContent=STOCK.filter(d=>d.days!=null&&d.days>=100&&d.days<150).length;
@@ -672,7 +766,7 @@ function renderLong(){
     const cls=d.days>=300?'pill-r':d.days>=150?'pill-y':d.days>=100?'pill-p':'pill-b';
     const msg=d.days>=300?'早急値下げ推奨':d.days>=150?'価格見直し推奨':d.days>=100?'要注意':'様子見';
     const vd=encodeURIComponent(JSON.stringify({name:d.name,cat:d.cat,year:d.year,km:d.km,price:d.price,color:d.color,days:d.days,hv:d.hv,fwd:d.fwd}));
-    return `<div class="aitem" style="gap:8px;max-width:70%;margin:0 auto 6px;align-items:center"><div style="flex:1"><div class="aname" style="font-size:14px;font-weight:700">${d.name} <span style="font-size:12px;color:var(--text2);font-weight:400">${d.cat} / ${d.year} / ${km} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'} → ${msg}</span></div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span class="pill ${cls}">${d.days}日</span><button onclick='runAiDiagnosis("${vd}")' style="background:var(--accent);color:#fff;border:none;padding:3px 9px;border-radius:5px;cursor:pointer;font-size:10px;white-space:nowrap">AI診断</button></div></div>`;
+    return `<div class="aitem" style="gap:8px;max-width:70%;margin:0 0 6px 0;align-items:center"><div style="flex:1"><div class="aname" style="font-size:14px;font-weight:700">${d.name} <span style="font-size:12px;color:var(--text2);font-weight:400">${d.cat} / ${d.year} / ${km} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'} → ${msg}</span></div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span class="pill ${cls}">${d.days}日</span><button onclick='runAiDiagnosis("${vd}")' style="background:var(--accent);color:#fff;border:none;padding:3px 9px;border-radius:5px;cursor:pointer;font-size:10px;white-space:nowrap">AI診断</button></div></div>`;
   }).join('');
 }
 
