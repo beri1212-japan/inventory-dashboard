@@ -266,7 +266,7 @@ tbody tr:hover td{background:var(--accent-bg)!important;}
   </div>
   <div class="sec">
     <div class="sec-hdr">
-      <span class="sec-title">🕐 長期在庫一覧</span>
+      <span class="sec-title">🕐 長期在庫一覧 <span id="longCount" style="font-size:13px;color:var(--text2);font-weight:600;margin-left:8px"></span></span>
       <div class="ctrls">
         <select class="sel" id="longThresh" onchange="renderLong()">
           <option value="60">60日以上</option><option value="100" selected>100日以上</option>
@@ -661,6 +661,8 @@ function renderLong(){
   let items=STOCK.filter(d=>d.days!=null&&d.days>=th&&d.days<10000);
   if(cf)items=items.filter(d=>d.cat===cf);
   items.sort((a,b)=>b.days-a.days);
+  const cntEl=document.getElementById('longCount');
+  if(cntEl)cntEl.textContent=`(${items.length}台${items.length>60?' / 上位60台表示':''})`;
   document.getElementById('l-300').textContent=STOCK.filter(d=>d.days!=null&&d.days>=300&&d.days<10000).length;
   document.getElementById('l-150').textContent=STOCK.filter(d=>d.days!=null&&d.days>=150&&d.days<300).length;
   document.getElementById('l-100').textContent=STOCK.filter(d=>d.days!=null&&d.days>=100&&d.days<150).length;
@@ -670,7 +672,7 @@ function renderLong(){
     const cls=d.days>=300?'pill-r':d.days>=150?'pill-y':d.days>=100?'pill-p':'pill-b';
     const msg=d.days>=300?'早急値下げ推奨':d.days>=150?'価格見直し推奨':d.days>=100?'要注意':'様子見';
     const vd=encodeURIComponent(JSON.stringify({name:d.name,cat:d.cat,year:d.year,km:d.km,price:d.price,color:d.color,days:d.days,hv:d.hv,fwd:d.fwd}));
-    return `<div class="aitem" style="gap:6px"><div style="flex:1"><div class="aname">${d.name}</div><div class="adet">${d.cat} / ${d.year} / ${km} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'} → ${msg}</div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span class="pill ${cls}">${d.days}日</span><button onclick='runAiDiagnosis("${vd}")' style="background:var(--accent);color:#fff;border:none;padding:3px 9px;border-radius:5px;cursor:pointer;font-size:10px;white-space:nowrap">AI診断</button></div></div>`;
+    return `<div class="aitem" style="gap:8px;max-width:70%;margin:0 auto 6px;align-items:center"><div style="flex:1"><div class="aname" style="font-size:14px;font-weight:700">${d.name} <span style="font-size:12px;color:var(--text2);font-weight:400">${d.cat} / ${d.year} / ${km} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'} → ${msg}</span></div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span class="pill ${cls}">${d.days}日</span><button onclick='runAiDiagnosis("${vd}")' style="background:var(--accent);color:#fff;border:none;padding:3px 9px;border-radius:5px;cursor:pointer;font-size:10px;white-space:nowrap">AI診断</button></div></div>`;
   }).join('');
 }
 
