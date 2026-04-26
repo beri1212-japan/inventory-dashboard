@@ -111,6 +111,17 @@ body{font-family:'Hiragino Sans','Meiryo',sans-serif;background:var(--bg);color:
     <div class="fchip" data-f="HVCP" onclick="setFilter('HVCP',this)">HVCP</div>
     <div class="fchip" data-f="軽" onclick="setFilter('軽',this)">軽</div>
   </div>
+  <div class="filter" id="statusFilter" style="margin-top:6px">
+    <div class="fchip active" data-s="all" onclick="setStatusFilter('all',this)">全状況</div>
+    <div class="fchip" data-s="BP待ち" onclick="setStatusFilter('BP待ち',this)">BP待ち</div>
+    <div class="fchip" data-s="BP入庫中" onclick="setStatusFilter('BP入庫中',this)">BP入庫中</div>
+    <div class="fchip" data-s="仮登録" onclick="setStatusFilter('仮登録',this)">仮登録</div>
+    <div class="fchip" data-s="掲載待" onclick="setStatusFilter('掲載待',this)">掲載待</div>
+    <div class="fchip" data-s="未仕上" onclick="setStatusFilter('未仕上',this)">未仕上</div>
+    <div class="fchip" data-s="未入庫" onclick="setStatusFilter('未入庫',this)">未入庫</div>
+    <div class="fchip" data-s="■完了" onclick="setStatusFilter('■完了',this)">■完了</div>
+    <div class="fchip" data-s="その他" onclick="setStatusFilter('その他',this)">その他</div>
+  </div>
 </div>
 
 <div class="main">
@@ -137,6 +148,7 @@ body{font-family:'Hiragino Sans','Meiryo',sans-serif;background:var(--bg);color:
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwmvcBRn13pPzTdNjz_joqmztKepHkZBnEv65LmCtF3VuYbt17bat_tHCJd9cVFMubZCg/exec';
 let DATA = [];
 let FILTER = 'all';
+let STATUS_FILTER = 'all';
 let CURRENT = null; // 編集中の車両
 
 const STATUS_OPTIONS = [
@@ -182,7 +194,14 @@ function updateSummary() {
 
 function setFilter(f, el) {
   FILTER = f;
-  document.querySelectorAll('.fchip').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('#filter .fchip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderList();
+}
+
+function setStatusFilter(s, el) {
+  STATUS_FILTER = s;
+  document.querySelectorAll('#statusFilter .fchip').forEach(c => c.classList.remove('active'));
   el.classList.add('active');
   renderList();
 }
@@ -191,6 +210,7 @@ function renderList() {
   const q = (document.getElementById('search').value || '').toLowerCase().trim();
   let list = DATA.slice();
   if (FILTER !== 'all') list = list.filter(v => v.genre === FILTER);
+  if (STATUS_FILTER !== 'all') list = list.filter(v => v.status === STATUS_FILTER);
   if (q) list = list.filter(v =>
     (v.carName || '').toLowerCase().includes(q) ||
     (v.grade || '').toLowerCase().includes(q)
