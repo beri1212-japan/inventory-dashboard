@@ -1039,7 +1039,6 @@ function setBalView(v){
 
 function renderBalance(){
   const cats=[...new Set(STOCK.map(d=>d.cat))].filter(Boolean);
-  const MASTER=getMasterData();
 
   let html='';
   cats.forEach(cat=>{
@@ -1047,6 +1046,7 @@ function renderBalance(){
     const names=[...new Set(items.map(d=>d.name))].filter(Boolean);
     const catBg=BAL_CAT_BG[cat]||'#374151';
     const total=items.length;
+    const MASTER=getMasterData(cat);
     const catDiff=names.reduce((s,n)=>{
       const stock=items.filter(d=>d.name===n).length;
       const target=MASTER[n]||0;
@@ -1093,15 +1093,19 @@ function renderBalance(){
   document.getElementById('balanceOverview').innerHTML=html;
 
   // サマリー更新
-  const allNames=[...new Set(STOCK.map(d=>d.name))].filter(Boolean);
   const surplus=[],shortage=[],normal=[];
-  allNames.forEach(n=>{
-    const stock=STOCK.filter(d=>d.name===n).length;
-    const target=MASTER[n]||0;
-    const diff=stock-target;
-    if(diff>1)surplus.push(n);
-    else if(diff<-1)shortage.push(n);
-    else normal.push(n);
+  cats.forEach(cat=>{
+    const M=getMasterData(cat);
+    const itms=STOCK.filter(d=>d.cat===cat);
+    const ns=[...new Set(itms.map(d=>d.name))].filter(Boolean);
+    ns.forEach(n=>{
+      const stock=itms.filter(d=>d.name===n).length;
+      const target=M[n]||0;
+      const diff=stock-target;
+      if(diff>1)surplus.push(n);
+      else if(diff<-1)shortage.push(n);
+      else normal.push(n);
+    });
   });
   document.getElementById('balSurplusVal').textContent=surplus.length+'車種';
   document.getElementById('balNormalVal').textContent=normal.length+'車種';
@@ -1123,10 +1127,23 @@ function renderBalance(){
   if(document.getElementById('balLgMax'))document.getElementById('balLgMax').textContent=lg.max;
 }
 
-function getMasterData(){
+function getMasterData(cat){
+  // TEISUはキーが `${cat}_${name}` 形式
+  // catが指定されていれば、そのcatの既定数オブジェクトを返す
   const master={};
-  if(typeof MASTER_SHEET!=='undefined'){
-    MASTER_SHEET.forEach(r=>{if(r.name)master[r.name]=Number(r.target)||0;});
+  if(typeof TEISU!=='undefined'){
+    Object.keys(TEISU).forEach(k=>{
+      const idx=k.indexOf('_');
+      if(idx<0)return;
+      const c=k.substring(0,idx);
+      const n=k.substring(idx+1);
+      if(cat){
+        if(c===cat)master[n]=Number(TEISU[k])||0;
+      }else{
+        // catなしの場合は名前のみで集約（複数catに同名がある場合は後勝ち）
+        master[n]=Number(TEISU[k])||0;
+      }
+    });
   }
   return master;
 }
