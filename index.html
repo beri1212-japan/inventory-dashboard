@@ -737,14 +737,15 @@ function renderLongMatrix() {
   );
 
   // 原価帯×日数（cost列がない場合はprice列で代用）
-  const costRows = costBands;
   document.getElementById('mtxCost').innerHTML = buildMatrix(
-    costRows,
+    costBands,
     (row, b) => longItems.filter(d => {
-      const cost = d.cost != null ? d.cost : d.price;
-      if (cost == null) return false;
+      let cost = d.cost != null ? d.cost : d.price;
+      if (cost === null || cost === undefined || cost === '') return false;
+      cost = Number(cost);
+      if (isNaN(cost)) return false;
       return cost >= row.min && cost < row.max && d.days >= b.min && d.days < b.max;
-    })
+    }).length
   );
 }
 
