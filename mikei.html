@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>未掲載管理 - INDIO</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1e3a5f">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --navy:#1e3a5f;--blue:#2979d4;--bg:#f0f4f8;--bg2:#fff;
+  --border:#e0e8f0;--text:#1a2332;--text2:#4a6070;--text3:#8a9aaa;
+  --green:#16a34a;--amber:#d97706;--red:#dc2626;--purple:#7c3aed;
+}
+body{font-family:'Hiragino Sans','Meiryo',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.hdr{background:var(--navy);padding:10px 16px;color:#fff;position:sticky;top:0;z-index:50;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.hdr-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.hdr-title{font-size:15px;font-weight:700;letter-spacing:.5px}
+.hdr-count{font-size:11px;background:rgba(255,255,255,.18);padding:3px 9px;border-radius:11px}
+.refresh{background:rgba(255,255,255,.15);border:none;color:#fff;padding:5px 11px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer}
+.refresh.spinning{opacity:.5}
+.filter{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:2px 0;margin:0 -16px;padding-left:16px;padding-right:16px}
+.filter::-webkit-scrollbar{display:none}
+.fchip{flex-shrink:0;padding:5px 12px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:14px;font-size:11px;font-weight:500;cursor:pointer;white-space:nowrap}
+.fchip.active{background:#fff;color:var(--navy);border-color:#fff}
+
+.main{padding:10px 12px 80px}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.sm-card{background:var(--bg2);border-radius:8px;padding:8px 6px;text-align:center;border:1px solid var(--border)}
+.sm-lbl{font-size:9px;color:var(--text3);margin-bottom:2px}
+.sm-val{font-size:18px;font-weight:700}
+
+.search-bar{position:relative;margin-bottom:10px}
+.search-bar input{width:100%;padding:9px 14px 9px 34px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);font-size:13px;color:var(--text);outline:none}
+.search-bar input:focus{border-color:var(--blue)}
+.search-bar::before{content:'🔍';position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14px}
+
+.card{background:var(--bg2);border-radius:10px;padding:11px 13px;margin-bottom:8px;border:1px solid var(--border);box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.car-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px}
+.car-name{font-size:15px;font-weight:700;color:var(--text);flex:1;line-height:1.3}
+.car-grade{font-size:11px;color:var(--text2);margin-top:2px}
+.lower4{background:var(--bg);color:var(--text2);font-family:monospace;font-size:11px;padding:2px 7px;border-radius:10px;flex-shrink:0;margin-left:6px}
+.specs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.spec{font-size:11px;background:var(--bg);color:var(--text2);padding:2px 7px;border-radius:8px}
+.spec.year{background:#dbeafe;color:#1d4ed8}
+.spec.km{background:#fef3c7;color:#92400e}
+.spec.color{background:#ede9fe;color:#6d28d9}
+.spec.shaken{background:#dcfce7;color:#166534}
+
+.staff-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:8px}
+.staff-cell{background:var(--bg);border-radius:6px;padding:5px 7px;cursor:pointer;border:1px solid transparent}
+.staff-cell:active{background:#dbeafe;border-color:var(--blue)}
+.staff-lbl{font-size:9px;color:var(--text3);margin-bottom:1px;font-weight:600}
+.staff-val{font-size:12px;color:var(--text);font-weight:500;min-height:14px}
+.staff-val.empty{color:var(--text3);font-weight:400}
+
+.status-row{display:flex;align-items:center;gap:6px;margin-bottom:7px}
+.status-lbl{font-size:11px;color:var(--text3);font-weight:600}
+.status-pill{padding:5px 12px;border-radius:14px;font-size:12px;font-weight:600;cursor:pointer;flex:1;text-align:center;border:none}
+.status-pill.bp-machi{background:#dcfce7;color:#166534}
+.status-pill.bp-irai{background:#ede9fe;color:#6d28d9}
+.status-pill.kari{background:#fce7f3;color:#9f1239}
+.status-pill.kanrn{background:#dc2626;color:#fff}
+.status-pill.machi{background:#fef3c7;color:#92400e}
+.status-pill.miji{background:#fee2e2;color:#991b1b}
+.status-pill.miin{background:#e5e7eb;color:#374151}
+.status-pill.other{background:#bfdbfe;color:#1e40af}
+
+.memo{font-size:11px;color:var(--text2);background:#fff8e1;padding:5px 8px;border-radius:6px;border-left:3px solid var(--amber);margin-top:5px;white-space:pre-wrap;word-break:break-word}
+
+.empty{text-align:center;padding:40px 20px;color:var(--text3);font-size:13px}
+
+/* モーダル */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;z-index:100;-webkit-overflow-scrolling:touch}
+.modal.active{display:flex}
+.modal-body{background:#fff;width:100%;max-height:80vh;border-radius:16px 16px 0 0;padding:18px;overflow-y:auto;animation:slide .25s ease}
+@keyframes slide{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-title{font-size:14px;font-weight:700;margin-bottom:12px;color:var(--text);text-align:center}
+.modal-list{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.modal-list.single{grid-template-columns:1fr}
+.modal-opt{padding:11px;background:var(--bg);border-radius:8px;text-align:center;font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid transparent}
+.modal-opt:active{background:#dbeafe;border-color:var(--blue)}
+.modal-opt.cancel{background:#fee2e2;color:#991b1b;margin-top:10px;grid-column:1 / -1}
+
+.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:rgba(26,35,50,.92);color:#fff;padding:10px 18px;border-radius:24px;font-size:13px;font-weight:500;z-index:200;display:none;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.toast.active{display:block}
+
+.loading{text-align:center;padding:50px 20px;color:var(--text3);font-size:13px}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:r 1s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes r{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-row">
+    <div>
+      <div class="hdr-title">📋 未掲載管理</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="hdr-count" id="cnt">— 件</span>
+      <button class="refresh" id="refresh" onclick="loadData()">🔄</button>
+    </div>
+  </div>
+  <div class="filter" id="filter">
+    <div class="fchip active" data-f="all" onclick="setFilter('all',this)">すべて</div>
+    <div class="fchip" data-f="ﾐﾆﾊﾞﾝ" onclick="setFilter('ﾐﾆﾊﾞﾝ',this)">ミニバン</div>
+    <div class="fchip" data-f="SUV" onclick="setFilter('SUV',this)">SUV</div>
+    <div class="fchip" data-f="HVCP" onclick="setFilter('HVCP',this)">HVCP</div>
+    <div class="fchip" data-f="軽" onclick="setFilter('軽',this)">軽</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="summary" id="summary"></div>
+  <div class="search-bar">
+    <input type="text" id="search" placeholder="車名・グレードで検索" oninput="renderList()">
+  </div>
+  <div id="list">
+    <div class="loading"><span class="spin"></span>読み込み中...</div>
+  </div>
+</div>
+
+<!-- 状況選択モーダル -->
+<div class="modal" id="modal">
+  <div class="modal-body">
+    <div class="modal-title" id="modalTitle">選択</div>
+    <div class="modal-list" id="modalList"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const GAS_URL = 'YOUR_GAS_WEBAPP_URL';
+let DATA = [];
+let FILTER = 'all';
+let CURRENT = null; // 編集中の車両
+
+const STATUS_OPTIONS = [
+  { v:'BP待ち',     cls:'bp-machi' },
+  { v:'BP入庫中',   cls:'bp-irai' },
+  { v:'仮登録',     cls:'kari' },
+  { v:'■完了',     cls:'kanrn' },
+  { v:'掲載待',     cls:'machi' },
+  { v:'未仕上',     cls:'miji' },
+  { v:'未入庫',     cls:'miin' },
+  { v:'その他',     cls:'other' },
+];
+
+const STAFF_OPTIONS = ['未', '川縁', '高木', '前田', '諸田', '作内'];
+
+async function loadData() {
+  const refreshBtn = document.getElementById('refresh');
+  refreshBtn.classList.add('spinning');
+  try {
+    const res = await fetch(`${GAS_URL}?action=getMikei`);
+    const data = await res.json();
+    DATA = data.vehicles || [];
+    renderList();
+    updateSummary();
+  } catch(e) {
+    showToast('読み込みエラー: ' + e.message);
+  } finally {
+    refreshBtn.classList.remove('spinning');
+  }
+}
+
+function updateSummary() {
+  const total = DATA.length;
+  const ready = DATA.filter(v => v.status === '■完了').length;
+  const wait  = DATA.filter(v => v.status === '掲載待' || v.status === '未仕上').length;
+  document.getElementById('cnt').textContent = total + ' 件';
+  document.getElementById('summary').innerHTML = `
+    <div class="sm-card"><div class="sm-lbl">全件</div><div class="sm-val" style="color:var(--blue)">${total}</div></div>
+    <div class="sm-card"><div class="sm-lbl">完了</div><div class="sm-val" style="color:var(--red)">${ready}</div></div>
+    <div class="sm-card"><div class="sm-lbl">掲載待・仕上</div><div class="sm-val" style="color:var(--amber)">${wait}</div></div>
+  `;
+}
+
+function setFilter(f, el) {
+  FILTER = f;
+  document.querySelectorAll('.fchip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderList();
+}
+
+function renderList() {
+  const q = (document.getElementById('search').value || '').toLowerCase().trim();
+  let list = DATA.slice();
+  if (FILTER !== 'all') list = list.filter(v => v.genre === FILTER);
+  if (q) list = list.filter(v =>
+    (v.carName || '').toLowerCase().includes(q) ||
+    (v.grade || '').toLowerCase().includes(q)
+  );
+
+  const el = document.getElementById('list');
+  if (list.length === 0) {
+    el.innerHTML = '<div class="empty">該当する車両がありません</div>';
+    return;
+  }
+
+  el.innerHTML = list.map(v => {
+    const stOpt = STATUS_OPTIONS.find(s => s.v === v.status) || { cls:'other' };
+    const yearMonth = (v.year || '') + (v.month ? '/' + v.month : '');
+    return `<div class="card">
+      <div class="car-row">
+        <div>
+          <div class="car-name">${escapeHtml(v.carName || '—')}</div>
+          ${v.grade ? `<div class="car-grade">${escapeHtml(v.grade)}</div>` : ''}
+        </div>
+        ${v.lower4 ? `<div class="lower4">${escapeHtml(String(v.lower4))}</div>` : ''}
+      </div>
+      <div class="specs">
+        ${yearMonth ? `<div class="spec year">📅 ${escapeHtml(yearMonth)}</div>` : ''}
+        ${v.mileage ? `<div class="spec km">🚗 ${formatKm(v.mileage)}</div>` : ''}
+        ${v.color ? `<div class="spec color">🎨 ${escapeHtml(v.color)}</div>` : ''}
+        ${v.shaken ? `<div class="spec shaken">📋 車検: ${escapeHtml(v.shaken)}</div>` : ''}
+      </div>
+      <div class="staff-row">
+        <div class="staff-cell" onclick="openStaffModal(${v.rowNum},'photo','写真')">
+          <div class="staff-lbl">📷 写真</div>
+          <div class="staff-val ${v.photo?'':'empty'}">${escapeHtml(v.photo || '未')}</div>
+        </div>
+        <div class="staff-cell" onclick="openStaffModal(${v.rowNum},'cs','CS')">
+          <div class="staff-lbl">🛁 CS</div>
+          <div class="staff-val ${v.cs?'':'empty'}">${escapeHtml(v.cs || '未')}</div>
+        </div>
+        <div class="staff-cell" onclick="openStaffModal(${v.rowNum},'goo','GOO')">
+          <div class="staff-lbl">🌐 GOO</div>
+          <div class="staff-val ${v.goo?'':'empty'}">${escapeHtml(v.goo || '未')}</div>
+        </div>
+      </div>
+      <div class="status-row">
+        <div class="status-lbl">状況:</div>
+        <button class="status-pill ${stOpt.cls}" onclick="openStatusModal(${v.rowNum})">${escapeHtml(v.status || '—')}</button>
+      </div>
+      ${v.memo ? `<div class="memo">📝 ${escapeHtml(v.memo)}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function formatKm(km) {
+  const n = Number(km);
+  if (isNaN(n)) return km;
+  return n.toLocaleString() + 'km';
+}
+
+function openStatusModal(rowNum) {
+  CURRENT = { rowNum, field:'status' };
+  document.getElementById('modalTitle').textContent = '状況を選択';
+  document.getElementById('modalList').className = 'modal-list';
+  document.getElementById('modalList').innerHTML = STATUS_OPTIONS.map(s =>
+    `<div class="modal-opt" onclick="updateValue('${s.v.replace(/'/g,"\\'")}')" style="background:${getStatusBg(s.cls)};color:${getStatusColor(s.cls)}">${s.v}</div>`
+  ).join('') + `<div class="modal-opt cancel" onclick="closeModal()">キャンセル</div>`;
+  document.getElementById('modal').classList.add('active');
+}
+
+function openStaffModal(rowNum, field, label) {
+  CURRENT = { rowNum, field };
+  document.getElementById('modalTitle').textContent = label + ' 担当者を選択';
+  document.getElementById('modalList').className = 'modal-list';
+  document.getElementById('modalList').innerHTML = STAFF_OPTIONS.map(s =>
+    `<div class="modal-opt" onclick="updateValue('${s.replace(/'/g,"\\'")}')">${s}</div>`
+  ).join('') + `<div class="modal-opt cancel" onclick="closeModal()">キャンセル</div>`;
+  document.getElementById('modal').classList.add('active');
+}
+
+function getStatusBg(cls) {
+  return { 'bp-machi':'#dcfce7','bp-irai':'#ede9fe','kari':'#fce7f3','kanrn':'#dc2626','machi':'#fef3c7','miji':'#fee2e2','miin':'#e5e7eb','other':'#bfdbfe' }[cls] || '#f0f4f8';
+}
+function getStatusColor(cls) {
+  return { 'bp-machi':'#166534','bp-irai':'#6d28d9','kari':'#9f1239','kanrn':'#fff','machi':'#92400e','miji':'#991b1b','miin':'#374151','other':'#1e40af' }[cls] || '#1a2332';
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('active');
+  CURRENT = null;
+}
+
+async function updateValue(value) {
+  if (!CURRENT) return;
+  const { rowNum, field } = CURRENT;
+  closeModal();
+  showToast('更新中...');
+
+  try {
+    const res = await fetch(GAS_URL, {
+      method:'POST',
+      body: JSON.stringify({ action:'updateMikei', rowNum, field, value })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+
+    // ローカルデータも更新
+    const v = DATA.find(d => d.rowNum === rowNum);
+    if (v) v[field] = value;
+
+    renderList();
+    updateSummary();
+    showToast('✅ 更新しました');
+  } catch(e) {
+    showToast('エラー: ' + e.message);
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('active');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('active'), 2000);
+}
+
+// モーダル外側タップで閉じる
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target.id === 'modal') closeModal();
+});
+
+loadData();
+setInterval(loadData, 60000); // 1分ごと自動更新
+</script>
+</body>
+</html>
