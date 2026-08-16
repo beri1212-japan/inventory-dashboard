@@ -1431,7 +1431,7 @@ async function loadStockV4(){
       const cost=parseNumV4(r[c.costC]);
       const price=parseNumV4(r[c.prC]);
       const profit=parseNumV4(r[c.prfC]);
-      const days=parseNumV4(r[c.dC]);
+      const days=parseDaysV4(r[c.dC]);
       res.push({
         cat:c.cat,name,
         year:normYV4(parseYearV4(r[18])),
@@ -1500,7 +1500,7 @@ async function loadSoldV4(){
     const price=parseNumV4(r[25]);
     const cost=parseNumV4(r[24]);
     const profit=parseNumV4(r[30]);
-    const dv=parseNumV4(r[32]);
+    const dv=parseDaysV4(r[32]);
     const days=dv&&dv>0&&dv<3000?Math.round(dv):null;
     // 売約シートに売約日の列が無いため、掲載日 + 掲載日数 を売約日として推定する。
     // 掲載日数が空の行は掲載日をそのまま使う。
@@ -1622,7 +1622,7 @@ function renderList(){
       onclick="lsSort('${c.k}')">${c.l}${_lsSort.k===c.k?(_lsSort.asc?' ▲':' ▼'):''}</th>`).join('');
   const body=rows.map(d=>`<tr${d.unlisted?' class="ul"':''}>`+LS_COLS.map(c=>
       `<td style="text-align:${c.a==='r'?'right':c.a==='c'?'center':'left'}"${c.mono?' class="num"':''}>${lsFmt(d,c)}</td>`).join('')
-      +`<td>${d.lower4&&!d.unlisted?`<button class="minibtn" onclick="openPriceChange('${encodeURIComponent(d.lower4)}','${encodeURIComponent(d.name)}',${d.price!=null?d.price:0})">価格</button>`:''}</td></tr>`).join('');
+      +`<td>${d.lower4&&!d.unlisted?`<button class="minibtn" onclick="openPriceChange('${encodeURIComponent(d.lower4)}','${encodeURIComponent(d.name)}',${d.price!=null?d.price:0},'${encodeURIComponent(d.cat||'')}')">価格</button>`:''}</td></tr>`).join('');
   box.innerHTML=`<table class="lst"><thead><tr>${th}<th style="width:52px"></th></tr></thead><tbody>${body}</tbody></table>`;
   const cost=rows.reduce((a,b)=>a+(b.cost||0),0), prof=rows.reduce((a,b)=>a+(b.profit||0),0);
   document.getElementById('lsCount').innerHTML=
@@ -1685,6 +1685,22 @@ function exportListPdf(){
 // 記録先は 在庫管理表（原本）の AP〜AT。1セル =「2026/07/12 189.8→179.8」
 const PRICE_GAS='https://script.google.com/macros/s/AKfycbyGaGh3AlDPhaoYRKvh8C-H5RkMmr6f51xs0-wQJHJ2nUOECLlt0deBl-WRkjcP0pCg/exec';
 const PCHG_COLS=[41,42,43,44,45];   // AP,AQ,AR,AS,AT（0始まり）
+/** 掲載日数を読む。セルの表示形式が「日付」になっていると 1900/01/10 のような値で来るため戻す */
+function parseDaysV4(v){
+  const t=String(v==null?'':v).trim();
+  if(!t)return null;
+  // スプレッドシートは 1899/12/30 を 0 とする通し番号で日付を持つ。
+  // 表示形式が日付だと「11」が 1900/01/10 として出力されるので、通し番号に戻す。
+  const m=t.match(/^(18\d\d|19\d\d)[\/\-.](\d{1,2})[\/\-.](\d{1,2})/);
+  if(m){
+    const d=Date.UTC(+m[1],+m[2]-1,+m[3]);
+    const base=Date.UTC(1899,11,30);
+    const n=Math.round((d-base)/86400000);
+    return n>0?n:null;
+  }
+  const n=parseFloat(t.replace(/,/g,''));
+  return isNaN(n)?null:n;
+}
 function lower4V4(v){const t=String(v==null?'':v).replace(/[^0-9]/g,'');return t?t.slice(-4).padStart(4,'0'):'';}
 function parsePriceLog(r){
   const out=[];
@@ -1706,10 +1722,10 @@ function priceSummary(d){
 }
 
 let _pcTarget=null;
-function openPriceChange(lower4,name,cur){
-  lower4=decodeURIComponent(lower4); name=decodeURIComponent(name);
-  _pcTarget={lower4,name,cur:Number(cur)};
-  const d=(STOCK.find(x=>x.lower4===lower4&&x.name===name))||{};
+function openPriceChange(lower4,name,cur,cat){
+  lower4=decodeURIComponent(lower4); name=decodeURIComponent(name); cat=cat?decodeURIComponent(cat):'';
+  _pcTarget={lower4,name,cur:Number(cur),cat};
+  const d=(STOCK.find(x=>x.lower4===lower4&&x.name===name&&(!cat||x.cat===cat)))||{};
   const sum=priceSummary(d);
   const hist=sum?`<div class="pc-hist"><div class="pc-hl">これまでの値下げ</div>${sum.log.map(x=>
       `<div class="pc-hr"><span>${x.date.replace(/^\d{4}-/,'')}</span><b>${x.before} → ${x.after}</b><em>${x.diff}万</em></div>`).join('')}
@@ -1761,12 +1777,15 @@ async function submitPriceChange(){
   btn.disabled=true;btn.textContent='送信中…';msg.className='pc-msg';msg.textContent='';
   try{
     const res=await fetch(PRICE_GAS,{method:'POST',body:JSON.stringify({
-      action:'setPrice',lower4:_pcTarget.lower4,name:_pcTarget.name,newPrice:v,
+      action:'setPrice',lower4:_pcTarget.lower4,name:_pcTarget.name,cat:_pcTarget.cat,newPrice:v,
       reason:document.getElementById('pcReason').value,staff})});
     const j=await res.json();
-    if(!j.ok)throw new Error(j.error||'不明なエラー');
+    if(!j.ok){
+      msg.className='pc-msg err';msg.textContent=j.error||'不明なエラー';
+      btn.disabled=false;btn.textContent='この価格に変更する';return;
+    }
     // 画面側も即時反映（シートの同期を待たずに見えるように）
-    const t=STOCK.find(x=>x.lower4===_pcTarget.lower4&&x.name===_pcTarget.name);
+    const t=STOCK.find(x=>x.lower4===_pcTarget.lower4&&x.name===_pcTarget.name&&(!_pcTarget.cat||x.cat===_pcTarget.cat));
     if(t){ t.price=v; (t.pchg=t.pchg||[]).push({date:new Date().toISOString().slice(0,10),before:j.oldPrice,after:v,diff:j.diff}); }
     msg.className='pc-msg ok';
     msg.innerHTML=`<b>${j.oldPrice} → ${j.newPrice}万円</b>（${j.diff}万円）に変更し、${j.sheet}シートの${j.slot}に記録しました。`;
@@ -1777,7 +1796,7 @@ async function submitPriceChange(){
       renderMatrix();},1400);
   }catch(e){
     msg.className='pc-msg err';
-    msg.textContent='失敗: '+e.message+'（GASのデプロイ設定が「全員」になっているかご確認ください）';
+    msg.textContent='通信に失敗しました: '+e.message;
     btn.disabled=false;btn.textContent='この価格に変更する';
   }
 }
@@ -1982,7 +2001,7 @@ function stockTable(c){
       <td>${d.days!=null&&d.days<3000?`<span class="pill ${cls}">${d.days}日</span>`:'—'}</td>
       <td>${sm?`<span class="pchg" title="${sm.log.map(x=>x.date+' '+x.before+'→'+x.after).join(' / ')}">${sm.n}回 <b>${sm.total}万</b></span>`:'<span style="color:var(--text3)">—</span>'}</td>
       <td style="color:var(--text3);font-size:11px">${act}</td>
-      <td>${d.lower4?`<button class="minibtn" onclick="openPriceChange('${encodeURIComponent(d.lower4)}','${encodeURIComponent(d.name)}',${d.price!=null?d.price:0})">価格変更</button>`:''}</td></tr>`;}).join('');
+      <td>${d.lower4?`<button class="minibtn" onclick="openPriceChange('${encodeURIComponent(d.lower4)}','${encodeURIComponent(d.name)}',${d.price!=null?d.price:0},'${encodeURIComponent(d.cat||'')}')">価格変更</button>`:''}</td></tr>`;}).join('');
   return `<table class="dtl"><thead><tr>${th('year','年式')}<th>色</th>${th('km','走行距離')}${th('price','価格')}${th('cost','原価')}${th('days','在庫日数')}<th>値下げ</th><th>対応</th><th></th></tr></thead><tbody>${body}</tbody></table>`;
 }
 function sortStockTable(k){
