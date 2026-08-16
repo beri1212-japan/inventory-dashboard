@@ -333,6 +333,22 @@ table.dtl tbody tr:hover td{background:#f7fafe!important;}
 .pc-msg.err{color:var(--red);background:var(--red-bg);border-radius:8px;padding:9px 11px;}
 .pc-btns{display:flex;gap:8px;justify-content:flex-end;}
 
+/* --- 在庫一覧 --- */
+.tblwrap2{overflow:auto;max-height:calc(100vh - 210px);border-radius:0 0 14px 14px;}
+table.lst{width:100%;border-collapse:collapse;white-space:nowrap;min-width:1180px;}
+table.lst thead th{position:sticky;top:0;z-index:10;background:var(--bg4);color:var(--text2);font-size:10px;font-weight:600;
+  padding:8px 7px;border:none;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;font-family:var(--font);
+  width:auto;min-width:0;max-width:none;white-space:nowrap;}
+table.lst thead th:first-child{position:sticky;top:0;left:auto;background:var(--bg4);width:auto;min-width:0;max-width:none;}
+table.lst thead th:hover{color:var(--accent);}
+table.lst tbody td{padding:6px 7px;border:none;border-bottom:1px solid var(--border);font-size:11.5px;
+  width:auto;min-width:0;max-width:none;text-align:left;overflow:hidden;text-overflow:ellipsis;}
+table.lst tbody td:first-child{position:static;background:transparent;width:auto;min-width:0;max-width:none;border-right:none;padding:6px 7px;font-size:11.5px;}
+table.lst tbody td.num{font-family:var(--mono);}
+table.lst tbody tr:hover td{background:#f4f8fe!important;}
+table.lst tbody tr.ul td{background:#fffaf3;}
+table.lst tbody tr.ul:hover td{background:#fff4e6!important;}
+
 /* --- responsive --- */
 .side-scrim{display:none;position:fixed;inset:0;background:rgba(4,10,17,.35);z-index:70;}
 @media (max-width:1024px){
@@ -403,6 +419,7 @@ table.dtl tbody tr:hover td{background:#f7fafe!important;}
   </div>
   <nav class="side-nav">
     <button class="nav-item active" onclick="showPage('stock')"><svg class="ic" aria-hidden="true"><use href="#i-stock"></use></svg><span>在庫現状</span></button>
+    <button class="nav-item" onclick="showPage('list')"><svg class="ic" aria-hidden="true"><use href="#i-checks"></use></svg><span>在庫一覧</span></button>
     <button class="nav-item" onclick="showPage('unlisted')"><svg class="ic" aria-hidden="true"><use href="#i-unlisted"></use></svg><span>未掲載管理</span><span class="nav-badge" id="navUl" style="display:none"></span></button>
     <button class="nav-item" onclick="showPage('longstock')"><svg class="ic" aria-hidden="true"><use href="#i-clock"></use></svg><span>長期在庫</span></button>
     <button class="nav-item" onclick="showPage('action')"><svg class="ic" aria-hidden="true"><use href="#i-action"></use></svg><span>在庫対策</span></button>
@@ -499,6 +516,31 @@ table.dtl tbody tr:hover td{background:#f7fafe!important;}
       <div class="four-col" id="profitCards"></div>
     </div>
   </div>
+</div>
+
+
+<!-- PAGE: 在庫一覧 -->
+<div class="page" id="page-list">
+  <div class="sec" style="margin-bottom:12px">
+    <div class="sec-hdr" style="gap:10px;flex-wrap:wrap">
+      <span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-checks"></use></svg>絞り込み</span>
+      <div class="ctrls">
+        <select class="sel" id="lsCat" onchange="renderList()"><option value="">全カテゴリ</option><option>ミニバン</option><option>SUV</option><option>HVCP</option><option>軽</option></select>
+        <select class="sel" id="lsDays" onchange="renderList()">
+          <option value="">在庫日数：すべて</option><option value="100">100日超のみ</option>
+          <option value="200">200日超のみ</option><option value="300">300日超のみ</option>
+          <option value="new">30日以内</option></select>
+        <select class="sel" id="lsSrc" onchange="renderList()"><option value="">仕入先：すべて</option></select>
+        <label class="chklbl"><input type="checkbox" id="lsUl" onchange="renderList()"> 未掲載も含む</label>
+        <input type="text" id="lsQ" class="sel" style="min-width:180px" placeholder="車名・グレード・SID・下4桁で検索" oninput="renderList()">
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+        <span id="lsCount" style="font-size:11.5px;color:var(--text3)"></span>
+        <button class="rbtn ghost" onclick="exportListPdf()"><svg class="ic ic-s"><use href="#i-pdf"></use></svg>PDF出力</button>
+      </div>
+    </div>
+  </div>
+  <div class="sec"><div class="sec-body" style="padding:0"><div class="tblwrap2"><div id="lsTable"></div></div></div></div>
 </div>
 
 <!-- PAGE 2: 未掲載管理 -->
@@ -1403,6 +1445,15 @@ async function loadStockV4(){
         color:normColor(r[20]),
         lower4:lower4V4(r[23]),
         pchg:parsePriceLog(r),          // AP〜AT の値下げ履歴
+        // 在庫一覧用
+        sid:String(r[40]||'').trim(),        // AO列
+        grade:String(r[16]||'').trim(),      // Q列
+        shaken:String(r[22]||'').trim(),     // W列
+        rating:String(r[10]||'').trim(),     // K列 評価点
+        source:String(r[8]||'').trim(),      // I列 仕入区分
+        status:String(r[4]||'').trim(),      // E列
+        gyohan:parseNumV4(r[33]),            // AH列 業販価格
+        total:parseNumV4(r[39]),             // AN列 総額
         unlisted:false
       });
     }
@@ -1485,6 +1536,7 @@ async function loadAll(){
     PRICE_BANDS.length=0;PRICE_BANDS_V4.forEach(p=>PRICE_BANDS.push(p));
     buildYrData();
     fillConsultCats();
+    if(document.getElementById('page-list').classList.contains('active'))renderList();
     updateSummary();renderMatrix();renderProfitCards();renderUnlisted();renderLong();renderAction();renderSold();
     if(document.getElementById('page-balance').classList.contains('active'))renderBalance();
     document.getElementById('upd').textContent='更新: '+new Date().toLocaleString('ja-JP',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
@@ -1496,6 +1548,138 @@ async function loadAll(){
 
 
 
+
+
+// ═══════════════════════════════════════════════
+//  在庫一覧（全台・絞り込み・並べ替え・PDF出力）
+// ═══════════════════════════════════════════════
+const LS_COLS=[
+  {k:'rating', l:'評価点',   w:46,  a:'c'},
+  {k:'source', l:'仕入先',   w:56,  a:'c'},
+  {k:'sid',    l:'SID',      w:56,  a:'c', mono:1},
+  {k:'lower4', l:'車体番号', w:62,  a:'c', mono:1},
+  {k:'name',   l:'車名',     w:132},
+  {k:'grade',  l:'グレード', w:150},
+  {k:'year',   l:'年式',     w:56,  a:'c'},
+  {k:'color',  l:'色',       w:74},
+  {k:'km',     l:'距離',     w:76,  a:'r', mono:1},
+  {k:'shaken', l:'車検',     w:64,  a:'c'},
+  {k:'days',   l:'掲載日数', w:66,  a:'r', mono:1},
+  {k:'cost',   l:'原価',     w:70,  a:'r', mono:1},
+  {k:'price',  l:'本体価格', w:76,  a:'r', mono:1},
+  {k:'gyohan', l:'業販価格', w:76,  a:'r', mono:1},
+  {k:'profit', l:'利益',     w:66,  a:'r', mono:1}
+];
+let _lsSort={k:'days',asc:false};
+
+function listRows(){
+  const cat=document.getElementById('lsCat').value;
+  const dv =document.getElementById('lsDays').value;
+  const src=document.getElementById('lsSrc').value;
+  const ul =document.getElementById('lsUl').checked;
+  const q  =(document.getElementById('lsQ').value||'').trim().toLowerCase();
+  let a=ul?[...STOCK,...UNLISTED]:[...STOCK];
+  if(cat)a=a.filter(d=>d.cat===cat);
+  if(src)a=a.filter(d=>(d.source||'')===src);
+  if(dv==='new')      a=a.filter(d=>d.days!=null&&d.days<=30);
+  else if(dv)         a=a.filter(d=>d.days!=null&&d.days<3000&&d.days>=+dv);
+  if(q)a=a.filter(d=>[d.name,d.grade,d.sid,d.lower4,d.color].some(v=>String(v||'').toLowerCase().includes(q)));
+  const K=_lsSort.k, A=_lsSort.asc;
+  const val=d=>{
+    if(K==='year')return ySeireki(d.year)||0;
+    const v=d[K];
+    if(v==null||v==='')return A?Infinity:-Infinity;
+    return typeof v==='number'?v:String(v);
+  };
+  a.sort((x,y)=>{const p=val(x),r=val(y);
+    if(typeof p==='string'||typeof r==='string')return String(p).localeCompare(String(r),'ja')*(A?1:-1);
+    return (p-r)*(A?1:-1);});
+  return a;
+}
+function lsFmt(d,c){
+  const v=d[c.k];
+  if(v==null||v==='')return '<span style="color:var(--text3)">—</span>';
+  switch(c.k){
+    case 'km':     return (v/10000).toFixed(1)+'万';
+    case 'cost': case 'price': case 'gyohan': return v.toFixed(1);
+    case 'profit': return `<span style="color:${v<0?'var(--red)':v<10?'var(--amber)':'var(--text)'}">${v.toFixed(1)}</span>`;
+    case 'days':   {const cl=v>=300?'pill-r':v>=100?'pill-y':'pill-g';return `<span class="pill ${cl}">${v}</span>`;}
+    case 'color':  return colorChip(v,11)+v;
+    case 'name':   return `<span class="mname" onclick="openModelDetail('${encodeURIComponent(d.cat)}','${encodeURIComponent(d.name)}')">${v}</span>`;
+    default:       return String(v);
+  }
+}
+function renderList(){
+  const box=document.getElementById('lsTable');if(!box)return;
+  // 仕入先の選択肢を作る
+  const sel=document.getElementById('lsSrc');
+  if(sel&&sel.options.length<=1){
+    const set=[...new Set(STOCK.map(d=>d.source).filter(Boolean))].sort();
+    set.forEach(v=>{const o=document.createElement('option');o.value=o.textContent=v;sel.appendChild(o);});
+  }
+  const rows=listRows();
+  const th=LS_COLS.map(c=>`<th style="width:${c.w}px;text-align:${c.a==='r'?'right':c.a==='c'?'center':'left'}"
+      onclick="lsSort('${c.k}')">${c.l}${_lsSort.k===c.k?(_lsSort.asc?' ▲':' ▼'):''}</th>`).join('');
+  const body=rows.map(d=>`<tr${d.unlisted?' class="ul"':''}>`+LS_COLS.map(c=>
+      `<td style="text-align:${c.a==='r'?'right':c.a==='c'?'center':'left'}"${c.mono?' class="num"':''}>${lsFmt(d,c)}</td>`).join('')
+      +`<td>${d.lower4&&!d.unlisted?`<button class="minibtn" onclick="openPriceChange('${encodeURIComponent(d.lower4)}','${encodeURIComponent(d.name)}',${d.price!=null?d.price:0})">価格</button>`:''}</td></tr>`).join('');
+  box.innerHTML=`<table class="lst"><thead><tr>${th}<th style="width:52px"></th></tr></thead><tbody>${body}</tbody></table>`;
+  const cost=rows.reduce((a,b)=>a+(b.cost||0),0), prof=rows.reduce((a,b)=>a+(b.profit||0),0);
+  document.getElementById('lsCount').innerHTML=
+    `<b style="color:var(--text);font-size:13px">${rows.length}</b>台 ・ 原価計 ${Math.round(cost).toLocaleString()}万 ・ 想定利益 ${Math.round(prof).toLocaleString()}万`;
+}
+function lsSort(k){
+  if(_lsSort.k===k)_lsSort.asc=!_lsSort.asc;
+  else{_lsSort.k=k;_lsSort.asc=['name','grade','color','shaken','source','sid','lower4','rating'].includes(k);}
+  renderList();
+}
+
+/** PDF出力：いまの絞り込みと並び順のまま A4横で印刷 */
+function exportListPdf(){
+  const rows=listRows();
+  if(!rows.length){alert('出力する在庫がありません。');return;}
+  const cat=document.getElementById('lsCat').value||'全カテゴリ';
+  const dv=document.getElementById('lsDays');
+  const cond=[cat, dv.options[dv.selectedIndex].text, document.getElementById('lsQ').value].filter(x=>x&&!/すべて/.test(x)).join(' / ');
+  const now=new Date().toLocaleString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const cost=rows.reduce((a,b)=>a+(b.cost||0),0), prof=rows.reduce((a,b)=>a+(b.profit||0),0);
+  const esc=v=>String(v==null?'':v).replace(/[<>&]/g,m=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[m]));
+  const cell=(d,c)=>{
+    const v=d[c.k]; if(v==null||v==='')return '';
+    if(c.k==='km')return (v/10000).toFixed(1)+'万';
+    if(['cost','price','gyohan','profit'].includes(c.k))return v.toFixed(1);
+    return esc(v);
+  };
+  const body=rows.map(d=>'<tr>'+LS_COLS.map(c=>
+      `<td class="${c.a==='r'?'r':c.a==='c'?'c':''}${d.days>=300&&c.k==='days'?' bad':''}">${cell(d,c)}</td>`).join('')+'</tr>').join('');
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><title>在庫一覧 ${now}</title>
+  <style>
+    @page{size:A4 landscape;margin:8mm}
+    *{box-sizing:border-box}
+    body{font-family:'Yu Gothic','Hiragino Sans',Meiryo,sans-serif;font-size:8.2pt;color:#111;margin:0}
+    h1{font-size:13pt;margin:0 0 2px}
+    .meta{font-size:8pt;color:#555;margin-bottom:7px;display:flex;gap:14px}
+    .meta b{color:#111}
+    table{width:100%;border-collapse:collapse}
+    thead{display:table-header-group}
+    th{background:#eef0f2;border:.4pt solid #b8bec4;padding:3px 4px;font-size:7.6pt;font-weight:700;text-align:left;white-space:nowrap}
+    td{border:.4pt solid #ccd1d6;padding:2.6px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
+    td.r{text-align:right}td.c{text-align:center}td.bad{color:#c00;font-weight:700}
+    tbody tr:nth-child(even){background:#fafbfc}
+    .ft{margin-top:6px;font-size:7.6pt;color:#555;text-align:right}
+  </style></head><body>
+  <h1>在庫一覧　${esc(cond||'全在庫')}</h1>
+  <div class="meta"><span>出力: ${now}</span><span>台数: <b>${rows.length}台</b></span>
+    <span>原価累計: <b>${Math.round(cost).toLocaleString()}万円</b></span>
+    <span>想定利益累計: <b>${Math.round(prof).toLocaleString()}万円</b></span>
+    <span>株式会社インディオ富山</span></div>
+  <table><thead><tr>${LS_COLS.map(c=>`<th>${c.l}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table>
+  <div class="ft">INDIO inventory management</div>
+  </body></html>`);
+  w.document.close();
+  setTimeout(()=>{w.focus();w.print();},400);
+}
 
 // ═══════════ 価格変更 ═══════════
 // 記録先は 在庫管理表（原本）の AP〜AT。1セル =「2026/07/12 189.8→179.8」
@@ -2435,6 +2619,7 @@ function balBarChart2(id,items){
 
 const PAGE_META={
   stock:['在庫現状','車種 × 年式 / 走行 / 価格帯のマトリクス'],
+  list:['在庫一覧','全在庫を1台ずつ。絞り込み・並べ替え・PDF出力'],
   unlisted:['未掲載管理','未入庫・掲載待ち・仕上待ちのフェーズ別一覧'],
   longstock:['長期在庫','在庫日数マトリクスと長期滞留車の一覧'],
   action:['在庫対策','仕入れ優先リストと過剰在庫の是正リスト'],
@@ -2458,6 +2643,7 @@ function showPage(n){
   window.scrollTo({top:0,behavior:'smooth'});
   if(n==='balance')renderBalance();
   if(n==='consult')renderConsult();
+  if(n==='list')renderList();
 }
 
 
