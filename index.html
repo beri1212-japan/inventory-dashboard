@@ -251,6 +251,23 @@ tbody tr:hover td.oor{background:#e7eaed!important;}
 .dg-a{font-size:11.5px;font-weight:600;margin-top:5px;display:inline-flex;align-items:center;gap:5px;}
 @media (max-width:1024px){.cs-grid{grid-template-columns:1fr;}}
 
+/* --- 色の偏り --- */
+.cstack{display:flex;height:16px;border-radius:5px;overflow:hidden;border:1px solid var(--border);background:var(--bg4);}
+.cstack>i{display:block;height:100%;}
+.crow{display:flex;align-items:center;gap:12px;padding:10px 12px;border-bottom:1px solid var(--border);}
+.crow:last-child{border-bottom:none;}
+.crow:hover{background:#f7fafe;}
+.cname{width:170px;flex-shrink:0;}
+.cname b{font-size:12.5px;font-weight:700;color:var(--text);display:block;}
+.cname span{font-size:10.5px;color:var(--text3);}
+.cbar{flex:1;min-width:120px;}
+.clegend{display:flex;flex-wrap:wrap;gap:8px;margin-top:5px;font-size:10px;color:var(--text2);}
+.clegend i{display:inline-flex;align-items:center;font-style:normal;}
+.cadvice{width:210px;flex-shrink:0;font-size:11px;line-height:1.5;}
+.colrow{display:grid;grid-template-columns:88px 1fr;align-items:center;gap:8px;padding:3px 0;}
+.colrow .cl{font-size:11px;color:var(--text2);display:flex;align-items:center;justify-content:flex-end;}
+@media (max-width:1024px){.crow{flex-wrap:wrap}.cname,.cadvice{width:100%}}
+
 /* --- responsive --- */
 .side-scrim{display:none;position:fixed;inset:0;background:rgba(4,10,17,.35);z-index:70;}
 @media (max-width:1024px){
@@ -388,6 +405,7 @@ tbody tr:hover td.oor{background:#e7eaed!important;}
           <option value="year">× 年式</option>
           <option value="km">× 走行距離</option>
           <option value="price">× 価格帯（20万毎）</option>
+          <option value="color">× 色</option>
         </select>
         <select class="sel" id="viewSel" onchange="renderMatrix()"><option value="count">台数</option><option value="price">平均価格（万）</option><option value="km">平均走行（万km）</option></select>
         <label class="chklbl"><input type="checkbox" id="showU" onchange="renderMatrix()"> 未掲載含む</label>
@@ -524,6 +542,13 @@ tbody tr:hover td.oor{background:#e7eaed!important;}
       <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-down"></use></svg>過剰在庫 是正リスト</span><span style="font-size:10px;color:var(--text3)">価格見直し・販促推奨</span></div>
       <div class="sec-body" style="max-height:360px;overflow-y:auto;"><div class="cards-grid" id="excessListL"></div></div>
     </div>
+  </div>
+  <div class="sec">
+    <div class="sec-hdr">
+      <span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-palette"></use></svg>色の偏りアラート</span>
+      <span style="font-size:10px;color:var(--text3)">在庫3台以上で1色に偏っている / 売れている色が欠けている車種</span>
+    </div>
+    <div class="sec-body" style="max-height:420px;overflow-y:auto"><div id="colorAlert"></div></div>
   </div>
   <div class="two-col">
     <div class="sec">
@@ -781,6 +806,58 @@ function closeModal(){document.getElementById('modal').style.display='none';docu
 
 function cellCls(n,u){if(u)return'nu';if(!n)return'n0';return['','n1','n2','n3','n3','n4','n4','n4','n5'][Math.min(n,8)];}
 
+
+// ═══════════ 色の正規化 ═══════════
+// シート上は「ﾊﾟｰﾙ / パール」「ｼﾙﾊﾞｰ / 銀」「茶 / ﾌﾞﾗｳﾝ」のように表記が割れているため統一する。
+// ※「白」と「パール」は中古車では別物として扱われることが多いので分けたまま。統合したい場合はここを1行変えるだけ。
+const COLOR_ALIAS={
+  'ﾊﾟｰﾙ':'パール','パール':'パール','ﾊﾟｰﾙﾎﾜｲﾄ':'パール',
+  '白':'白','ﾎﾜｲﾄ':'白','ホワイト':'白',
+  '黒':'黒','ﾌﾞﾗｯｸ':'黒','ブラック':'黒','黒紫':'黒',
+  'ｼﾙﾊﾞｰ':'シルバー','シルバー':'シルバー','銀':'シルバー',
+  'ｸﾞﾚｰ':'グレー','グレー':'グレー','灰':'グレー','ｶﾞﾝﾒﾀ':'グレー','ガンメタ':'グレー',
+  'ﾌﾞﾗｳﾝ':'ブラウン','ブラウン':'ブラウン','茶':'ブラウン',
+  'ﾍﾞｰｼﾞｭ':'ベージュ','ベージュ':'ベージュ',
+  'ﾋﾟﾝｸ':'ピンク','ピンク':'ピンク','桃':'ピンク',
+  'ｵﾚﾝｼﾞ':'オレンジ','オレンジ':'オレンジ',
+  'ｶｰｷ':'カーキ','カーキ':'カーキ',
+  'ｺﾞｰﾙﾄﾞ':'ゴールド','ゴールド':'ゴールド',
+  'ﾌﾞﾛﾝｽﾞ':'ブロンズ','ブロンズ':'ブロンズ',
+  'ﾜｲﾝ':'ワイン','ワイン':'ワイン','赤黒':'ワイン',
+  '赤':'赤','青':'青','紺':'紺','水色':'水色','緑':'緑','紫':'紫','黄':'黄'
+};
+const COLOR_HEX={'黒':'#14181d','パール':'#f4f4f2','白':'#ffffff','シルバー':'#c5cad0','グレー':'#8b939c',
+  '青':'#1c72e0','紺':'#1e3a5f','水色':'#7dd3fc','赤':'#d40924','ワイン':'#7f1d1d','緑':'#00af44',
+  'ブラウン':'#7c4a21','ベージュ':'#e2d6bd','紫':'#955be3','ピンク':'#f472b6','黄':'#f5c518',
+  'オレンジ':'#ff862e','カーキ':'#7d7f4a','ゴールド':'#d4af37','ブロンズ':'#a97142'};
+function normColor(v){
+  const t=String(v==null?'':v).trim();
+  if(!t||t.length>6&&!COLOR_ALIAS[t])return COLOR_ALIAS[t]||'';
+  return COLOR_ALIAS[t]||(t.length<=1&&!/[黒白赤青緑紫黄茶銀灰紺桃]/.test(t)?'':t);
+}
+function colorChip(c,size){
+  const s=size||11;const hex=COLOR_HEX[c]||'#cbd5e1';
+  const light=['#ffffff','#f4f4f2','#e2d6bd','#f5c518'].includes(hex);
+  return `<span style="display:inline-block;width:${s}px;height:${s}px;border-radius:50%;background:${hex};border:1px solid ${light?'#c8ccd0':'rgba(0,0,0,.12)'};vertical-align:-1px;margin-right:4px;flex-shrink:0"></span>`;
+}
+// 在庫全体での出現順（多い色から）
+function colorKeys(){
+  const m={};[...STOCK,...UNLISTED,...SOLD].forEach(d=>{if(d.color)m[d.color]=(m[d.color]||0)+1;});
+  return Object.keys(m).sort((a,b)=>m[b]-m[a]);
+}
+// 色の偏り診断（在庫3台以上が対象）
+function colorSkew(items,soldItems){
+  const st=items.filter(d=>d.color);
+  if(st.length<3)return null;
+  const m={};st.forEach(d=>m[d.color]=(m[d.color]||0)+1);
+  const ent=Object.entries(m).sort((a,b)=>b[1]-a[1]);
+  const [topC,topN]=ent[0];
+  const sm={};(soldItems||[]).forEach(d=>{if(d.color)sm[d.color]=(sm[d.color]||0)+1;});
+  const sold=Object.entries(sm).sort((a,b)=>b[1]-a[1]);
+  const missing=sold.filter(([c,n])=>n>=2&&!m[c]).map(([c,n])=>({c,n}));
+  return {n:st.length,dist:ent,top:topC,topN,ratio:topN/st.length,kinds:ent.length,sold,missing};
+}
+
 // ═══════════ 年式レンジ ═══════════
 // 優先順位: ① 車種マスタ G列/H列（お客様が編集） ② 内蔵表 ③ 実データから自動算出
 // 0 = それ以前から / 9999 = 現行（今年まで）
@@ -845,8 +922,8 @@ function inYearRange(name,key){
   return y>=r.lo&&y<=r.hi;
 }
 
-function axisKeys(t){if(t==='year')return YEAR_ORDER;if(t==='km')return KM_BANDS;return PRICE_BANDS;}
-function axisVal(d,t){if(t==='year')return d.year;if(t==='km')return kmBand(d.km);return pBand(d.price);}
+function axisKeys(t){if(t==='year')return YEAR_ORDER;if(t==='km')return KM_BANDS;if(t==='color')return colorKeys();return PRICE_BANDS;}
+function axisVal(d,t){if(t==='year')return d.year;if(t==='km')return kmBand(d.km);if(t==='color')return d.color||null;return pBand(d.price);}
 
 function renderMatrix(){
   const cf=document.getElementById('catSel').value;
@@ -874,7 +951,7 @@ function renderMatrix(){
   let h=`<thead><tr>
     <th>車種</th>
     <th>計</th><th>既定</th><th>過不足</th>
-    ${keys.map(k=>`<th>${k}</th>`).join('')}
+    ${keys.map(k=>`<th${type==='color'?' style="min-width:40px;max-width:40px;width:40px"':''}>${type==='color'?colorChip(k,9)+'<br>':''}${k}</th>`).join('')}
   </tr></thead><tbody>
   <tr style="background:#fff;font-weight:700;border-bottom:2px solid var(--border2)">
     <td style="position:sticky;left:0;background:#f7f9fc;font-size:10px;font-weight:700;padding:3px 8px;color:var(--accent);border-right:1.5px solid var(--border)">縦計</td>
@@ -1123,6 +1200,7 @@ function renderAction(){
   exc.sort((a,b)=>b.diff-a.diff);
   document.getElementById('excessListL').innerHTML=exc.map(d=>{const avg=STOCK.filter(s=>s.name===d.name&&s.days!=null&&s.days<10000).reduce((a,b,_,arr)=>a+b.days/arr.length,0);return `<div class="aitem"><div><div class="aname">${d.name}</div><div class="adet">${d.cat} / 規定${d.t}台→実${d.cnt}台 / 平均${Math.round(avg)}日在庫</div></div><span class="pill pill-y">+${d.diff}</span></div>`;}).join('');
   document.getElementById('longActionL').innerHTML=STOCK.filter(d=>d.days!=null&&d.days>=100&&d.days<10000).sort((a,b)=>b.days-a.days).slice(0,30).map(d=>{const cls=d.days>=300?'pill-r':d.days>=150?'pill-y':'pill-p';const msg=d.days>=300?'早急値下げ推奨':d.days>=150?'価格見直し推奨':'要注意';return `<div class="aitem"><div><div class="aname">${d.name}</div><div class="adet">${d.year} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'} → ${msg}</div></div><span class="pill ${cls}">${d.days}日</span></div>`;}).join('');
+  renderColorAlert();
   document.getElementById('readyListL').innerHTML=UNLISTED.filter(d=>!noSt.includes(d.status)&&d.name&&d.name.length>1).map(d=>{const k=`${d.cat}_${d.name}`;const stk=sm[k];const t=TEISU[k];const need=t!=null&&stk&&stk.cnt<t;return `<div class="aitem"><div><div class="aname">${d.name}</div><div class="adet">${d.cat} / ${d.year} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'}</div></div><span class="pill ${need?'pill-r':'pill-g'}">${need?'不足中・急ぎ':'掲載推奨'}</span></div>`;}).join('');
 }
 
@@ -1251,7 +1329,7 @@ async function loadStockV4(){
         days:(days&&days>=1&&days<2000)?Math.round(days):null,
         hv:r[14]?.trim()==='〇'?'〇':'',
         fwd:r[15]?.trim()==='〇'?'〇':'',
-        color:r[20]?.trim()||'',
+        color:normColor(r[20]),
         unlisted:false
       });
     }
@@ -1276,7 +1354,7 @@ async function loadUnlistedV4(){
       cost:(cost&&cost>0&&cost<2000)?cost:null,
       hv:r[14]?.trim()==='〇'?'〇':'',
       fwd:r[15]?.trim()==='〇'?'〇':'',
-      color:r[20]?.trim()||'',
+      color:normColor(r[20]),
       status:r[4]?.trim()||'',
       lower4:lower4?String(Math.round(lower4)).padStart(4,'0'):'',
       unlisted:true
@@ -1312,7 +1390,7 @@ async function loadSoldV4(){
       price:(price&&price>0&&price<2000)?price:null,
       cost:(cost&&cost>0&&cost<2000)?cost:null,
       profit:(profit&&Math.abs(profit)<500)?profit:null,
-      color:r[20]?.trim()||'',
+      color:normColor(r[20]),
       hv:r[14]?.trim()==='〇'?'〇':'',
       fwd:r[15]?.trim()==='〇'?'〇':'',
       days,month
@@ -1341,6 +1419,42 @@ async function loadAll(){
   }finally{btn.textContent='更新';sp.style.display='none';}
 }
 
+
+
+// ═══ 色の偏りアラート（在庫対策ページ）═══
+function colorStack(dist,total){
+  return '<div class="cstack">'+dist.map(([c,n])=>
+    `<i style="width:${n/total*100}%;background:${COLOR_HEX[c]||'#cbd5e1'}" title="${c} ${n}台"></i>`).join('')+'</div>';
+}
+function renderColorAlert(){
+  const box=document.getElementById('colorAlert');if(!box)return;
+  const by={};STOCK.forEach(d=>{const k=d.cat+'|'+d.name;(by[k]=by[k]||[]).push(d);});
+  const rows=[];
+  Object.entries(by).forEach(([k,items])=>{
+    const [cat,name]=k.split('|');
+    const cs=colorSkew(items,SOLD.filter(s=>s.name===name));
+    if(!cs)return;
+    // 6割を超えたら黄信号。展示場で気づく前に出す
+    if(cs.ratio>=0.6||cs.missing.length)rows.push({cat,name,cs});
+  });
+  rows.sort((a,b)=>b.cs.ratio-a.cs.ratio||b.cs.n-a.cs.n);
+  if(!rows.length){box.innerHTML='<div style="font-size:12px;color:var(--text3);padding:6px 2px">色が偏っている車種はありません。</div>';return;}
+  box.innerHTML=rows.map(r=>{
+    const cs=r.cs, pct=Math.round(cs.ratio*100);
+    const sev=cs.ratio>=0.85?['pill-r','危険']:cs.ratio>=0.7?['pill-y','注意']:['pill-b','監視'];
+    const legend=cs.dist.slice(0,6).map(([c,n])=>`<i>${colorChip(c,9)}${c} ${n}</i>`).join('');
+    let adv;
+    if(cs.missing.length)adv=`<b style="color:var(--red)">${cs.missing.map(x=>x.c).join('・')}</b> が売れているのに在庫ゼロ。次はこの色を。`;
+    else if(cs.ratio>=0.7)adv=`<b style="color:var(--amber)">${cs.top}以外</b>を優先。${cs.sold.filter(([c])=>c!==cs.top).slice(0,2).map(([c,n])=>`${c}(実績${n}台)`).join('・')||'売れ筋色を確認'}`;
+    else adv=`${cs.top}が${pct}%。次の1台は別色を検討。`;
+    return `<div class="crow">
+      <div class="cname"><b>${r.name}</b><span>${r.cat} / 在庫${cs.n}台 ・ ${cs.kinds}色</span></div>
+      <div class="cbar">${colorStack(cs.dist,cs.n)}<div class="clegend">${legend}</div></div>
+      <span class="pill ${sev[0]}" style="flex-shrink:0">${cs.top} ${pct}%</span>
+      <div class="cadvice">${adv}</div>
+      <span class="pill ${sev[0]}" style="flex-shrink:0">${sev[1]}</span>
+    </div>`;}).join('');
+}
 
 // ═══════════ 車種コンサル ═══════════
 function fillConsultCats(){
@@ -1444,11 +1558,54 @@ function consultDiagnose(c){
       g>0?'値付けを売れ筋帯に寄せる':'もう一段上の価格帯も狙える');
   }
 
-  // ⑧ 未掲載
+  // ⑧ 色の偏り（展示場が同じ色で埋まるのを事前に防ぐ）
+  const cs=colorSkew(c.st,c.sd);
+  if(cs){
+    const pct=Math.round(cs.ratio*100);
+    if(cs.ratio>=0.7){
+      const other=cs.sold.filter(([x])=>x!==cs.top).slice(0,2);
+      R(cs.ratio>=0.85?'S':'A','色が1色に偏っている',
+        `在庫${cs.n}台のうち${cs.topN}台（${pct}%）が${cs.top}です。展示場が同じ色で埋まり、色で選びたいお客様を取りこぼします。`,
+        `次は${cs.top}以外を仕入れる${other.length?`（実績あり: ${other.map(([x,n])=>`${x} ${n}台`).join('・')}）`:''}`);
+    }else if(cs.kinds<=2&&cs.n>=4){
+      R('A','色のバリエーションが少ない',`在庫${cs.n}台に対して色は${cs.kinds}色だけです（${cs.dist.map(([x,n])=>`${x}${n}`).join(' / ')}）。`,'色の選択肢を増やす');
+    }else{
+      R('B','色バランスは良好',`在庫${cs.n}台で${cs.kinds}色。最多の${cs.top}でも${pct}%です。`,'この配分を維持');
+    }
+    if(cs.missing.length)R('A','売れている色の在庫が無い',
+      `${cs.missing.map(x=>`${x.c}（売約${x.n}台）`).join('、')} は実績があるのに在庫ゼロです。`,
+      `${cs.missing.map(x=>x.c).join('・')}を仕入れる`);
+  }
+
+  // ⑨ 未掲載
   if(c.ul.length)R('A','未掲載が残っている',`${c.ul.length}台が未掲載です。掲載しない限り在庫日数だけが増えます。`,'掲載を最優先');
 
   const ord={S:0,A:1,B:2};
   return out.sort((a,b)=>ord[a.p]-ord[b.p]);
+}
+
+function colorBalanceHtml(c){
+  const sm={},im={};
+  c.st.forEach(d=>{if(d.color)im[d.color]=(im[d.color]||0)+1;});
+  c.sd.forEach(d=>{if(d.color)sm[d.color]=(sm[d.color]||0)+1;});
+  const keys=[...new Set([...Object.keys(im),...Object.keys(sm)])].sort((a,b)=>(im[b]||0)-(im[a]||0)||(sm[b]||0)-(sm[a]||0));
+  if(!keys.length)return'<div style="font-size:12px;color:var(--text3)">色データがありません</div>';
+  const stTot=c.st.filter(d=>d.color).length;
+  const dist=Object.entries(im).sort((a,b)=>b[1]-a[1]);
+  const mx=Math.max(1,...keys.map(k=>Math.max(im[k]||0,sm[k]||0)));
+  let h='';
+  if(stTot){
+    const top=dist[0], pct=Math.round(top[1]/stTot*100);
+    const col=pct>=85?'var(--red)':pct>=70?'var(--amber)':'var(--text2)';
+    h+=`<div style="margin-bottom:10px">${colorStack(dist,stTot)}
+      <div style="font-size:11px;margin-top:6px;color:var(--text2)">在庫${stTot}台 / ${dist.length}色 ・ 最多は<b style="color:${col}">${top[0]} ${top[1]}台（${pct}%）</b></div></div>`;
+  }
+  h+=keys.map(k=>{
+    const a=im[k]||0,b=sm[k]||0;
+    const bar=(v,col)=>v?`<div class="ybar" style="width:${Math.max(v/mx*100,7)}%;background:${col}">${v}</div>`:`<div class="ybar empty" style="width:100%"></div>`;
+    return `<div class="colrow"><div class="cl">${colorChip(k,10)}${k}</div><div class="ybar-pair">${bar(a,'var(--accent)')}${bar(b,'#00af44')}</div></div>`;
+  }).join('');
+  return h;
 }
 
 function renderConsult(){
@@ -1482,9 +1639,16 @@ function renderConsult(){
         <span class="sec-title">${'<svg class="ic ic-s"><use href="#i-gauge"></use></svg>'}年式バランス</span>
         <span style="font-size:10.5px;color:var(--text3)">上段＝<b style="color:var(--accent)">在庫</b> / 下段＝<b style="color:#00af44">売約実績</b>${c.rng?` ・ レンジ ${yearRangeLabel(c.name)}（${c.rng.src}）`:''}</span>
       </div><div class="sec-body">${rows||'<div style="font-size:12px;color:var(--text3)">データがありません</div>'}</div></div>
-    <div class="sec"><div class="sec-hdr"><span class="sec-title">${'<svg class="ic ic-s"><use href="#i-chart"></use></svg>'}価格帯・走行距離帯</span></div>
-      <div class="sec-body"><div style="font-size:10.5px;color:var(--text3);font-weight:600;margin-bottom:5px">価格帯（在庫）</div><div class="barchart" id="csPrice"></div><div style="font-size:10.5px;color:var(--text3);font-weight:600;margin:12px 0 5px">走行距離帯（在庫）</div><div class="barchart" id="csKm"></div></div></div>
-  </div>`;
+    <div class="sec"><div class="sec-hdr">
+        <span class="sec-title">${'<svg class="ic ic-s"><use href="#i-palette"></use></svg>'}色バランス</span>
+        <span style="font-size:10.5px;color:var(--text3)">上段＝<b style="color:var(--accent)">在庫</b> / 下段＝<b style="color:#00af44">売約実績</b></span>
+      </div><div class="sec-body">${colorBalanceHtml(c)}</div></div>
+  </div>
+  <div class="sec" style="margin-bottom:12px"><div class="sec-hdr"><span class="sec-title">${'<svg class="ic ic-s"><use href="#i-chart"></use></svg>'}価格帯・走行距離帯</span></div>
+    <div class="sec-body cs-grid" style="margin-bottom:0">
+      <div><div style="font-size:10.5px;color:var(--text3);font-weight:600;margin-bottom:5px">価格帯（在庫）</div><div class="barchart" id="csPrice"></div></div>
+      <div><div style="font-size:10.5px;color:var(--text3);font-weight:600;margin-bottom:5px">走行距離帯（在庫）</div><div class="barchart" id="csKm"></div></div>
+    </div></div>`;
 
   // 診断
   const dg=consultDiagnose(c);
