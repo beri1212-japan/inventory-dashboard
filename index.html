@@ -268,6 +268,71 @@ tbody tr:hover td.oor{background:#e7eaed!important;}
 .colrow .cl{font-size:11px;color:var(--text2);display:flex;align-items:center;justify-content:flex-end;}
 @media (max-width:1024px){.crow{flex-wrap:wrap}.cname,.cadvice{width:100%}}
 
+/* --- 車種詳細モーダル --- */
+.modal.wide{max-width:1060px;width:94vw;max-height:88vh;padding:22px 24px;}
+.mname{cursor:pointer;border-bottom:1px dotted #b6bec6;}
+.mname:hover{color:var(--accent);border-bottom-color:var(--accent);}
+.md-kpi{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:4px 0 16px;}
+.md-kpi>div{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:9px 11px;}
+.md-kpi span{display:block;font-size:10px;color:var(--text3);font-weight:500;margin-bottom:3px;}
+.md-kpi b{font-size:19px;font-weight:700;font-family:var(--mono);line-height:1;}
+.md-kpi em{font-size:10px;font-style:normal;font-weight:500;color:var(--text3);margin-left:2px;}
+.md-sec{border-top:1px solid var(--border);padding-top:14px;margin-top:14px;}
+.md-t{font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px;margin-bottom:10px;}
+.md-t .ic{color:var(--accent);}
+.nar{display:flex;gap:10px;padding:9px 0;align-items:flex-start;}
+.nar-ic{flex-shrink:0;width:24px;height:24px;border-radius:7px;display:flex;align-items:center;justify-content:center;}
+.nar-h{font-size:13px;font-weight:700;margin-bottom:3px;}
+.nar-b{font-size:12px;color:var(--text2);line-height:1.75;}
+.nar-b b{color:var(--text);font-weight:700;}
+.jg{margin-bottom:12px;}
+.jg-h{font-size:11.5px;font-weight:700;letter-spacing:.04em;margin-bottom:5px;}
+.jg ul{margin:0;padding-left:17px;}
+.jg li{font-size:12px;color:var(--text2);line-height:1.75;margin-bottom:4px;}
+.jg li b{color:var(--text);}
+.lgrow{display:flex;flex-wrap:wrap;gap:11px;align-items:center;font-size:10.5px;color:var(--text2);margin-top:8px;}
+.lgrow i{display:inline-flex;align-items:center;gap:3px;font-style:normal;}
+table.dtl{width:100%;border-collapse:collapse;white-space:nowrap;min-width:0;}
+table.dtl thead th{position:static;background:var(--bg4);color:var(--text2);font-size:10px;font-weight:600;padding:7px 9px;text-align:left;border:none;border-bottom:1px solid var(--border);width:auto;min-width:0;max-width:none;font-family:var(--font);}
+table.dtl thead th:first-child{position:static;background:var(--bg4);width:auto;min-width:0;max-width:none;}
+table.dtl tbody td{padding:7px 9px;border:none;border-bottom:1px solid var(--border);text-align:left;width:auto;min-width:0;max-width:none;font-size:12px;}
+table.dtl tbody td:first-child{position:static;background:transparent;width:auto;min-width:0;max-width:none;border-right:none;padding:7px 9px;font-size:12px;}
+table.dtl tbody td.num{font-family:var(--mono);}
+table.dtl tbody tr:hover td{background:#f7fafe!important;}
+@media (max-width:1024px){.md-kpi{grid-template-columns:repeat(3,1fr);}.modal.wide{width:96vw;padding:16px;}}
+
+/* --- 価格変更 --- */
+.ov2{z-index:110;}
+.modal2{z-index:120;max-width:430px;}
+.minibtn{border:1px solid var(--border);background:var(--bg2);color:var(--accent);border-radius:7px;padding:4px 10px;font-size:11px;font-weight:600;font-family:var(--font);cursor:pointer;white-space:nowrap;}
+.minibtn:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
+.pchg{font-size:11px;font-family:var(--mono);color:var(--text2);cursor:help;border-bottom:1px dotted var(--border2);}
+.pchg b{color:var(--red);}
+.pc-cur{font-size:11.5px;color:var(--text2);margin-bottom:12px;}
+.pc-cur b{font-family:var(--mono);color:var(--text);}
+.pc-hist{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:14px;}
+.pc-hl{font-size:10.5px;font-weight:700;color:var(--text3);margin-bottom:6px;letter-spacing:.03em;}
+.pc-hr{display:flex;gap:10px;align-items:baseline;font-size:11.5px;padding:2px 0;font-family:var(--mono);}
+.pc-hr span{color:var(--text3);width:44px;flex-shrink:0;}
+.pc-hr b{flex:1;color:var(--text);font-weight:600;}
+.pc-hr em{font-style:normal;color:var(--red);font-weight:700;}
+.pc-hr.tot{border-top:1px solid var(--border);margin-top:5px;padding-top:6px;}
+.pc-row{display:flex;align-items:center;gap:10px;margin-bottom:11px;}
+.pc-row label{width:74px;flex-shrink:0;font-size:12px;color:var(--text2);font-weight:500;}
+.pc-row input{flex:1;border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:14px;font-family:var(--mono);color:var(--text);background:var(--bg2);}
+.pc-row input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(5,89,210,.13);}
+.pc-now{font-size:17px;font-weight:700;font-family:var(--mono);}
+.pc-now em{font-size:11px;font-style:normal;color:var(--text3);margin-left:3px;font-weight:500;}
+.pc-diff{font-size:13px;font-weight:700;font-family:var(--mono);width:74px;text-align:right;}
+.pc-diff.dn{color:var(--red);}.pc-diff.up{color:var(--green);}
+.pc-quick{display:flex;gap:6px;margin:-4px 0 13px 84px;}
+.pc-quick button{flex:1;border:1px solid var(--border);background:var(--bg2);border-radius:7px;padding:6px 0;font-size:11.5px;font-family:var(--mono);color:var(--text2);cursor:pointer;}
+.pc-quick button:hover{border-color:var(--accent);color:var(--accent);background:#f4f8fe;}
+.pc-msg{font-size:11.5px;line-height:1.6;margin-bottom:10px;}
+.pc-msg.ok{color:var(--green);background:var(--green-bg);border-radius:8px;padding:9px 11px;}
+.pc-msg.err{color:var(--red);background:var(--red-bg);border-radius:8px;padding:9px 11px;}
+.pc-btns{display:flex;gap:8px;justify-content:flex-end;}
+
 /* --- responsive --- */
 .side-scrim{display:none;position:fixed;inset:0;background:rgba(4,10,17,.35);z-index:70;}
 @media (max-width:1024px){
@@ -693,6 +758,12 @@ tbody tr:hover td.oor{background:#e7eaed!important;}
 </div>
 
 <div class="ov" id="ov" onclick="closeModal()"></div>
+<div class="ov ov2" id="ov2" onclick="closeModal2()"></div>
+<div class="modal modal2" id="modal2">
+  <span class="modal-x" onclick="closeModal2()">×</span>
+  <h3 id="modal2-title"></h3>
+  <div id="modal2-body"></div>
+</div>
 <div class="modal" id="modal">
   <span class="modal-x" onclick="closeModal()">×</span>
   <h3 id="modal-title"></h3>
@@ -802,7 +873,7 @@ function showCatModal(cat){
     <div style="max-height:320px;overflow-y:auto">${rows}</div>`;
   document.getElementById('modal').style.display='block';document.getElementById('ov').style.display='block';
 }
-function closeModal(){document.getElementById('modal').style.display='none';document.getElementById('ov').style.display='none';}
+function closeModal(){document.getElementById('modal').style.display='none';document.getElementById('ov').style.display='none';document.getElementById('modal').classList.remove('wide');}
 
 function cellCls(n,u){if(u)return'nu';if(!n)return'n0';return['','n1','n2','n3','n3','n4','n4','n4','n5'][Math.min(n,8)];}
 
@@ -983,7 +1054,7 @@ function renderMatrix(){
       const rng=(useRange&&type==='year')?yearRange(name):null;
       const rlbl=rng?yearRangeLabel(name):'';
       h+=`<tr>
-        <td>${name}${rlbl?`<div class="yrlbl" title="取扱年式レンジ（出典: ${rng.src}）">${rlbl}</div>`:''}</td>
+        <td><span class="mname" onclick="openModelDetail('${encodeURIComponent(cat)}','${encodeURIComponent(name)}')" title="クリックで年式×走行の散布図と在庫一覧を表示">${name}</span>${rlbl?`<div class="yrlbl" title="取扱年式レンジ（出典: ${rng.src}）">${rlbl}</div>`:''}</td>
         <td class="tcol">${tot}</td>
         <td class="dcol">${t!=null?t:'—'}</td>
         <td style="text-align:center">${diffBadge}</td>`;
@@ -1330,6 +1401,8 @@ async function loadStockV4(){
         hv:r[14]?.trim()==='〇'?'〇':'',
         fwd:r[15]?.trim()==='〇'?'〇':'',
         color:normColor(r[20]),
+        lower4:lower4V4(r[23]),
+        pchg:parsePriceLog(r),          // AP〜AT の値下げ履歴
         unlisted:false
       });
     }
@@ -1386,6 +1459,7 @@ async function loadSoldV4(){
     const month=sd?`${sd.getFullYear()}-${String(sd.getMonth()+1).padStart(2,'0')}`:null;
     res.push({
       cat,name,year:normYV4(parseYearV4(r[18])),
+      lower4:lower4V4(r[23]), pchg:parsePriceLog(r),
       km:(km&&km<500000)?km:null,
       price:(price&&price>0&&price<2000)?price:null,
       cost:(cost&&cost>0&&cost<2000)?cost:null,
@@ -1420,6 +1494,355 @@ async function loadAll(){
 }
 
 
+
+
+
+// ═══════════ 価格変更 ═══════════
+// 記録先は 在庫管理表（原本）の AP〜AT。1セル =「2026/07/12 189.8→179.8」
+const PRICE_GAS='https://script.google.com/macros/s/AKfycbyGaGh3AlDPhaoYRKvh8C-H5RkMmr6f51xs0-wQJHJ2nUOECLlt0deBl-WRkjcP0pCg/exec';
+const PCHG_COLS=[41,42,43,44,45];   // AP,AQ,AR,AS,AT（0始まり）
+function lower4V4(v){const t=String(v==null?'':v).replace(/[^0-9]/g,'');return t?t.slice(-4).padStart(4,'0'):'';}
+function parsePriceLog(r){
+  const out=[];
+  PCHG_COLS.forEach(i=>{
+    const t=String((r&&r[i])||'').trim();if(!t)return;
+    const m=t.match(/(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})\s*([\d.]+)\s*[→\->]+\s*([\d.]+)/);
+    if(!m)return;
+    const b=parseFloat(m[4]),a=parseFloat(m[5]);
+    out.push({date:`${m[1]}-${('0'+m[2]).slice(-2)}-${('0'+m[3]).slice(-2)}`,before:b,after:a,diff:Math.round((a-b)*10)/10});
+  });
+  return out;
+}
+/** 値下げの要約: 初回価格・回数・累計下げ幅・最終変更日 */
+function priceSummary(d){
+  const p=d.pchg||[];
+  if(!p.length)return null;
+  const first=p[0].before, last=p[p.length-1];
+  return {n:p.length, first, now:last.after, total:Math.round((last.after-first)*10)/10, lastDate:last.date, log:p};
+}
+
+let _pcTarget=null;
+function openPriceChange(lower4,name,cur){
+  lower4=decodeURIComponent(lower4); name=decodeURIComponent(name);
+  _pcTarget={lower4,name,cur:Number(cur)};
+  const d=(STOCK.find(x=>x.lower4===lower4&&x.name===name))||{};
+  const sum=priceSummary(d);
+  const hist=sum?`<div class="pc-hist"><div class="pc-hl">これまでの値下げ</div>${sum.log.map(x=>
+      `<div class="pc-hr"><span>${x.date.replace(/^\d{4}-/,'')}</span><b>${x.before} → ${x.after}</b><em>${x.diff}万</em></div>`).join('')}
+     <div class="pc-hr tot"><span>累計</span><b>${sum.first} → ${sum.now}</b><em>${sum.total}万</em></div></div>`
+    :'<div class="pc-hist"><div class="pc-hl">これまでの値下げ</div><div style="font-size:11.5px;color:var(--text3)">まだ記録がありません</div></div>';
+
+  document.getElementById('modal2-title').textContent=`価格変更 — ${name}`;
+  document.getElementById('modal2-body').innerHTML=`
+    <div class="pc-cur">下4桁 <b>${lower4}</b>　${d.year||''} ${d.color||''} ${d.km!=null?(d.km/10000).toFixed(1)+'万km':''}
+      ${d.days!=null?`　<span class="pill ${d.days>=300?'pill-r':d.days>=100?'pill-y':'pill-g'}">${d.days}日</span>`:''}</div>
+    ${hist}
+    <div class="pc-row"><label>現在価格</label><div class="pc-now">${cur}<em>万円</em></div></div>
+    <div class="pc-row"><label>新しい価格</label>
+      <input type="number" id="pcNew" step="0.1" inputmode="decimal" placeholder="例 179.8" oninput="pcPreview()">
+      <span id="pcDiff" class="pc-diff"></span></div>
+    <div class="pc-quick">
+      <button onclick="pcSet(-5)">−5万</button><button onclick="pcSet(-10)">−10万</button>
+      <button onclick="pcSet(-15)">−15万</button><button onclick="pcSet(-20)">−20万</button></div>
+    <div class="pc-row"><label>理由</label>
+      <select id="pcReason" class="sel" style="flex:1">
+        <option>長期在庫のため</option><option>相場下落</option><option>競合対策</option>
+        <option>問い合わせが少ない</option><option>決算・月末</option><option>その他</option></select></div>
+    <div class="pc-row"><label>担当者</label><input type="text" id="pcStaff" placeholder="任意"></div>
+    <div id="pcMsg" class="pc-msg"></div>
+    <div class="pc-btns">
+      <button class="rbtn ghost" onclick="closeModal2()">キャンセル</button>
+      <button class="rbtn" id="pcGo" onclick="submitPriceChange()">この価格に変更する</button></div>`;
+  const st=localStorage.getItem('price_staff'); if(st)document.getElementById('pcStaff').value=st;
+  document.getElementById('ov2').style.display='block';
+  document.getElementById('modal2').style.display='block';
+  setTimeout(()=>document.getElementById('pcNew').focus(),50);
+}
+function pcSet(d){const el=document.getElementById('pcNew');el.value=Math.round((_pcTarget.cur+d)*10)/10;pcPreview();}
+function pcPreview(){
+  const v=parseFloat(document.getElementById('pcNew').value);
+  const el=document.getElementById('pcDiff');
+  if(!(v>0)){el.textContent='';el.className='pc-diff';return;}
+  const d=Math.round((v-_pcTarget.cur)*10)/10;
+  el.textContent=(d>0?'+':'')+d+'万円';
+  el.className='pc-diff '+(d<0?'dn':d>0?'up':'');
+}
+async function submitPriceChange(){
+  const v=parseFloat(document.getElementById('pcNew').value);
+  const msg=document.getElementById('pcMsg'), btn=document.getElementById('pcGo');
+  if(!(v>0)){msg.className='pc-msg err';msg.textContent='新しい価格を入力してください';return;}
+  if(v===_pcTarget.cur){msg.className='pc-msg err';msg.textContent='現在価格と同じです';return;}
+  const staff=document.getElementById('pcStaff').value.trim();
+  if(staff)localStorage.setItem('price_staff',staff);
+  btn.disabled=true;btn.textContent='送信中…';msg.className='pc-msg';msg.textContent='';
+  try{
+    const res=await fetch(PRICE_GAS,{method:'POST',body:JSON.stringify({
+      action:'setPrice',lower4:_pcTarget.lower4,name:_pcTarget.name,newPrice:v,
+      reason:document.getElementById('pcReason').value,staff})});
+    const j=await res.json();
+    if(!j.ok)throw new Error(j.error||'不明なエラー');
+    // 画面側も即時反映（シートの同期を待たずに見えるように）
+    const t=STOCK.find(x=>x.lower4===_pcTarget.lower4&&x.name===_pcTarget.name);
+    if(t){ t.price=v; (t.pchg=t.pchg||[]).push({date:new Date().toISOString().slice(0,10),before:j.oldPrice,after:v,diff:j.diff}); }
+    msg.className='pc-msg ok';
+    msg.innerHTML=`<b>${j.oldPrice} → ${j.newPrice}万円</b>（${j.diff}万円）に変更し、${j.sheet}シートの${j.slot}に記録しました。`;
+    btn.textContent='完了';
+    setTimeout(()=>{closeModal2();
+      if(window.__MD){const c=modelStats(window.__MD.cat,window.__MD.name);window.__MD=c;
+        const el=document.getElementById('mdTable'); if(el)el.innerHTML=stockTable(c);}
+      renderMatrix();},1400);
+  }catch(e){
+    msg.className='pc-msg err';
+    msg.textContent='失敗: '+e.message+'（GASのデプロイ設定が「全員」になっているかご確認ください）';
+    btn.disabled=false;btn.textContent='この価格に変更する';
+  }
+}
+function closeModal2(){document.getElementById('modal2').style.display='none';document.getElementById('ov2').style.display='none';}
+
+// ═══════════════════════════════════════════════
+//  車種詳細（散布図 ＋ 一覧 ＋ 自動読み取り）
+// ═══════════════════════════════════════════════
+
+/** 1車種ぶんの数値をまとめて出す */
+function modelStats(cat,name){
+  const st=STOCK.filter(d=>d.cat===cat&&d.name===name);
+  const ul=UNLISTED.filter(d=>d.cat===cat&&d.name===name);
+  const sd=SOLD.filter(d=>d.name===name);
+  const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+  const teisu=TEISU[cat+'_'+name];
+  const long=st.filter(d=>d.days!=null&&d.days>=100&&d.days<3000);
+  const yset=a=>[...new Set(a.map(d=>d.year).filter(y=>y&&y!=='不明'))].sort((x,y)=>YEAR_ORDER.indexOf(x)-YEAR_ORDER.indexOf(y));
+  const stY=yset(st), sdY=yset(sd);
+  return {
+    cat,name,st,ul,sd,teisu,long,
+    tot:st.length, diff:teisu!=null?st.length-teisu:null,
+    stKm:avg(st.filter(d=>d.km!=null).map(d=>d.km)),
+    sdKm:avg(sd.filter(d=>d.km!=null).map(d=>d.km)),
+    stPrice:avg(st.filter(d=>d.price!=null).map(d=>d.price)),
+    sdPrice:avg(sd.filter(d=>d.price!=null).map(d=>d.price)),
+    stDays:avg(st.filter(d=>d.days!=null&&d.days<3000).map(d=>d.days)),
+    sdDays:avg(sd.filter(d=>d.days!=null).map(d=>d.days)),
+    profit:avg(sd.filter(d=>d.profit!=null).map(d=>d.profit)),
+    stYears:stY, sdYears:sdY,
+    overlap:stY.filter(y=>sdY.includes(y)),
+    skew:colorSkew(st,sd),
+    worst:st.filter(d=>d.days!=null&&d.days<3000).sort((a,b)=>b.days-a.days)[0]||null
+  };
+}
+
+/** 数値から「この結果から言えること」を文章で組み立てる */
+function modelNarrative(c){
+  const out=[];const R=(lv,h,b)=>out.push({lv,h,b});
+  const n=v=>Math.round(v), f1=v=>v.toFixed(1);
+  const km=v=>v==null?'—':(v/10000).toFixed(1)+'万km';
+  const man=v=>v==null?'—':n(v)+'万円';
+
+  // ① 年式の重なり
+  if(c.sd.length>=3&&c.stYears.length&&c.sdYears.length){
+    if(!c.overlap.length){
+      R('bad','売れている年式の在庫を1台も持っていない',
+        `売れた${c.sd.length}台は ${c.sdYears.join('・')}。いま抱えている在庫は ${c.stYears.join('・')}。<b>年式の重なりがゼロ</b>です。売れる年式を仕入れていない状態です。`);
+    }else if(c.overlap.length<=Math.min(2,c.sdYears.length-1)){
+      R('warn','売れ筋の年式をほとんど持っていない',
+        `売れた年式 ${c.sdYears.join('・')} のうち、在庫があるのは ${c.overlap.join('・')} だけです。`);
+    }else{
+      R('good','売れ筋の年式を押さえられている',
+        `売れた年式のうち ${c.overlap.join('・')} は在庫があります。仕入れの狙いは合っています。`);
+    }
+  }
+
+  // ② 価格・走行のズレ
+  if(c.stPrice!=null&&c.sdPrice!=null&&c.sd.length>=3){
+    const g=c.stPrice-c.sdPrice;
+    if(Math.abs(g)>=20){
+      R(g<0?'warn':'warn', g<0?`価格帯が${n(-g)}万円ぶん下にズレている`:`価格帯が${n(g)}万円ぶん上にズレている`,
+        `お客様が実際に買っているのは平均 <b>${man(c.sdPrice)}</b> のゾーン。並べている在庫の平均は <b>${man(c.stPrice)}</b> です。`
+        + (g<0?'安い車を揃えているのに、売れているのは高い車、という状態です。':'売れ筋より高い値付けの在庫が中心です。')
+        + (c.stKm!=null&&c.sdKm!=null?` 走行距離も在庫 ${km(c.stKm)} に対し売れたのは ${km(c.sdKm)} と${Math.abs(c.stKm-c.sdKm)>=10000?'はっきり':'やや'}差があります。`:''));
+    }else{
+      R('good','価格帯は売れ筋と合っている',`在庫平均 ${man(c.stPrice)} / 売れた平均 ${man(c.sdPrice)}。大きなズレはありません。`);
+    }
+  }
+
+  // ③ 滞留
+  if(c.tot>=3){
+    const r=c.long.length/c.tot;
+    if(r>=0.5){
+      const w=c.worst;
+      R('bad',`在庫の${n(r*100)}%が滞留している`,
+        `${c.tot}台中 <b>${c.long.length}台が100日超</b>。平均滞留 ${c.stDays!=null?n(c.stDays)+'日':'—'}。`
+        + (w?`最長は ${w.year} / ${w.color||'色不明'} / ${man(w.price)} で <b>${w.days}日</b>。`:'')
+        + (c.stPrice!=null&&c.sdPrice!=null&&c.stPrice<c.sdPrice
+           ? ' しかも滞留しているのは高い車ではありません。<b>値下げしても効きにくい</b>タイプで、価格ではなく年式・走行が市場とズレているのが原因です。':''));
+    }else if(c.long.length){
+      R('warn',`100日超が${c.long.length}台`,`${c.tot}台中${c.long.length}台。${c.worst?`最長 ${c.worst.days}日（${c.worst.year} / ${man(c.worst.price)}）。`:''}`);
+    }else{
+      R('good','滞留在庫なし',`100日を超えている在庫はありません。回転できています。`);
+    }
+  }
+
+  // ④ 色
+  if(c.skew){
+    const s=c.skew, pct=n(s.ratio*100);
+    if(s.ratio>=0.7||s.missing.length){
+      R(s.ratio>=0.85?'bad':'warn',`色が${s.top}に偏っている（${pct}%）`,
+        `在庫${s.n}台中 ${s.topN}台が${s.top}。`
+        + (s.missing.length?` 一方 <b>${s.missing.map(x=>`${x.c}は売約${x.n}台</b>の実績があるのに在庫ゼロ`).join('、')}です。その色を狙うお客様は他店へ行きます。`
+           :` 展示場が同じ色で埋まります。`));
+    }else{
+      R('good','色のバランスは取れている',`在庫${s.n}台で${s.kinds}色。最多の${s.top}でも${pct}%です。`);
+    }
+  }
+
+  // ⑤ 台数
+  if(c.teisu!=null){
+    const d=c.diff;
+    if(d<=-3)R('bad',`規定より${-d}台不足`,`規定${c.teisu}台に対し在庫${c.tot}台。売り場に選択肢が無く、機会損失が出ています。`);
+    else if(d>=3)R('warn',`規定より${d}台過剰`,`規定${c.teisu}台に対し在庫${c.tot}台。同じ車種に資金が寝ています。`);
+  }
+  return out;
+}
+
+/** 判断（今すぐ / 仕入れ方針 / やってはいけないこと） */
+function modelJudgement(c){
+  const n=v=>Math.round(v), man=v=>v==null?'—':n(v)+'万円';
+  const j={now:[],buy:[],avoid:[]};
+
+  if(c.worst&&c.worst.days>=200)
+    j.now.push(`<b>${c.worst.year} / ${c.worst.color||'色不明'} / ${man(c.worst.price)}</b> は${c.worst.days}日（約${Math.round(c.worst.days/30)}ヶ月）滞留。値下げの効きも期待しにくいので、業販に流して資金を回収する判断どき。`);
+  if(c.long.length>=3)
+    j.now.push(`100日超の${c.long.length}台を1台ずつ「下げる／流す」で仕分ける。放置すると仕入れ資金が作れません。`);
+  if(c.ul.length)
+    j.now.push(`未掲載が${c.ul.length}台。掲載しない限り在庫日数だけが増えます。最優先で掲載。`);
+
+  if(c.sd.length>=3){
+    const y=c.sdYears.slice(-3).join('〜')||'—';
+    const kmT=c.sdKm!=null?`${(c.sdKm/10000).toFixed(0)}万km前後`:'—';
+    const pT=c.sdPrice!=null?`${n(c.sdPrice*0.92)}〜${n(c.sdPrice*1.08)}万円`:'—';
+    const col=c.skew&&c.skew.missing.length?c.skew.missing.map(x=>x.c).join('・')
+             :(c.skew&&c.skew.sold.length?c.skew.sold.filter(([x])=>x!==c.skew.top).slice(0,1).map(([x])=>x).join('')||'':'');
+    j.buy.push(`次に買うべきは <b>${y} / ${kmT} / ${pT}</b>${col?` / <b>${col}</b>優先`:''}。実際に売れた${c.sd.length}台の実績値です。`);
+    if(c.stPrice!=null&&c.sdPrice!=null&&c.sdPrice-c.stPrice>=40)
+      j.buy.push(`ただし仕入単価が今より約${n(c.sdPrice-c.stPrice)}万円上がります。<b>滞留在庫の処分と仕入れはセットで動かす</b>必要があります。`);
+  }
+
+  if(c.stPrice!=null&&c.sdPrice!=null&&c.sdPrice-c.stPrice>=40&&c.long.length>=2)
+    j.avoid.push(`「安いから持っておく」。この車種では低価格帯が回転していません。安い個体を持つ理由が数字上ありません。`);
+  if(c.skew&&c.skew.ratio>=0.7)
+    j.avoid.push(`${c.skew.top}の追加仕入れ。すでに${Math.round(c.skew.ratio*100)}%です。`);
+  return j;
+}
+
+/** 案A: 散布図（年式 × 走行距離 / 色=車体色 / 大きさ=価格 / 赤リング=長期 / 破線=売約） */
+function scatterSvg(c){
+  const rng=yearRange(c.name);
+  let years=YEAR_ORDER.filter(y=>y!=='不明').filter(y=>{
+    if(!rng)return true;const v=ySeireki(y);return v!=null&&v>=rng.lo&&v<=rng.hi;});
+  const used=[...new Set([...c.st,...c.sd].map(d=>d.year))];
+  years=years.filter(y=>true);
+  if(!years.length)years=YEAR_ORDER.filter(y=>used.includes(y));
+  if(!years.length)return '<div style="font-size:12px;color:var(--text3)">データがありません</div>';
+
+  const W=980,H=300,L=54,R=16,T=16,B=34;
+  const pw=W-L-R, ph=H-T-B;
+  const kms=[...c.st,...c.sd].map(d=>d.km).filter(v=>v!=null);
+  const mxKm=Math.max(20000,Math.ceil((Math.max(...kms,0)*1.1)/20000)*20000);
+  const px=y=>L+(years.indexOf(y)+0.5)*(pw/years.length);
+  const py=k=>T+ph-(k/mxKm)*ph;                       // 下が低走行
+  const rad=p=>6+Math.min(p==null?60:p,320)/320*7;
+
+  let g='';
+  for(let k=0;k<=mxKm;k+=20000){
+    const y=py(k);
+    g+=`<line x1="${L}" y1="${y}" x2="${W-R}" y2="${y}" stroke="#eceef0"/>`
+     + `<text x="${L-8}" y="${y+3.5}" font-size="9.5" fill="#8b939c" text-anchor="end" font-family="DM Mono">${k/10000}万</text>`;
+  }
+  years.forEach((v,i)=>{ g+=`<text x="${L+(i+0.5)*(pw/years.length)}" y="${H-11}" font-size="10" fill="#4d5660" text-anchor="middle" font-weight="600">${v}</text>`; });
+
+  const light=x=>['パール','白','ベージュ','シルバー'].includes(x);
+  let sold='',stock='';
+  c.sd.forEach(d=>{ if(!years.includes(d.year)||d.km==null)return; const r=rad(d.price);
+    const h=COLOR_HEX[d.color]||'#cbd5e1';
+    sold+=`<circle cx="${px(d.year)}" cy="${py(d.km)}" r="${r}" fill="${h}" fill-opacity=".28" stroke="${light(d.color)?'#b9bfc6':h}" stroke-width="1.6" stroke-dasharray="3 2"><title>売約 ${d.year} ${d.color||''} ${(d.km/10000).toFixed(1)}万km ${d.price!=null?d.price+'万円':''}</title></circle>`; });
+  c.st.forEach(d=>{ if(!years.includes(d.year)||d.km==null)return; const r=rad(d.price);
+    const h=COLOR_HEX[d.color]||'#cbd5e1', lg=d.days!=null&&d.days>=100&&d.days<3000;
+    stock+=`<circle cx="${px(d.year)}" cy="${py(d.km)}" r="${r+2.6}" fill="#fff"/>`
+      +(lg?`<circle cx="${px(d.year)}" cy="${py(d.km)}" r="${r+2.4}" fill="none" stroke="#d40924" stroke-width="2"/>`:'')
+      +`<circle cx="${px(d.year)}" cy="${py(d.km)}" r="${r}" fill="${h}" stroke="${light(d.color)?'#b9bfc6':'rgba(0,0,0,.18)'}" stroke-width="1"><title>在庫 ${d.year} ${d.color||''} ${(d.km/10000).toFixed(1)}万km ${d.price!=null?d.price+'万円':''} ${d.days!=null?d.days+'日':''}</title></circle>`; });
+
+  const cols=[...new Set([...c.st,...c.sd].map(d=>d.color).filter(Boolean))];
+  const lg=cols.map(x=>`<i>${colorChip(x,10)}${x}</i>`).join('')
+    +`<i style="margin-left:12px"><svg width="15" height="15"><circle cx="7.5" cy="7.5" r="5.5" fill="#14181d"/></svg>在庫</i>`
+    +`<i><svg width="15" height="15"><circle cx="7.5" cy="7.5" r="5.5" fill="#14181d" fill-opacity=".28" stroke="#14181d" stroke-width="1.5" stroke-dasharray="3 2"/></svg>売約実績</i>`
+    +`<i><svg width="17" height="17"><circle cx="8.5" cy="8.5" r="7.4" fill="none" stroke="#d40924" stroke-width="2"/><circle cx="8.5" cy="8.5" r="5" fill="#14181d"/></svg>100日超</i>`;
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">${g}${sold}${stock}</svg>
+    <div class="lgrow">${lg}<span style="margin-left:auto;color:var(--text3)">丸の大きさ＝価格</span></div>`;
+}
+
+/** 案C: 在庫一覧（並べ替え可） */
+let _tblSort={k:'days',asc:false};
+function stockTable(c){
+  const K=_tblSort.k, A=_tblSort.asc;
+  const val=(d,k)=>k==='year'?(ySeireki(d.year)||0):(d[k]==null?-1:d[k]);
+  const rows=c.st.slice().sort((a,b)=>(val(a,K)-val(b,K))*(A?1:-1));
+  const th=(k,l)=>`<th onclick="sortStockTable('${k}')" style="cursor:pointer;user-select:none">${l}${K===k?(A?' ▲':' ▼'):''}</th>`;
+  const body=rows.map(d=>{
+    const cls=d.days>=300?'pill-r':d.days>=100?'pill-y':'pill-g';
+    const act=d.days>=300?'早急に値下げ / 業販':d.days>=100?'価格見直し':'—';
+    const sm=priceSummary(d);
+    return `<tr><td style="font-weight:700">${d.year}</td>
+      <td style="white-space:nowrap">${colorChip(d.color,12)}${d.color||'—'}</td>
+      <td class="num">${d.km!=null?(d.km/10000).toFixed(1)+'万km':'—'}</td>
+      <td class="num">${d.price!=null?d.price+'万円':'—'}</td>
+      <td class="num">${d.cost!=null?d.cost+'万円':'—'}</td>
+      <td>${d.days!=null&&d.days<3000?`<span class="pill ${cls}">${d.days}日</span>`:'—'}</td>
+      <td>${sm?`<span class="pchg" title="${sm.log.map(x=>x.date+' '+x.before+'→'+x.after).join(' / ')}">${sm.n}回 <b>${sm.total}万</b></span>`:'<span style="color:var(--text3)">—</span>'}</td>
+      <td style="color:var(--text3);font-size:11px">${act}</td>
+      <td>${d.lower4?`<button class="minibtn" onclick="openPriceChange('${encodeURIComponent(d.lower4)}','${encodeURIComponent(d.name)}',${d.price!=null?d.price:0})">価格変更</button>`:''}</td></tr>`;}).join('');
+  return `<table class="dtl"><thead><tr>${th('year','年式')}<th>色</th>${th('km','走行距離')}${th('price','価格')}${th('cost','原価')}${th('days','在庫日数')}<th>値下げ</th><th>対応</th><th></th></tr></thead><tbody>${body}</tbody></table>`;
+}
+function sortStockTable(k){
+  if(_tblSort.k===k)_tblSort.asc=!_tblSort.asc; else {_tblSort.k=k;_tblSort.asc=(k==='year');}
+  const c=window.__MD; if(!c)return;
+  document.getElementById('mdTable').innerHTML=stockTable(c);
+}
+
+/** 車種詳細を開く */
+function openModelDetail(cat,name){
+  cat=decodeURIComponent(cat); name=decodeURIComponent(name);
+  const c=modelStats(cat,name); window.__MD=c;
+  _tblSort={k:'days',asc:false};
+  const nar=modelNarrative(c), jg=modelJudgement(c);
+  const ic={bad:['#d40924','#fdeaec','i-alert'],warn:['#ff862e','#fff2e8','i-alert'],good:['#0559d2','#eaf1fd','i-checks']};
+  const man=v=>v==null?'—':Math.round(v)+'万円';
+
+  const kpi=`<div class="md-kpi">
+    <div><span>在庫</span><b>${c.tot}<em>台</em></b></div>
+    <div><span>規定</span><b>${c.teisu!=null?c.teisu:'—'}<em>台</em></b></div>
+    <div><span>過不足</span><b style="color:${c.diff==null?'':c.diff<0?'var(--red)':c.diff>=3?'var(--amber)':'var(--green)'}">${c.diff==null?'—':(c.diff>0?'+':'')+c.diff}</b></div>
+    <div><span>100日超</span><b style="color:${c.long.length?'var(--red)':'var(--green)'}">${c.long.length}<em>台</em></b></div>
+    <div><span>在庫平均</span><b>${man(c.stPrice)}</b></div>
+    <div><span>売れた平均</span><b style="color:var(--green)">${man(c.sdPrice)}</b></div>
+  </div>`;
+
+  const narHtml=nar.map(x=>{const t=ic[x.lv];
+    return `<div class="nar"><span class="nar-ic" style="background:${t[1]};color:${t[0]}"><svg class="ic ic-s"><use href="#${t[2]}"></use></svg></span>
+      <div><div class="nar-h" style="color:${t[0]}">${x.h}</div><div class="nar-b">${x.b}</div></div></div>`;}).join('');
+
+  const blk=(t,arr,col)=>arr.length?`<div class="jg"><div class="jg-h" style="color:${col}">${t}</div><ul>${arr.map(x=>`<li>${x}</li>`).join('')}</ul></div>`:'';
+  const jgHtml=blk('今すぐ',jg.now,'var(--red)')+blk('仕入れ方針',jg.buy,'var(--accent)')+blk('やってはいけないこと',jg.avoid,'var(--text2)');
+
+  document.getElementById('modal-title').innerHTML=`${name} <span style="font-size:11px;color:var(--text3);font-weight:400">${cat}${yearRangeLabel(name)?' ・ '+yearRangeLabel(name):''}</span>`;
+  document.getElementById('modal-body').innerHTML=
+    kpi
+    + `<div class="md-sec"><div class="md-t"><svg class="ic ic-s"><use href="#i-bulb"></use></svg>この車種から言えること</div>${narHtml||'<div class="nar-b">判定に必要なデータが足りません。</div>'}</div>`
+    + (jgHtml?`<div class="md-sec">${jgHtml}</div>`:'')
+    + `<div class="md-sec"><div class="md-t"><svg class="ic ic-s"><use href="#i-chart"></use></svg>年式 × 走行距離</div>${scatterSvg(c)}</div>`
+    + `<div class="md-sec"><div class="md-t"><svg class="ic ic-s"><use href="#i-checks"></use></svg>在庫一覧（${c.tot}台）<span style="font-weight:400;font-size:10.5px;color:var(--text3);margin-left:8px">見出しをクリックで並べ替え</span></div><div id="mdTable">${stockTable(c)}</div></div>`;
+  document.getElementById('modal').classList.add('wide');
+  document.getElementById('ov').style.display='block';
+  document.getElementById('modal').style.display='block';
+}
 
 // ═══ 色の偏りアラート（在庫対策ページ）═══
 function colorStack(dist,total){
