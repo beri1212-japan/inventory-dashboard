@@ -838,7 +838,10 @@ function yearRangeLabel(name){
 }
 function inYearRange(name,key){
   const r=yearRange(name);if(!r)return true;
-  const y=ySeireki(key);if(y==null)return true;   // 「不明」列は常に表示
+  if(key==='不明')return true;
+  // 「H23以前」は2011年以前をまとめた列。モデルの開始が2011年以前なら重なる
+  if(key==='H23以前')return r.lo<=2011;
+  const y=ySeireki(key);if(y==null)return true;
   return y>=r.lo&&y<=r.hi;
 }
 
