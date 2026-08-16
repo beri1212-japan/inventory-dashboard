@@ -1,0 +1,22 @@
+【inventory-dashboard リポジトリ アイコン修正 一式】
+
+■ やること（GitHubのWeb画面でOK・数クリック）
+1. https://github.com/beri1212-japan/inventory-dashboard を開く
+2. 「Add file ▸ Upload files」をクリック
+3. このフォルダ内の全ファイル（21個）をまとめてドラッグ＆ドロップ
+   ※ index.html / salvage-admin.html / mikei.html は上書きされます（正しい動作）
+4. 下の「Commit changes」で確定
+
+■ 反映後（アイコンを実際に切り替える）
+各アプリを一度ホーム画面から削除 → もう一度「ホーム画面に追加」
+　・在庫HUB      … https://beri1212-japan.github.io/inventory-dashboard/
+　・廃車管理      … https://beri1212-japan.github.io/inventory-dashboard/salvage-admin.html
+　・未掲載管理    … https://beri1212-japan.github.io/inventory-dashboard/mikei.html
+（アイコンはOSがキャッシュするため、入れ直しで新アイコンに変わります）
+
+■ 中身
+・HTML(3): 各ページのHEADに専用アイコン/マニフェスト参照を追加済み
+・PNG(15): zaiko-*(在庫=青) / salvage-*(廃車=グレー) / mikei-*(未掲載=オレンジ) 各5サイズ
+・manifest(3): manifest-zaiko / manifest-salvage / manifest-mikei
+
+※ 買取(kaimax-dashboard)は別リポジトリで今のままでOK・変更不要です。
