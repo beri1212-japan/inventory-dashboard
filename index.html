@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="zaiko-apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#f9fafb;--bg2:#ffffff;--bg3:#fbfcfd;--bg4:#f2f4f5;
@@ -25,7 +25,7 @@
   --amber:#ff862e;--amber-bg:#fff2e8;
   --teal:#0666ee;--teal-bg:#e9f0fe;
   --purple:#955be3;--purple-bg:#f3ebfd;
-  --font:'Inter','Noto Sans JP',system-ui,-apple-system,sans-serif;--mono:'DM Mono',ui-monospace,monospace;
+  --font:Inter,system-ui,sans-serif;--mono:'DM Mono',ui-monospace,monospace;
   --side:236px;--r:12px;--rs:8px;
   --sh:0 1px 3px rgba(0,0,0,.1),0 1px 2px -1px rgba(0,0,0,.1);
 }
@@ -230,6 +230,27 @@ tbody tr:hover td{background:#f4f8fe!important;}
 .ov{background:rgba(4,10,17,.4);}
 .errbox{background:var(--red-bg);border:1px solid #f5bcc2;border-radius:12px;color:var(--red);}
 
+/* --- 年式レンジ表示 --- */
+.yrlbl{font-size:9px;color:var(--text3);font-family:var(--mono);letter-spacing:-.02em;line-height:1.1;margin-top:1px;}
+tbody td.oor{background:#eef0f2;}
+tbody tr:hover td.oor{background:#e7eaed!important;}
+.cell-gap{border:1px dashed #dde2e7;background:#fff;min-width:18px;min-height:14px;border-radius:4px;}
+.cell-warn{outline:2px solid var(--amber);outline-offset:-2px;}
+/* --- 車種コンサル --- */
+.cs-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.ybar-row{display:grid;grid-template-columns:64px 1fr;align-items:center;gap:8px;padding:3px 0;}
+.ybar-lbl{font-size:11px;color:var(--text2);font-family:var(--mono);text-align:right;}
+.ybar-pair{display:flex;flex-direction:column;gap:3px;}
+.ybar{height:13px;border-radius:4px;display:flex;align-items:center;padding-left:6px;font-size:9.5px;font-weight:600;color:#fff;font-family:var(--mono);min-width:2px;transition:width .2s;}
+.ybar.empty{background:repeating-linear-gradient(45deg,#f2f4f5,#f2f4f5 4px,#e7eaed 4px,#e7eaed 8px);}
+.dg{display:flex;gap:11px;padding:12px 14px;border-bottom:1px solid var(--border);align-items:flex-start;}
+.dg:last-child{border-bottom:none;}
+.dg-ic{flex-shrink:0;width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;}
+.dg-t{font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.dg-d{font-size:12px;color:var(--text2);line-height:1.6;}
+.dg-a{font-size:11.5px;font-weight:600;margin-top:5px;display:inline-flex;align-items:center;gap:5px;}
+@media (max-width:1024px){.cs-grid{grid-template-columns:1fr;}}
+
 /* --- responsive --- */
 .side-scrim{display:none;position:fixed;inset:0;background:rgba(4,10,17,.35);z-index:70;}
 @media (max-width:1024px){
@@ -285,6 +306,12 @@ tbody tr:hover td{background:#f4f8fe!important;}
 <symbol id="i-cl" viewBox="0 0 24 24"><svg class="lucide lucide-chevron-left" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m15 18-6-6 6-6" /></symbol>
 <symbol id="i-pdf" viewBox="0 0 24 24"><svg class="lucide lucide-file-down" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /> <path d="M14 2v5a1 1 0 0 0 1 1h5" /> <path d="M12 18v-6" /> <path d="m9 15 3 3 3-3" /></symbol>
 <symbol id="i-info" viewBox="0 0 24 24"><svg class="lucide lucide-info" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="12" cy="12" r="10" /> <path d="M12 16v-4" /> <path d="M12 8h.01" /></symbol>
+<symbol id="i-bulb" viewBox="0 0 24 24"><svg class="lucide lucide-lightbulb" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" /> <path d="M9 18h6" /> <path d="M10 22h4" /></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><svg class="lucide lucide-circle-alert" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="12" cy="12" r="10" /> <line x1="12" x2="12" y1="8" y2="12" /> <line x1="12" x2="12.01" y1="16" y2="16" /></symbol>
+<symbol id="i-cr" viewBox="0 0 24 24"><svg class="lucide lucide-chevron-right" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m9 18 6-6-6-6" /></symbol>
+<symbol id="i-ai" viewBox="0 0 24 24"><svg class="lucide lucide-sparkle" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" /></symbol>
+<symbol id="i-checks" viewBox="0 0 24 24"><svg class="lucide lucide-list-checks" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M13 5h8" /> <path d="M13 12h8" /> <path d="M13 19h8" /> <path d="m3 17 2 2 4-4" /> <path d="m3 7 2 2 4-4" /></symbol>
+<symbol id="i-gauge" viewBox="0 0 24 24"><svg class="lucide lucide-gauge" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m12 14 4-4" /> <path d="M3.34 19a10 10 0 1 1 17.32 0" /></symbol>
 </svg>
 
 <aside class="side" id="side">
@@ -299,6 +326,7 @@ tbody tr:hover td{background:#f4f8fe!important;}
     <button class="nav-item" onclick="showPage('action')"><svg class="ic" aria-hidden="true"><use href="#i-action"></use></svg><span>在庫対策</span></button>
     <button class="nav-item" onclick="showPage('balance')"><svg class="ic" aria-hidden="true"><use href="#i-balance"></use></svg><span>車種バランス</span></button>
     <button class="nav-item" onclick="showPage('sold')"><svg class="ic" aria-hidden="true"><use href="#i-sold"></use></svg><span>売約分析</span></button>
+    <button class="nav-item" onclick="showPage('consult')"><svg class="ic" aria-hidden="true"><use href="#i-bulb"></use></svg><span>車種コンサル</span></button>
   </nav>
   <div class="side-ft">
     <button class="nav-item" onclick="openMarketModal()"><svg class="ic" aria-hidden="true"><use href="#i-line"></use></svg><span>市場分析</span></button>
@@ -364,6 +392,7 @@ tbody tr:hover td{background:#f4f8fe!important;}
         <select class="sel" id="viewSel" onchange="renderMatrix()"><option value="count">台数</option><option value="price">平均価格（万）</option><option value="km">平均走行（万km）</option></select>
         <label class="chklbl"><input type="checkbox" id="showU" onchange="renderMatrix()"> 未掲載含む</label>
         <label class="chklbl"><input type="checkbox" id="alertOnly" onchange="renderMatrix()"> アラートのみ</label>
+        <label class="chklbl" title="車種ごとの取扱年式レンジ外を薄く表示し、レンジ内の0台を欠品として強調します"><input type="checkbox" id="showRange" checked onchange="renderMatrix()"> 年式レンジ</label>
       </div>
       <div class="legend">
         <div class="leg"><div class="ld" style="background:#dbeafe;border:1px solid #bfdbfe"></div>1</div>
@@ -372,6 +401,8 @@ tbody tr:hover td{background:#f4f8fe!important;}
         <div class="leg"><div class="ld" style="background:#2563eb"></div>5〜7</div>
         <div class="leg"><div class="ld" style="background:#1d4ed8"></div>8+</div>
         <div class="leg"><div class="ld" style="background:#fef3c7;border:1px solid #fde68a"></div>未掲載</div>
+        <div class="leg"><div class="ld" style="background:#fff;border:1px dashed #c8cfd6"></div>欠品(レンジ内0台)</div>
+        <div class="leg"><div class="ld" style="background:#eef0f2;border:1px solid #e3e5e6"></div>レンジ外</div>
       </div>
     </div>
     <div class="sec-body" style="padding:8px;">
@@ -617,6 +648,22 @@ tbody tr:hover td{background:#f4f8fe!important;}
   </div>
 </div>
 
+<!-- PAGE 7: 車種コンサル -->
+<div class="page" id="page-consult">
+  <div class="sec" style="margin-bottom:12px">
+    <div class="sec-hdr">
+      <span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-bulb"></use></svg>車種を選ぶ</span>
+      <div class="ctrls">
+        <select class="sel" id="cCat" onchange="fillConsultNames()"></select>
+        <select class="sel" id="cName" onchange="renderConsult()" style="min-width:190px"></select>
+        <button class="rbtn ghost" onclick="aiConsult()"><svg class="ic ic-s" aria-hidden="true"><use href="#i-ai"></use></svg>AIで詳しく分析</button>
+      </div>
+    </div>
+  </div>
+  <div id="consultBody"></div>
+</div>
+
+
 </div>
 </div>
 
@@ -637,7 +684,7 @@ function rebuildName2Cat(){
   Object.keys(NAME2CAT).forEach(k=>delete NAME2CAT[k]);
   Object.keys(TEISU).forEach(k=>{const i=k.indexOf('_');if(i>0)NAME2CAT[k.slice(i+1)]=k.slice(0,i);});
 }
-const YEAR_ORDER=["H24以前","H24","H25","H26","H27","H28","H29","H30","H31/R1","R1","R2","R3","R4","R5","R6","R7","R8","不明"];
+const YEAR_ORDER=["H23以前","H24","H25","H26","H27","H28","H29","H30","H31/R1","R2","R3","R4","R5","R6","R7","R8","不明"];
 const OLD_YEARS_SET=new Set(["H15","H19","H21","H22","H23"]);
 const CAT_ORDER=["ミニバン","SUV","HVCP","軽"];
 const KM_BANDS=["〜2万km","2〜4万km","4〜6万km","6〜8万km","8〜10万km","10万km超"];
@@ -662,7 +709,7 @@ async function fetchCsv(gid,tries=3){
 const nn=v=>{const n=parseFloat(v);return isNaN(n)?null:n;};
 const nm=s=>{s=String(s).trim();return NAME_MAP[s]||s;};
 function parseYear(v){const s=String(v).trim();if(s.includes('/')){try{const y=parseInt(s);if(y<=8)return`R${y}`;if(y===31)return'H31/R1';return`H${y}`;}catch(e){}}const n=parseInt(s);if(isNaN(n))return'不明';if(n<=8)return`R${n}`;if(n===31)return'H31/R1';return`H${n}`;}
-function normY(y){return OLD_YEARS_SET.has(y)?'H24以前':y;}
+function normY(y){return OLD_YEARS_SET.has(y)?'H23以前':(y==='R1'?'H31/R1':y);}
 function kmBand(k){if(k==null)return null;if(k<20000)return'〜2万km';if(k<40000)return'2〜4万km';if(k<60000)return'4〜6万km';if(k<80000)return'6〜8万km';if(k<100000)return'8〜10万km';return'10万km超';}
 function pBand(p){if(p==null||p<=0)return null;const i=Math.floor(p/20);return i>=PRICE_BANDS.length-1?'300万超':PRICE_BANDS[i];}
 function parseDate(v){
@@ -733,6 +780,68 @@ function showCatModal(cat){
 function closeModal(){document.getElementById('modal').style.display='none';document.getElementById('ov').style.display='none';}
 
 function cellCls(n,u){if(u)return'nu';if(!n)return'n0';return['','n1','n2','n3','n3','n4','n4','n4','n5'][Math.min(n,8)];}
+
+// ═══════════ 年式レンジ ═══════════
+// 優先順位: ① 車種マスタ G列/H列（お客様が編集） ② 内蔵表 ③ 実データから自動算出
+// 0 = それ以前から / 9999 = 現行（今年まで）
+const YR_BUILTIN={"アルファード20以前":[0,2015],"アルファード30系":[2015,2023],"アルファード40系":[2023,9999],"ヴェルファイア20以前":[0,2015],"ヴェルファイア30系":[2015,2023],"ヴェルファイア40系":[2023,9999],"ヴォクシー70以前":[0,2014],"ヴォクシー80系":[2014,2021],"ヴォクシー90系":[2022,9999],"ノア70以前":[0,2014],"ノア80系":[2014,2021],"ノア90系":[2022,9999],"エスクァイア":[2014,2021],"シエンタ":[0,9999],"エスティマ":[0,2019],"ウィッシュ":[0,2017],"ハイエースV":[0,9999],"レジアスエースV":[0,2020],"ステップワゴン":[0,9999],"フリード":[0,9999],"オデッセイ":[0,9999],"セレナ26系":[0,2016],"セレナ27前期":[2016,2019],"セレナ27後期":[2019,2022],"セレナ28現行":[2022,9999],"デリカD5":[0,9999],"エルグランド":[0,9999],"ランクル250":[2024,9999],"ランクル300":[2021,9999],"プラド":[0,2024],"ハリアー60前期":[2013,2017],"ハリアー60後期":[2017,2020],"ハリアー80":[2020,9999],"ハリアー80HV":[2020,9999],"RAV4":[2019,9999],"カローラクロス":[2021,9999],"ヤリスクロス":[2020,9999],"ライズ":[2019,9999],"C-HR":[2016,2023],"ヴェゼル前型":[2013,2021],"ヴェゼル現行":[2021,9999],"ヴェゼルHV現行":[2021,9999],"ZR-V":[2023,9999],"エクストレイル31":[0,2013],"エクストレイル32前期":[2013,2017],"エクストレイル32後期":[2017,2022],"エクストレイル33現行":[2022,9999],"キックス":[2020,9999],"CX-3":[2015,9999],"CX-5":[2012,9999],"CX-8":[2017,2023],"CX-30":[2019,9999],"MX-30":[2020,9999],"フォレスター":[0,9999],"アウトバック":[0,9999],"インプレッサXV":[0,2017],"インプレッサスポーツ":[0,9999],"アウトランダー":[0,9999],"エクリプスクロス":[2018,9999],"ジムニー":[2018,9999],"ジムニーシエラ":[2018,9999],"ジムニーノマド":[2025,9999],"NX":[2014,9999],"RX":[0,9999],"UX":[2018,9999],"フェアレディZ":[0,9999],"Gクラス":[0,9999],"Q3":[0,9999],"Q5":[0,9999],"マカン":[2014,9999],"アクア10前期":[2011,2014],"アクア10中期":[2014,2017],"アクア10後期":[2017,2021],"アクア現行":[2021,9999],"プリウス30系":[0,2015],"プリウス50前期":[2015,2018],"プリウス50後期":[2018,2022],"プリウス50PHV":[2017,2022],"プリウス60":[2022,9999],"プリウス60PHEV":[2023,9999],"カムリ":[0,2023],"カローラスポーツ":[2018,9999],"カローラツーリング":[2019,9999],"ルーミー":[2016,9999],"タンク":[2016,2020],"トール":[2016,9999],"スペイド":[2012,2020],"ヴィッツ":[0,2020],"マークX":[0,2019],"ノート前中期":[2012,2016],"ノート後期":[2016,2020],"ノートEpower":[2016,2020],"ノートEpower現行":[2020,9999],"オーラ":[2021,9999],"マツダ2":[2019,9999],"マツダ3":[2019,9999],"ソリオ":[0,9999],"ソリオバンディット":[0,9999],"スイフト":[0,9999],"ミラージュ":[2012,2025],"CT200":[0,2021],"ロードスター":[2015,9999],"N-BOX":[0,9999],"N-BOXカスタム":[0,9999],"N-ONE":[2012,9999],"Nワゴン":[2013,9999],"N-VAN":[2018,9999],"バモス":[0,2018],"タント":[0,9999],"タントカスタム":[0,9999],"タントエグゼ":[0,2014],"キャスト":[2015,2023],"ミライース":[0,9999],"ミラジーノ":[0,2009],"ミラ":[0,2018],"ミラトコット":[2018,2024],"ムーヴ":[0,9999],"ムーヴキャンバス":[2016,9999],"ムーヴコンテ":[0,2017],"ウェイク":[2014,2022],"タフト":[2020,9999],"ハイゼットキャディー":[2016,2021],"ワゴンR":[0,9999],"ワゴンRスマイル":[2021,9999],"スペーシア":[2013,9999],"スペーシアカスタム":[2013,9999],"スペーシアギア":[2018,9999],"ハスラー":[2014,9999],"アルト":[0,9999],"アルトラパン":[0,9999],"アルトラパンショコラ":[2013,2015],"エブリー":[0,9999],"セルボ":[0,2009],"デイズ":[2013,9999],"デイズルークス":[2014,2020],"ルークス":[2020,9999],"ルークスHW":[2020,9999],"モコ":[0,2016],"EKワゴン":[0,9999],"EKスペース":[2014,9999],"AZワゴン":[0,2012],"キャロル":[0,9999],"ステラ":[0,9999],"クリッパーリオ":[0,2015]};
+const YR_MASTER={};   // 車種マスタから読み込み（最優先）
+const YR_DATA={};     // 在庫・未掲載・売約の実データから算出（最後の保険）
+const NOW_Y=new Date().getFullYear();
+function yLabel(y){
+  if(y==null)return null;
+  if(y>=9999)y=NOW_Y;
+  if(y<=2011)return'H23以前';
+  if(y<=2018)return'H'+(y-1988);
+  if(y===2019)return'H31/R1';
+  const r=y-2018;return'R'+(r>8?8:r);
+}
+function ySeireki(label){
+  if(!label)return null;
+  if(label==='H23以前')return 2011;
+  if(label==='H31/R1')return 2019;
+  const m=String(label).match(/^([HR])(\d+)$/);
+  if(!m)return null;
+  return m[1]==='H'?1988+ +m[2]:2018+ +m[2];
+}
+// マスタの年式セルを西暦に。「H26」「R3」「2014」「2014年」「以前」に対応
+function parseRangeCell(v){
+  if(v==null)return null;
+  const t=String(v).trim();if(!t)return null;
+  if(/以前/.test(t))return 0;
+  if(/現行|現在/.test(t))return 9999;
+  const w=t.match(/^([HRhr])\s*(\d{1,2})/);
+  if(w)return (w[1].toUpperCase()==='H'?1988:2018)+parseInt(w[2],10);
+  const g=t.match(/(\d{4})/);
+  if(g)return parseInt(g[1],10);
+  return null;
+}
+function buildYrData(){
+  Object.keys(YR_DATA).forEach(k=>delete YR_DATA[k]);
+  [...STOCK,...UNLISTED,...SOLD].forEach(d=>{
+    if(!d.name)return;
+    const y=ySeireki(d.year);if(y==null)return;
+    const c=YR_DATA[d.name];
+    if(!c)YR_DATA[d.name]=[y,y];
+    else{if(y<c[0])c[0]=y;if(y>c[1])c[1]=y;}
+  });
+}
+function yearRange(name){
+  const r=YR_MASTER[name]||YR_BUILTIN[name]||YR_DATA[name];
+  if(!r)return null;
+  return {lo:(r[0]<=0?0:r[0]), hi:(r[1]>=9999?NOW_Y:r[1]),
+          src:YR_MASTER[name]?'マスタ':(YR_BUILTIN[name]?'内蔵':'実データ')};
+}
+function yearRangeLabel(name){
+  const r=yearRange(name);if(!r)return'';
+  return (r.lo<=2011?'H23以前':yLabel(r.lo))+'–'+yLabel(r.hi);
+}
+function inYearRange(name,key){
+  const r=yearRange(name);if(!r)return true;
+  const y=ySeireki(key);if(y==null)return true;   // 「不明」列は常に表示
+  return y>=r.lo&&y<=r.hi;
+}
+
 function axisKeys(t){if(t==='year')return YEAR_ORDER;if(t==='km')return KM_BANDS;return PRICE_BANDS;}
 function axisVal(d,t){if(t==='year')return d.year;if(t==='km')return kmBand(d.km);return pBand(d.price);}
 
@@ -742,6 +851,7 @@ function renderMatrix(){
   const vf=document.getElementById('viewSel').value;
   const su=document.getElementById('showU').checked;
   const ao=document.getElementById('alertOnly').checked;
+  const srEl=document.getElementById('showRange');const useRange=srEl?srEl.checked:false;
   let data=su?[...STOCK,...UNLISTED.map(d=>({...d}))]:[...STOCK];
   if(cf)data=data.filter(d=>d.cat===cf);
   const keys=axisKeys(type).filter(k=>data.some(d=>axisVal(d,type)===k));
@@ -790,20 +900,30 @@ function renderMatrix(){
         const sign=diff>0?'+':'';
         diffBadge=cls?`<span class="ab ${cls}">${sign}${diff}</span>`:`<span style="font-family:var(--mono);font-size:11px">${sign}${diff}</span>`;
       }
+      const rng=(useRange&&type==='year')?yearRange(name):null;
+      const rlbl=rng?yearRangeLabel(name):'';
       h+=`<tr>
-        <td>${name}</td>
+        <td>${name}${rlbl?`<div class="yrlbl" title="取扱年式レンジ（出典: ${rng.src}）">${rlbl}</div>`:''}</td>
         <td class="tcol">${tot}</td>
         <td class="dcol">${t!=null?t:'—'}</td>
         <td style="text-align:center">${diffBadge}</td>`;
       keys.forEach(key=>{
         const its=ym[key]||[];const li=its.filter(i=>!i.unlisted);const ul=its.filter(i=>i.unlisted);
-        if(!its.length){h+='<td></td>';return;}
+        const oor=rng&&!inYearRange(name,key);   // 取扱年式レンジ外
+        if(!its.length){
+          // レンジ外＝そもそも存在しない年式なので薄く潰す。レンジ内の0台＝「欠品」として点線で強調
+          h+=oor?'<td class="oor"></td>'
+                :(rng&&key!=='不明'?'<td><div class="cell cell-gap" title="レンジ内だが在庫0（仕入れ候補）"></div></td>':'<td></td>');
+          return;
+        }
         let val='',cls='';
         if(vf==='count'){val=its.length;cls=cellCls(li.length||its.length,ul.length>0&&li.length===0);}
         else if(vf==='price'){const ps=its.filter(i=>i.price!=null).map(i=>i.price);val=ps.length?Math.round(ps.reduce((a,b)=>a+b)/ps.length):'—';cls='n2';}
         else{const ks=its.filter(i=>i.km!=null).map(i=>i.km);val=ks.length?(ks.reduce((a,b)=>a+b)/ks.length/10000).toFixed(1):'—';cls='n2';}
         const uLbl=ul.length?`<div class="u">未${ul.length}</div>`:'';
-        h+=`<td><div class="cell ${cls}" onclick="showCell('${encodeURIComponent(cat)}','${encodeURIComponent(name)}','${encodeURIComponent(key)}','${type}',${su})">${val}${uLbl}</div></td>`;
+        // レンジ外なのに在庫がある＝データ誤りかレンジ設定誤り。潰さず警告表示して気づけるようにする
+        if(oor)cls+=' cell-warn';
+        h+=`<td${oor?' class="oor"':''}><div class="cell ${cls}"${oor?' title="取扱年式レンジ外に在庫があります。マスタの年式列をご確認ください"':''} onclick="showCell('${encodeURIComponent(cat)}','${encodeURIComponent(name)}','${encodeURIComponent(key)}','${type}',${su})">${val}${uLbl}</div></td>`;
       });
       h+=`</tr>`;
     });
@@ -1037,14 +1157,14 @@ function barChart(id,items,color){
 // ═══ v4追加: 正しい列インデックスでデータロード ═══
 const NM_V4={'ｳﾞｫｸｼｰ80系':'ヴォクシー80系','ｳﾞｫｸｼｰ90系':'ヴォクシー90系','ｳﾞｪﾙﾌｧｲｱ 30系':'ヴェルファイア30系','ﾉｱ80系':'ノア80系','ﾉｱ90系':'ノア90系','ｴｽｸｧｲｱ':'エスクァイア','ｼｴﾝﾀ':'シエンタ','ｽﾃｯﾌﾟﾜｺﾞﾝ':'ステップワゴン','ｾﾚﾅ 27前期':'セレナ27前期','ｾﾚﾅ 27後期':'セレナ27後期','ｾﾚﾅ 28現行':'セレナ28現行','ﾌﾘｰﾄﾞ':'フリード','ﾊﾘｱｰ80':'ハリアー80','ﾊﾘｱｰ80HV':'ハリアー80HV','ｳﾞｪｾﾞﾙ（現行）':'ヴェゼル現行','ｳﾞｪｾﾞﾙHV（現行）':'ヴェゼルHV現行','ｳﾞｪｾﾞﾙHV（前型）':'ヴェゼルHV前型','ｴｸｽﾄﾚｲﾙ32（前期）':'エクストレイル32前期','ｴｸｽﾄﾚｲﾙ32（後期）':'エクストレイル32後期','ｶﾛｰﾗｸﾛｽ':'カローラクロス','ﾌｫﾚｽﾀｰ':'フォレスター','ﾔﾘｽｸﾛｽ':'ヤリスクロス','ﾗｲｽﾞ':'ライズ','ｼﾞﾑニーﾉﾏﾄﾞ':'ジムニーノマド','ｱｸｱ前期':'アクア10前期','ｱｸｱ中期':'アクア10中期','ｱｸｱ後期':'アクア10後期','ｱｸｱ現行':'アクア20現行','ｱｸｱ10前期':'アクア10前期','ｱｸｱ10中期':'アクア10中期','ｱｸｱ10後期':'アクア10後期','ｱｸｱ20現行':'アクア20現行','ﾉｰﾄ前期':'ノート前期','ﾉｰﾄ中期':'ノート中期','ﾉｰﾄEpower':'ノートEpower','ﾉｰﾄEpower（現行）':'ノートEpower現行','ﾌﾟﾘｳｽ30系':'プリウス30系','ﾌﾟﾘｳｽ 50前期':'プリウス50前期','ﾌﾟﾘｳｽ 50後期':'プリウス50後期','ﾌﾟﾘｳｽ 50PHV':'プリウス50PHV','ﾌﾟﾘｳｽ 60':'プリウス60','ﾙｰﾐｰ':'ルーミー','ﾀﾝｸ':'タンク','ﾄｰﾙ':'トール','ｿﾘｵ':'ソリオ','ｽﾍﾟｲﾄﾞ':'スペイド','ｳﾞｨｯﾂ':'ヴィッツ','ｶﾛｰﾗｽﾎﾟｰﾂ':'カローラスポーツ','ｶﾛｰﾗﾂｰﾘﾝｸﾞ':'カローラツーリング','ﾏｰﾁ':'マーチ','ﾐﾗｰｼﾞｭ':'ミラージュ','N-BOXｶｽﾀﾑ':'N-BOXカスタム','Nﾜｺﾞﾝ':'Nワゴン','ｱﾙﾄ':'アルト','ｱﾙﾄﾗﾊﾟﾝ':'アルトラパン','ｴﾌﾞﾘｰ':'エブリー','ｷｬｽﾄ':'キャスト','ｷｬﾛﾙ':'キャロル','ｼﾞﾑﾆｰ':'ジムニー','ｽﾍﾟｰｼｱ':'スペーシア','ｽﾍﾟｰｼｱｶｽﾀﾑ':'スペーシアカスタム','ﾀﾝﾄ':'タント','ﾀﾝﾄｶｽﾀﾑ':'タントカスタム','ﾃﾞｲｽﾞ':'デイズ','ﾃﾞｲｽﾞﾙｰｸｽ':'デイズルークス','ﾊｽﾗｰ':'ハスラー','ﾐﾗｲｰｽ':'ミライース','ﾐﾗｼﾞｰﾉ':'ミラジーノ','ﾑｰｳﾞｺﾝﾃ':'ムーヴコンテ','ﾓｺ':'モコ','ﾙｰｸｽ':'ルークス','ﾙｰｸｽ　ﾊｲｳｪｲｽﾀｰ':'ルークスHW','ﾜｺﾞﾝＲ':'ワゴンR','AZﾜｺﾞﾝ':'AZワゴン','EKﾜｺﾞﾝ':'EKワゴン','ｸﾘｯﾊﾟｰﾘｵ':'クリッパーリオ','ｵｰﾗ':'オーラ','ﾗﾝｸﾙ250':'ランクル250','ﾌｪｱﾚﾃﾞｨZ':'フェアレディZ','ﾛｰﾄﾞｽﾀｰ':'ロードスター','ｲﾝﾌﾟﾚｯｻｽﾎﾟｰﾂ':'インプレッサスポーツ','ﾌﾟﾘｳｽ60PHEV':'プリウス60PHEV'};
 
-const YEAR_ORDER_V4=["H23以前","H24","H25","H26","H27","H28","H29","H30","H31/R1","R1","R2","R3","R4","R5","R6","R7","R8","不明"];
+const YEAR_ORDER_V4=["H23以前","H24","H25","H26","H27","H28","H29","H30","H31/R1","R2","R3","R4","R5","R6","R7","R8","不明"];  // H31とR1は同じ2019年のため1列に統合
 const OLD_Y_V4=new Set(["H15","H16","H17","H18","H19","H20","H21","H22","H23"]);
 const KM_BANDS_V4=["〜2万km","2〜4万km","4〜6万km","6〜8万km","8〜10万km","10万km超"];
 const PRICE_BANDS_V4=["〜20万","20〜40万","40〜60万","60〜80万","80〜100万","100〜120万","120〜140万","140〜160万","160〜180万","180〜200万","200〜220万","220〜240万","240〜260万","260〜280万","280〜300万","300万超"];
 
 function nmV4(s){s=String(s||'').trim();return NM_V4[s]||s;}
 function parseYearV4(v){if(v==null||v==='')return'不明';const s=String(v).trim();if(s.includes('/')){try{const y=parseInt(s);if(y<=8)return`R${y}`;if(y===31)return'H31/R1';return`H${y}`;}catch(e){}}try{const n=parseInt(s);if(isNaN(n))return'不明';if(n<=8)return`R${n}`;if(n===31)return'H31/R1';return`H${n}`;}catch(e){return'不明';}}
-const normYV4=y=>OLD_Y_V4.has(y)?'H23以前':y;
+const normYV4=y=>OLD_Y_V4.has(y)?'H23以前':(y==='R1'?'H31/R1':y);  // R1(2019)はH31/R1に寄せる
 function kmBandV4(k){if(k==null)return null;if(k<20000)return'〜2万km';if(k<40000)return'2〜4万km';if(k<60000)return'4〜6万km';if(k<80000)return'6〜8万km';if(k<100000)return'8〜10万km';return'10万km超';}
 function pBandV4(p){if(p==null||p<=0)return null;const i=Math.floor(p/20);return i>=PRICE_BANDS_V4.length-1?'300万超':PRICE_BANDS_V4[i];}
 
@@ -1072,6 +1192,7 @@ async function loadMasterV4(){
     const rows=await fetchCsv(GIDS.master);
     // TEISUをリセット
     Object.keys(TEISU).forEach(k=>delete TEISU[k]);
+    Object.keys(YR_MASTER).forEach(k=>delete YR_MASTER[k]);
     let currentCat='';
     for(let i=1;i<rows.length;i++){
       const r=rows[i];if(!r||r.length<4)continue;
@@ -1084,6 +1205,9 @@ async function loadMasterV4(){
       if(currentCat&&name&&!isNaN(teisu)&&teisu>0){
         TEISU[currentCat+'_'+name]=Math.round(teisu);
       }
+      // G列=年式開始 / H列=年式終了（入っていればこれを最優先で使う）
+      const ys=parseRangeCell(r[6]), ye=parseRangeCell(r[7]);
+      if(name&&(ys!=null||ye!=null))YR_MASTER[name]=[ys!=null?ys:0, ye!=null?ye:9999];
     }
     rebuildName2Cat();
     console.log('既定数読み込み完了:', Object.keys(TEISU).length+'件');
@@ -1204,12 +1328,226 @@ async function loadAll(){
     YEAR_ORDER.length=0;YEAR_ORDER_V4.forEach(y=>YEAR_ORDER.push(y));
     KM_BANDS.length=0;KM_BANDS_V4.forEach(k=>KM_BANDS.push(k));
     PRICE_BANDS.length=0;PRICE_BANDS_V4.forEach(p=>PRICE_BANDS.push(p));
+    buildYrData();
+    fillConsultCats();
     updateSummary();renderMatrix();renderProfitCards();renderUnlisted();renderLong();renderAction();renderSold();
     if(document.getElementById('page-balance').classList.contains('active'))renderBalance();
     document.getElementById('upd').textContent='更新: '+new Date().toLocaleString('ja-JP',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
   }catch(e){
     document.getElementById('MT').innerHTML=`<tr><td colspan="30"><div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:14px;color:#dc2626;margin:10px"><b>⚠ エラー: </b>${e.message}</div></td></tr>`;
   }finally{btn.textContent='更新';sp.style.display='none';}
+}
+
+
+// ═══════════ 車種コンサル ═══════════
+function fillConsultCats(){
+  const sel=document.getElementById('cCat');if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML=CAT_ORDER.map(c=>`<option${c===cur?' selected':''}>${c}</option>`).join('');
+  fillConsultNames();
+}
+function fillConsultNames(){
+  const cat=document.getElementById('cCat').value||CAT_ORDER[0];
+  const sel=document.getElementById('cName');const cur=sel.value;
+  // 在庫がある車種を多い順に。在庫ゼロでも規定数がある車種は末尾に出す（＝欠品車種も診断できる）
+  const cnt={};STOCK.filter(d=>d.cat===cat).forEach(d=>cnt[d.name]=(cnt[d.name]||0)+1);
+  Object.keys(TEISU).forEach(k=>{const i=k.indexOf('_');if(k.slice(0,i)===cat){const n=k.slice(i+1);if(cnt[n]==null)cnt[n]=0;}});
+  const names=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]||a.localeCompare(b,'ja'));
+  sel.innerHTML=names.map(n=>`<option${n===cur?' selected':''}>${n}（${cnt[n]}台）</option>`).join('');
+  renderConsult();
+}
+const cName=()=>String(document.getElementById('cName').value||'').replace(/（\d+台）$/,'');
+
+function consultData(){
+  const cat=document.getElementById('cCat').value, name=cName();
+  if(!name)return null;
+  const st=STOCK.filter(d=>d.cat===cat&&d.name===name);
+  const ul=UNLISTED.filter(d=>d.cat===cat&&d.name===name);
+  const sd=SOLD.filter(d=>d.name===name);
+  const teisu=TEISU[cat+'_'+name];
+  const rng=yearRange(name);
+  const years=YEAR_ORDER.filter(y=>{
+    if(y==='不明')return st.some(d=>d.year===y)||sd.some(d=>d.year===y);
+    if(!rng)return true;
+    const v=ySeireki(y);return v!=null&&v>=rng.lo&&v<=rng.hi;
+  });
+  const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+  return {cat,name,st,ul,sd,teisu,rng,years,
+    tot:st.length, diff:teisu!=null?st.length-teisu:null,
+    days:avg(st.filter(d=>d.days!=null&&d.days<3000).map(d=>d.days)),
+    soldDays:avg(sd.filter(d=>d.days!=null).map(d=>d.days)),
+    profit:avg(sd.filter(d=>d.profit!=null).map(d=>d.profit)),
+    stPrice:avg(st.filter(d=>d.price!=null).map(d=>d.price)),
+    sdPrice:avg(sd.filter(d=>d.price!=null).map(d=>d.price)),
+    long:st.filter(d=>d.days!=null&&d.days>=100&&d.days<3000)};
+}
+
+// ルールベース診断（在庫責任者の視点）
+function consultDiagnose(c){
+  const out=[];const R=(p,t,d,a)=>out.push({p,t,d,a});
+  const allDays=SOLD.filter(d=>d.days!=null).map(d=>d.days);
+  const baseDays=allDays.length?Math.round(allDays.reduce((a,b)=>a+b,0)/allDays.length):null;
+
+  // ① 台数の過不足
+  if(c.teisu!=null){
+    const d=c.diff;
+    if(d<=-3)R('S','台数が大きく不足',`規定${c.teisu}台に対し在庫${c.tot}台（${d}台）。売れ筋を置けていない状態で、問い合わせを取りこぼしている可能性が高いです。`,'最優先で仕入れる');
+    else if(d<0)R('A','台数がやや不足',`規定${c.teisu}台に対し在庫${c.tot}台（${d}台）。`,'補充を検討');
+    else if(d>=3)R('A','台数が過剰',`規定${c.teisu}台に対し在庫${c.tot}台（+${d}台）。同じ車種に資金が寝ています。`,'価格見直し・販促で回転を上げる');
+    else R('B','台数は適正',`規定${c.teisu}台 / 在庫${c.tot}台（${d>0?'+':''}${d}台）。`,'現状維持');
+  }else{
+    R('B','規定台数が未設定',`車種マスタに既定数が入っていないため、過不足の判定ができません。`,'マスタD列に既定数を入力');
+  }
+
+  // ② 売れているのに在庫が無い年式（欠品）
+  const stY={},sdY={};
+  c.st.forEach(d=>stY[d.year]=(stY[d.year]||0)+1);
+  c.sd.forEach(d=>sdY[d.year]=(sdY[d.year]||0)+1);
+  const gaps=c.years.filter(y=>y!=='不明'&&(sdY[y]||0)>=2&&!(stY[y]||0));
+  if(gaps.length)R('S','売れている年式が欠品',`${gaps.map(y=>`${y}（売約${sdY[y]}台）`).join('、')} は実績があるのに在庫ゼロです。`,`${gaps.join('・')}を優先して仕入れる`);
+
+  // ③ 在庫はあるが売れていない年式（死に筋）
+  const dead=c.years.filter(y=>y!=='不明'&&(stY[y]||0)>=2&&!(sdY[y]||0));
+  if(dead.length)R('A','実績のない年式に在庫が偏在',`${dead.map(y=>`${y}（在庫${stY[y]}台）`).join('、')} は売約実績がありません。`,'価格を見直すか、次回仕入れを止める');
+
+  // ④ 年式の重心ズレ
+  const w=(m)=>{let n=0,sum=0;Object.keys(m).forEach(y=>{const v=ySeireki(y);if(v==null)return;sum+=v*m[y];n+=m[y];});return n?sum/n:null;};
+  const ws=w(stY),wd=w(sdY);
+  if(ws!=null&&wd!=null&&c.sd.length>=5){
+    const gap=ws-wd;
+    if(gap<=-1.5)R('A','在庫が売れ筋より古い',`在庫の年式重心は約${Math.round(ws)}年、売れた車の重心は約${Math.round(wd)}年。${Math.abs(gap).toFixed(1)}年ぶん古い在庫を抱えています。`,'新しい年式へ入れ替える');
+    else if(gap>=1.5)R('B','在庫が売れ筋より新しい',`在庫の重心は約${Math.round(ws)}年、売れた車は約${Math.round(wd)}年。仕入単価が上がっている可能性があります。`,'価格帯を落とした仕入れも検討');
+    else R('B','年式バランスは良好',`在庫の年式重心（約${Math.round(ws)}年）が売れ筋（約${Math.round(wd)}年）とほぼ一致しています。`,'この年式帯を維持');
+  }
+
+  // ⑤ 長期在庫
+  if(c.long.length){
+    const worst=c.long.slice().sort((a,b)=>b.days-a.days)[0];
+    R(c.long.length>=3?'S':'A','長期在庫あり',`100日超が${c.long.length}台。最長は${worst.year} / ${worst.price!=null?worst.price+'万円':'価格未設定'} で${worst.days}日。`,'早急に値下げか業販へ');
+  }
+
+  // ⑥ 回転日数
+  if(c.soldDays!=null&&baseDays!=null){
+    const d=Math.round(c.soldDays);
+    if(d<=baseDays*0.8)R('B','回転が速い',`平均${d}日で売れています（全体平均${baseDays}日）。`,'台数を増やす価値あり');
+    else if(d>=baseDays*1.25)R('A','回転が遅い',`平均${d}日かかっています（全体平均${baseDays}日）。`,'仕入価格を下げるか在庫数を絞る');
+  }
+
+  // ⑦ 価格帯のズレ
+  if(c.stPrice!=null&&c.sdPrice!=null&&c.sd.length>=5){
+    const g=c.stPrice-c.sdPrice;
+    if(Math.abs(g)>=15)R(g>0?'A':'B',g>0?'在庫価格が売れ筋より高い':'在庫価格が売れ筋より安い',
+      `在庫の平均${Math.round(c.stPrice)}万円に対し、実際に売れた平均は${Math.round(c.sdPrice)}万円（差${g>0?'+':''}${Math.round(g)}万円）。`,
+      g>0?'値付けを売れ筋帯に寄せる':'もう一段上の価格帯も狙える');
+  }
+
+  // ⑧ 未掲載
+  if(c.ul.length)R('A','未掲載が残っている',`${c.ul.length}台が未掲載です。掲載しない限り在庫日数だけが増えます。`,'掲載を最優先');
+
+  const ord={S:0,A:1,B:2};
+  return out.sort((a,b)=>ord[a.p]-ord[b.p]);
+}
+
+function renderConsult(){
+  const box=document.getElementById('consultBody');if(!box)return;
+  const c=consultData();
+  if(!c||!c.name){box.innerHTML='<div class="sec"><div class="sec-body" style="color:var(--text3);font-size:12px">データ読込後に車種を選んでください。</div></div>';return;}
+  const f=(v,u='',d=0)=>v==null?'—':(d?v.toFixed(d):Math.round(v))+u;
+
+  // KPI
+  const dcls=c.diff==null?'':(c.diff<0?'var(--red)':c.diff>=3?'var(--amber)':'var(--green)');
+  let h=`<div class="five-col">
+    <div class="kpi"><div class="kpi-lbl">在庫台数</div><div class="kpi-val" style="color:var(--accent)">${c.tot}</div><div class="kpi-sub">未掲載 ${c.ul.length}台</div></div>
+    <div class="kpi"><div class="kpi-lbl">規定台数</div><div class="kpi-val">${c.teisu!=null?c.teisu:'—'}</div><div class="kpi-sub">マスタ既定数</div></div>
+    <div class="kpi"><div class="kpi-lbl">過不足</div><div class="kpi-val" style="color:${dcls}">${c.diff==null?'—':(c.diff>0?'+':'')+c.diff}</div><div class="kpi-sub">在庫 − 規定</div></div>
+    <div class="kpi"><div class="kpi-lbl">平均回転日数</div><div class="kpi-val" style="color:var(--purple)">${f(c.soldDays,'日')}</div><div class="kpi-sub">売約実績 ${c.sd.length}台</div></div>
+    <div class="kpi"><div class="kpi-lbl">平均利益</div><div class="kpi-val" style="color:var(--amber)">${f(c.profit,'',1)}</div><div class="kpi-sub">万円 / 台</div></div>
+  </div>`;
+
+  // 年式バランス
+  const stY={},sdY={};
+  c.st.forEach(d=>stY[d.year]=(stY[d.year]||0)+1);
+  c.sd.forEach(d=>sdY[d.year]=(sdY[d.year]||0)+1);
+  const mx=Math.max(1,...c.years.map(y=>Math.max(stY[y]||0,sdY[y]||0)));
+  const rows=c.years.map(y=>{
+    const a=stY[y]||0,b=sdY[y]||0;
+    const bar=(v,col)=>v?`<div class="ybar" style="width:${Math.max(v/mx*100,6)}%;background:${col}">${v}</div>`:`<div class="ybar empty" style="width:100%"></div>`;
+    return `<div class="ybar-row"><div class="ybar-lbl">${y}</div><div class="ybar-pair">${bar(a,'var(--accent)')}${bar(b,'#00af44')}</div></div>`;
+  }).join('');
+  h+=`<div class="cs-grid">
+    <div class="sec"><div class="sec-hdr">
+        <span class="sec-title">${'<svg class="ic ic-s"><use href="#i-gauge"></use></svg>'}年式バランス</span>
+        <span style="font-size:10.5px;color:var(--text3)">上段＝<b style="color:var(--accent)">在庫</b> / 下段＝<b style="color:#00af44">売約実績</b>${c.rng?` ・ レンジ ${yearRangeLabel(c.name)}（${c.rng.src}）`:''}</span>
+      </div><div class="sec-body">${rows||'<div style="font-size:12px;color:var(--text3)">データがありません</div>'}</div></div>
+    <div class="sec"><div class="sec-hdr"><span class="sec-title">${'<svg class="ic ic-s"><use href="#i-chart"></use></svg>'}価格帯・走行距離帯</span></div>
+      <div class="sec-body"><div style="font-size:10.5px;color:var(--text3);font-weight:600;margin-bottom:5px">価格帯（在庫）</div><div class="barchart" id="csPrice"></div><div style="font-size:10.5px;color:var(--text3);font-weight:600;margin:12px 0 5px">走行距離帯（在庫）</div><div class="barchart" id="csKm"></div></div></div>
+  </div>`;
+
+  // 診断
+  const dg=consultDiagnose(c);
+  const style={S:['var(--red)','var(--red-bg)','i-alert','最優先'],A:['var(--amber)','var(--amber-bg)','i-alert','要対応'],B:['var(--accent)','var(--accent-bg)','i-checks','良好']};
+  h+=`<div class="sec"><div class="sec-hdr">
+      <span class="sec-title">${'<svg class="ic ic-s"><use href="#i-bulb"></use></svg>'}在庫責任者としての所見</span>
+      <span style="font-size:10.5px;color:var(--text3)">数値から自動診断（${dg.length}件）</span>
+    </div><div>${dg.map(d=>{const st=style[d.p];
+      return `<div class="dg"><div class="dg-ic" style="background:${st[1]};color:${st[0]}"><svg class="ic ic-s"><use href="#${st[2]}"></use></svg></div>
+        <div style="flex:1"><div class="dg-t">${d.t}</div><div class="dg-d">${d.d}</div>
+        <div class="dg-a" style="color:${st[0]}"><svg class="ic ic-s"><use href="#i-cr"></use></svg>${d.a}</div></div>
+        <span class="pill" style="background:${st[1]};color:${st[0]};align-self:flex-start">${st[3]}</span></div>`;}).join('')}</div></div>`;
+
+  h+=`<div class="sec" id="csAi" style="display:none"><div class="sec-hdr"><span class="sec-title">${'<svg class="ic ic-s"><use href="#i-ai"></use></svg>'}AIによる詳細分析</span></div><div class="sec-body" id="csAiBody"></div></div>`;
+
+  box.innerHTML=h;
+
+  // 価格帯 / 走行距離帯
+  const pb={},kb={};
+  c.st.forEach(d=>{const p=pBand(d.price);if(p)pb[p]=(pb[p]||0)+1;const k=kmBand(d.km);if(k)kb[k]=(kb[k]||0)+1;});
+  barChart('csPrice',PRICE_BANDS.filter(b=>pb[b]).map(b=>({l:b,v:pb[b]})),'#0666ee');
+  barChart('csKm',KM_BANDS.filter(b=>kb[b]).map(b=>({l:b,v:kb[b]})),'#ff862e');
+}
+
+async function aiConsult(){
+  const key=localStorage.getItem('anthropic_api_key');
+  if(!key){alert('APIキーが設定されていません。\n左メニューの「API設定」からキーを入力してください。');openApiModal();return;}
+  const c=consultData();if(!c||!c.name){alert('車種を選んでください。');return;}
+  const box=document.getElementById('csAi'),body=document.getElementById('csAiBody');
+  box.style.display='';body.innerHTML='<div style="font-size:12px;color:var(--text3)">分析中…（10〜20秒）</div>';
+  box.scrollIntoView({behavior:'smooth',block:'start'});
+  const stY={},sdY={};
+  c.st.forEach(d=>stY[d.year]=(stY[d.year]||0)+1);
+  c.sd.forEach(d=>sdY[d.year]=(sdY[d.year]||0)+1);
+  const line=m=>c.years.map(y=>`${y}:${m[y]||0}`).join(' ');
+  const prompt=`あなたは中古車販売店の在庫責任者です。次の1車種について、仕入れと価格の判断を助ける助言をしてください。
+
+■車種: ${c.cat} / ${c.name}
+■取扱年式レンジ: ${c.rng?yearRangeLabel(c.name):'不明'}
+■在庫: ${c.tot}台（規定${c.teisu!=null?c.teisu:'未設定'}台、過不足${c.diff==null?'—':c.diff}台、未掲載${c.ul.length}台）
+■在庫の年式分布: ${line(stY)}
+■売約実績の年式分布: ${line(sdY)}（累計${c.sd.length}台）
+■平均在庫日数(現在庫): ${c.days!=null?Math.round(c.days)+'日':'—'} / 平均回転日数(売約): ${c.soldDays!=null?Math.round(c.soldDays)+'日':'—'}
+■平均価格: 在庫${c.stPrice!=null?Math.round(c.stPrice)+'万円':'—'} / 売約${c.sdPrice!=null?Math.round(c.sdPrice)+'万円':'—'}
+■平均利益: ${c.profit!=null?c.profit.toFixed(1)+'万円/台':'—'}
+■100日超の長期在庫: ${c.long.length}台
+
+次の順に、日本語で簡潔に述べてください。前置きは不要です。
+1. この車種の在庫状態の総評（3行以内）
+2. 仕入れるべき年式・価格帯・走行距離帯（具体的な数字で）
+3. 今すぐ手を打つべき在庫（年式と対応方針）
+4. 3ヶ月後にどうなっていれば成功か（数値目標）`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key.trim().replace(/[^a-zA-Z0-9\-_]/g,''),
+        'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1600,messages:[{role:'user',content:prompt}]})
+    });
+    if(!res.ok){const e=await res.json();throw new Error(e.error?.message||('HTTP '+res.status));}
+    const data=await res.json();
+    const txt=data.content.filter(b=>b.type==='text').map(b=>b.text).join('\n');
+    body.innerHTML=`<div style="font-size:12.5px;line-height:1.85;white-space:pre-wrap">${txt.replace(/[<>]/g,m=>m==='<'?'&lt;':'&gt;')}</div>`;
+  }catch(e){
+    body.innerHTML=`<div class="errbox" style="margin:0">分析に失敗しました: ${e.message}</div>`;
+  }
 }
 
 // ─── 車種バランス（ツリーマップ）───
@@ -1511,7 +1849,8 @@ const PAGE_META={
   longstock:['長期在庫','在庫日数マトリクスと長期滞留車の一覧'],
   action:['在庫対策','仕入れ優先リストと過剰在庫の是正リスト'],
   balance:['車種バランス','適正台数に対する過不足の可視化'],
-  sold:['売約分析','売約実績の推移とランキング']
+  sold:['売約分析','売約実績の推移とランキング'],
+  consult:['車種コンサル','1車種を選んで年式バランスと在庫戦略を診断']
 };
 function toggleSide(force){
   const open=(force===undefined)?!document.body.classList.contains('side-open'):force;
@@ -1528,6 +1867,7 @@ function showPage(n){
   toggleSide(false);
   window.scrollTo({top:0,behavior:'smooth'});
   if(n==='balance')renderBalance();
+  if(n==='consult')renderConsult();
 }
 
 
