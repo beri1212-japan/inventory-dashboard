@@ -221,7 +221,11 @@ tbody tr:hover td{background:#f4f8fe!important;}
 .aitem:hover{border-color:#c2d6f4;background:#f7fafe;}
 .btrack{background:var(--bg4);border:1px solid var(--border);border-radius:6px;height:18px;}
 .bfill{border-radius:6px;}
-.mbar{border-radius:5px 5px 0 0;}
+.mbars{display:flex;align-items:stretch;gap:6px;height:180px;}
+.mbar-wrap{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;flex:1;gap:3px;height:100%;}
+.mbar{width:100%;min-height:4px;max-height:calc(100% - 32px);border-radius:6px 6px 0 0;}
+.mbar-lbl{font-size:10px;color:var(--text3);}
+.mbar-val{font-size:10.5px;font-weight:600;color:var(--text2);}
 .modal{border:1px solid var(--border);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.16);padding:22px;}
 .ov{background:rgba(4,10,17,.4);}
 .errbox{background:var(--red-bg);border:1px solid #f5bcc2;border-radius:12px;color:var(--red);}
@@ -642,7 +646,19 @@ let STOCK=[],UNLISTED=[],SOLD=[];
 
 const csvUrl=gid=>`https://docs.google.com/spreadsheets/d/${SID}/export?format=csv&gid=${gid}`;
 function parseCsv(t){return t.split('\n').map(l=>{const c=[];let cur='',q=false;for(const ch of l){if(ch==='"')q=!q;else if(ch===','&&!q){c.push(cur.trim());cur='';}else cur+=ch;}c.push(cur.trim());return c;});}
-async function fetchCsv(gid){const r=await fetch(csvUrl(gid));if(!r.ok)throw new Error(`HTTP ${r.status}`);return parseCsv(await r.text());}
+async function fetchCsv(gid,tries=3){
+  // Googleスプレッドシートは短時間に連続アクセスすると散発的に 400/429 を返すため、少し待って再試行する
+  let last;
+  for(let i=0;i<tries;i++){
+    try{
+      const r=await fetch(csvUrl(gid),{cache:'no-store'});
+      if(r.ok)return parseCsv(await r.text());
+      last=new Error(`HTTP ${r.status}`);
+    }catch(e){last=e;}
+    if(i<tries-1)await new Promise(res=>setTimeout(res,600*(i+1)));
+  }
+  throw last;
+}
 const nn=v=>{const n=parseFloat(v);return isNaN(n)?null:n;};
 const nm=s=>{s=String(s).trim();return NAME_MAP[s]||s;};
 function parseYear(v){const s=String(v).trim();if(s.includes('/')){try{const y=parseInt(s);if(y<=8)return`R${y}`;if(y===31)return'H31/R1';return`H${y}`;}catch(e){}}const n=parseInt(s);if(isNaN(n))return'不明';if(n<=8)return`R${n}`;if(n===31)return'H31/R1';return`H${n}`;}
@@ -998,16 +1014,16 @@ function renderSold(){
   const sm2=Object.keys(mo).sort().slice(-18);const mm=Math.max(...sm2.map(m=>mo[m]),1);
   document.getElementById('monthlyBars').innerHTML=sm2.map(m=>{const v=mo[m];const h=Math.round(v/mm*100);const l=m.replace(/^\d{4}-/,'');return `<div class="mbar-wrap"><div class="mbar" style="height:${h}%;background:var(--accent)" title="${m}: ${v}台"></div><div class="mbar-lbl">${l}</div><div class="mbar-val">${v}</div></div>`;}).join('');
   const nc={};sd.forEach(d=>{nc[d.name]=(nc[d.name]||0)+1;});
-  barChart('soldRank',Object.entries(nc).sort((a,b)=>b[1]-a[1]).slice(0,20).map(([k,v])=>({l:k,v})),'#2979d4');
+  barChart('soldRank',Object.entries(nc).sort((a,b)=>b[1]-a[1]).slice(0,20).map(([k,v])=>({l:k,v})),'#0666ee');
   const dn={};sd.filter(d=>d.days!=null).forEach(d=>{if(!dn[d.name])dn[d.name]=[];dn[d.name].push(d.days);});
   const rot=Object.entries(dn).filter(([,a])=>a.length>=5).map(([n,a])=>({l:n,v:Math.round(a.reduce((a,b)=>a+b)/a.length)})).sort((a,b)=>a.v-b.v).slice(0,15);
-  barChart('rotationRank',rot,'#16a34a');
+  barChart('rotationRank',rot,'#00af44');
   const cc={};sd.forEach(d=>{if(d.color&&d.color.length>0&&d.color!='nan')cc[d.color]=(cc[d.color]||0)+1;});
-  barChart('soldColor',Object.entries(cc).sort((a,b)=>b[1]-a[1]).slice(0,12).map(([k,v])=>({l:k,v})),'#0891b2');
+  barChart('soldColor',Object.entries(cc).sort((a,b)=>b[1]-a[1]).slice(0,12).map(([k,v])=>({l:k,v})),'#f83f54');
   const yc={};sd.forEach(d=>{yc[d.year]=(yc[d.year]||0)+1;});
-  barChart('soldYear',YEAR_ORDER.filter(y=>yc[y]).map(y=>({l:y,v:yc[y]})),'#7c3aed');
+  barChart('soldYear',YEAR_ORDER.filter(y=>yc[y]).map(y=>({l:y,v:yc[y]})),'#955be3');
   const bands=[['〜2万',0,20000],['〜4万',20000,40000],['〜6万',40000,60000],['〜8万',60000,80000],['8万超',80000,Infinity]];
-  barChart('soldKm',bands.map(([l,lo,hi])=>({l,v:sd.filter(d=>d.km!=null&&d.km>=lo&&d.km<hi).length})),'#d97706');
+  barChart('soldKm',bands.map(([l,lo,hi])=>({l,v:sd.filter(d=>d.km!=null&&d.km>=lo&&d.km<hi).length})),'#ff862e');
 }
 
 function barChart(id,items,color){
