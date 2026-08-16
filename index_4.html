@@ -1,0 +1,2160 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INDIO inventory management</title>
+<!-- ホーム画面アイコン（在庫HUB専用） -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="在庫HUB">
+<meta name="theme-color" content="#0559d2">
+<link rel="manifest" href="manifest-zaiko.webmanifest">
+<link rel="icon" href="zaiko-favicon-64.png" sizes="64x64" type="image/png">
+<link rel="apple-touch-icon" href="zaiko-apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f9fafb;--bg2:#ffffff;--bg3:#fbfcfd;--bg4:#f2f4f5;
+  --border:#e3e5e6;--border2:#d7dbdf;
+  --text:#040a11;--text2:#4d5660;--text3:#8b939c;
+  --accent:#0559d2;--accent-bg:#eaf1fd;
+  --green:#00af44;--green-bg:#e4f7ea;
+  --red:#d40924;--red-bg:#fdeaec;
+  --amber:#ff862e;--amber-bg:#fff2e8;
+  --teal:#0666ee;--teal-bg:#e9f0fe;
+  --purple:#955be3;--purple-bg:#f3ebfd;
+  --font:'Inter','Noto Sans JP',system-ui,-apple-system,sans-serif;--mono:'DM Mono',ui-monospace,monospace;
+  --side:236px;--r:12px;--rs:8px;
+  --sh:0 1px 3px rgba(0,0,0,.1),0 1px 2px -1px rgba(0,0,0,.1);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;min-height:100vh;}
+.hdr{background:var(--bg2);border-bottom:1.5px solid var(--border);padding:0 14px;height:44px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+.hdr-l{display:flex;align-items:center;gap:16px;}
+.logo{font-size:15px;font-weight:700;color:var(--accent);}
+.pages{display:flex;gap:2px;background:var(--bg4);border-radius:7px;padding:3px;}
+.ptab{padding:5px 13px;border-radius:5px;cursor:pointer;font-size:12px;color:var(--text2);border:none;background:none;font-family:var(--font);transition:all .15s;white-space:nowrap;font-weight:500;}
+.ptab.active{background:var(--bg2);color:var(--accent);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.1);}
+.ptab:hover:not(.active){background:rgba(255,255,255,.6);color:var(--text);}
+.upd{font-size:10px;color:var(--text3);font-family:var(--mono);}
+.rbtn{background:var(--accent);border:none;color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-family:var(--font);display:flex;align-items:center;gap:5px;font-weight:500;}
+.rbtn:hover{opacity:.88;}
+.spin{display:none;width:12px;height:12px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.main{padding:8px 12px;max-width:1800px;margin:0 auto;}
+.page{display:none;}.page.active{display:block;}
+.summary{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;cursor:pointer;transition:box-shadow .15s,border-color .15s;}
+.card:hover{box-shadow:0 2px 8px rgba(41,121,212,.15);border-color:var(--accent);}
+.card-lbl{font-size:10px;color:var(--text3);margin-bottom:4px;letter-spacing:.04em;font-weight:500;}
+.card-val{font-size:24px;font-weight:700;font-family:var(--mono);line-height:1;color:var(--accent);}
+.card-sub{font-size:10px;color:var(--text3);margin-top:4px;line-height:1.4;}
+.card-ul .card-val{color:var(--red);}
+.sec{background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:7px;overflow:hidden;}
+.sec-hdr{padding:9px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;background:var(--bg3);}
+.sec-title{font-size:12px;font-weight:700;color:var(--text);}
+.sec-body{padding:7px 10px;}
+.ctrls{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.sel{background:var(--bg2);border:1px solid var(--border2);color:var(--text);padding:4px 8px;border-radius:5px;font-size:11px;font-family:var(--font);cursor:pointer;}
+.sel:focus{outline:none;border-color:var(--accent);}
+.chklbl{font-size:11px;color:var(--text2);display:flex;align-items:center;gap:4px;cursor:pointer;}
+.chklbl input{accent-color:var(--accent);}
+.legend{display:flex;gap:10px;flex-wrap:wrap;}
+.leg{display:flex;align-items:center;gap:3px;font-size:10px;color:var(--text3);}
+.ld{width:10px;height:10px;border-radius:2px;}
+.tbl-wrap{overflow:auto;max-height:calc(100vh - 320px);border-radius:6px;border:1px solid var(--border);max-width:800px;}
+table{border-collapse:collapse;white-space:nowrap;min-width:100%;}
+thead th{position:sticky;top:0;z-index:10;background:#e8eef5;font-size:9px;font-weight:600;padding:3px 1px;border-bottom:1.5px solid var(--border2);border-right:1px solid var(--border2);color:var(--text2);text-align:center;font-family:var(--mono);width:28px;min-width:28px;max-width:28px;}
+thead th:first-child{position:sticky;left:0;z-index:20;text-align:left;min-width:110px;max-width:110px;width:110px;background:#dde5ef;}
+tbody td{padding:1px 1px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);text-align:center;vertical-align:middle;width:28px;min-width:28px;max-width:28px;}
+tbody td:first-child{position:sticky;left:0;background:var(--bg2);border-right:1.5px solid var(--border);z-index:5;text-align:left;padding:2px 6px;font-size:11px;font-weight:500;width:110px;min-width:110px;max-width:110px;}
+tbody tr:hover td{background:var(--accent-bg)!important;}
+.cat-row td{background:#dde8f5!important;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:.08em;padding:4px 10px;border-bottom:1.5px solid var(--border2)!important;}
+.cell{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;min-width:24px;padding:2px 4px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:700;font-family:var(--mono);line-height:1.2;transition:opacity .1s;}
+.cell:hover{opacity:.75;}
+.cell .u{font-size:8px;font-weight:400;opacity:.8;}
+.n0{color:var(--text3);}
+.n1{background:#dbeafe;color:#1d4ed8;}
+.n2{background:#bfdbfe;color:#1d4ed8;}
+.n3{background:#3b82f6;color:#fff;}
+.n4{background:#2563eb;color:#fff;}
+.n5{background:#1d4ed8;color:#fff;}
+.nu{background:#fef3c7;color:#92400e;}
+.ab{display:inline-block;font-size:10px;padding:0 4px;border-radius:5px;margin-left:3px;font-family:var(--mono);font-weight:600;}
+.abr{background:var(--red-bg);color:var(--red);}
+.aby{background:var(--amber-bg);color:var(--amber);}
+.abg{background:var(--green-bg);color:var(--green);}
+.tcol{font-weight:700;font-family:var(--mono);font-size:11px;color:var(--accent);}
+.dcol{color:var(--text3);font-family:var(--mono);font-size:11px;}
+.cards-grid{display:flex;flex-direction:column;gap:5px;}
+.aitem{display:flex;justify-content:space-between;align-items:center;background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:8px 12px;transition:border-color .15s;}
+.aitem:hover{border-color:var(--accent);background:var(--accent-bg);}
+.aname{font-size:12px;font-weight:600;color:var(--text);}
+.adet{font-size:10px;color:var(--text);margin-top:2px;font-family:var(--mono);}
+.pill{font-size:11px;font-weight:700;padding:2px 9px;border-radius:14px;font-family:var(--mono);white-space:nowrap;}
+.pill-r{background:var(--red-bg);color:var(--red);}
+.pill-y{background:var(--amber-bg);color:var(--amber);}
+.pill-g{background:var(--green-bg);color:var(--green);}
+.pill-b{background:var(--accent-bg);color:var(--accent);}
+.pill-p{background:var(--purple-bg);color:var(--purple);}
+.pill-t{background:var(--teal-bg);color:var(--teal);}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.four-col{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;}
+.five-col{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px;}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;}
+.kpi-lbl{font-size:10px;color:var(--text3);margin-bottom:4px;letter-spacing:.04em;font-weight:500;}
+.kpi-val{font-size:22px;font-weight:700;font-family:var(--mono);}
+.kpi-sub{font-size:10px;color:var(--text3);margin-top:3px;}
+.barchart{display:flex;flex-direction:column;gap:4px;}
+.brow{display:flex;align-items:center;gap:6px;}
+.blbl{font-size:10px;color:var(--text2);width:110px;text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.btrack{flex:1;height:16px;background:var(--bg4);border-radius:3px;overflow:hidden;border:1px solid var(--border);}
+.bfill{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:5px;font-size:9px;font-family:var(--mono);font-weight:600;color:#fff;min-width:20px;}
+.mbars{display:flex;align-items:flex-end;gap:3px;height:110px;}
+.mbar-wrap{display:flex;flex-direction:column;align-items:center;flex:1;gap:2px;}
+.mbar{width:100%;border-radius:3px 3px 0 0;min-height:2px;cursor:pointer;}
+.mbar:hover{opacity:.75;}
+.mbar-lbl{font-size:8px;color:var(--text3);font-family:var(--mono);}
+.mbar-val{font-size:8px;color:var(--text2);font-family:var(--mono);}
+.pri{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;margin-right:4px;}
+.pri-s{background:var(--red-bg);color:var(--red);}
+.pri-a{background:var(--amber-bg);color:var(--amber);}
+.pri-b{background:var(--accent-bg);color:var(--accent);}
+.score-bar{height:3px;border-radius:2px;background:var(--border);margin-top:4px;overflow:hidden;width:100px;}
+.score-fill{height:100%;border-radius:2px;}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:90;backdrop-filter:blur(3px);}
+.modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:20px;min-width:340px;max-width:520px;max-height:75vh;overflow-y:auto;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,.15);}
+.modal h3{font-size:14px;font-weight:700;margin-bottom:12px;color:var(--text);}
+.modal-x{float:right;cursor:pointer;color:var(--text3);font-size:20px;line-height:1;}
+.drow{display:flex;justify-content:space-between;font-size:11px;padding:5px 0;border-bottom:1px solid var(--border);}
+.drow:last-child{border:none;}
+.dlbl{color:var(--text2);}
+.dwarn{color:var(--red);font-weight:600;}
+.errbox{background:var(--red-bg);border:1px solid #fca5a5;border-radius:8px;padding:14px;color:var(--red);margin:10px 0;}
+
+/* ═══ Symphony-style refresh ═══ */
+html{-webkit-text-size-adjust:100%;}
+body{font-family:var(--font);font-size:13px;letter-spacing:.01em;-webkit-font-smoothing:antialiased;}
+.ic{width:18px;height:18px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.ic-s{width:15px;height:15px;}
+
+/* --- sidebar --- */
+.side{position:fixed;top:0;left:0;bottom:0;width:var(--side);background:#fcfcfc;border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:80;transition:transform .25s ease;}
+.side-hd{height:56px;display:flex;align-items:center;gap:9px;padding:0 16px;flex-shrink:0;}
+.lg-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#0559d2,#0f8ae8);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;letter-spacing:.02em;flex-shrink:0;}
+.lg-txt{display:flex;flex-direction:column;line-height:1.15;overflow:hidden;}
+.lg-txt b{font-size:14px;font-weight:700;color:var(--text);letter-spacing:.01em;}
+.lg-txt span{font-size:9.5px;color:var(--text3);font-weight:500;letter-spacing:.04em;white-space:nowrap;}
+.side-nav{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:2px;}
+.side-ft{padding:12px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:2px;flex-shrink:0;}
+.nav-item{display:flex;align-items:center;gap:12px;width:100%;height:40px;padding:8px 12px;border:none;background:none;border-radius:8px;cursor:pointer;font-family:var(--font);font-size:13.5px;font-weight:500;color:var(--text2);text-align:left;transition:background .15s,color .15s;}
+.nav-item:hover{background:var(--bg4);color:var(--text);}
+.nav-item.active{background:rgba(5,89,210,.10);color:var(--accent);}
+.nav-item.active .ic{color:var(--accent);}
+.nav-badge{margin-left:auto;font-size:10px;font-weight:700;font-family:var(--mono);background:var(--red-bg);color:var(--red);border-radius:9px;padding:1px 7px;}
+.nav-item.active .nav-badge{background:#fff;}
+
+/* --- shell / topbar --- */
+.shell{margin-left:var(--side);min-height:100vh;display:flex;flex-direction:column;}
+.hdr{background:rgba(255,255,255,.72);backdrop-filter:saturate(180%) blur(10px);-webkit-backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--border);box-shadow:none;height:56px;padding:0 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:60;}
+.pg-title{font-size:16px;font-weight:700;color:var(--text);letter-spacing:.01em;line-height:1.2;margin:0;}
+.pg-sub{font-size:11.5px;color:var(--text3);font-weight:400;}
+.hdr-r{margin-left:auto;display:flex;align-items:center;gap:12px;}
+.upd{font-size:11px;color:var(--text3);font-family:var(--mono);white-space:nowrap;}
+.rbtn{background:var(--accent);border:none;color:#fff;padding:0 14px;height:34px;border-radius:8px;cursor:pointer;font-size:12.5px;font-family:var(--font);font-weight:500;display:inline-flex;align-items:center;gap:7px;box-shadow:var(--sh);transition:filter .15s;}
+.rbtn:hover{filter:brightness(1.08);opacity:1;}
+.rbtn.ghost{background:var(--bg2);color:var(--text2);border:1px solid var(--border);box-shadow:none;}
+.rbtn.ghost:hover{background:var(--bg4);color:var(--text);}
+.icon-btn{display:none;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);cursor:pointer;}
+.spin{border-color:rgba(255,255,255,.45);border-top-color:#fff;width:13px;height:13px;}
+
+.main{padding:20px 24px 32px;max-width:1800px;margin:0 auto;width:100%;}
+
+/* --- cards / sections --- */
+.summary{gap:12px;margin-bottom:16px;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:14px 16px;box-shadow:var(--sh);transition:box-shadow .18s,border-color .18s,transform .18s;}
+.card:hover{box-shadow:0 4px 14px rgba(5,89,210,.13);border-color:#c2d6f4;transform:translateY(-1px);}
+.card-lbl{font-size:11px;color:var(--text3);font-weight:500;letter-spacing:.02em;margin-bottom:6px;}
+.card-val{font-size:26px;color:var(--text);letter-spacing:-.01em;}
+.card-ul .card-val{color:var(--red);}
+.card-sub{font-size:10.5px;}
+.sec{background:var(--bg2);border:1px solid var(--border);border-radius:14px;margin-bottom:12px;box-shadow:var(--sh);}
+.sec-hdr{padding:13px 16px;background:transparent;border-bottom:1px solid var(--border);}
+.sec-title{font-size:13.5px;font-weight:700;color:var(--text);display:inline-flex;align-items:center;gap:8px;letter-spacing:.01em;}
+.sec-title .ic{color:var(--accent);}
+.sec-body{padding:12px 14px;}
+.kpi{border-radius:14px;padding:14px 16px;box-shadow:var(--sh);}
+.kpi-lbl{font-size:11px;color:var(--text3);}
+.kpi-val{font-size:23px;letter-spacing:-.01em;}
+.two-col,.three-col{gap:12px;}
+.four-col,.five-col{gap:12px;margin-bottom:12px;}
+
+/* --- controls --- */
+.sel{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:8px;font-size:12px;height:32px;transition:border-color .15s,box-shadow .15s;}
+.sel:hover{border-color:var(--border2);}
+.sel:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(5,89,210,.13);}
+.chklbl{font-size:12px;}
+.ctrls{gap:8px;}
+
+/* --- tables --- */
+.tbl-wrap{border-radius:10px;border:1px solid var(--border);}
+thead th{background:#f2f4f5;color:var(--text2);border-bottom:1px solid var(--border);border-right:1px solid var(--border);font-size:9.5px;}
+thead th:first-child{background:#eceff1;}
+tbody td{border-bottom:1px solid var(--border);border-right:1px solid var(--border);}
+tbody td:first-child{border-right:1px solid var(--border);font-size:11.5px;}
+tbody tr:hover td{background:#f4f8fe!important;}
+.cat-row td{background:#eaf1fd!important;color:var(--accent);border-bottom:1px solid var(--border)!important;}
+.n1{background:#e2ecfb;color:#0559d2;}
+.n2{background:#c3d9f7;color:#0447a8;}
+.n3{background:#5b9bf0;color:#fff;}
+.n4{background:#1c72e0;color:#fff;}
+.n5{background:#0447a8;color:#fff;}
+.nu{background:#fff2e8;color:#c2570f;}
+.cell{border-radius:6px;}
+
+/* --- pills / items --- */
+.pill{border-radius:999px;padding:3px 10px;font-size:11px;}
+.aitem{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:11px 14px;}
+.aitem:hover{border-color:#c2d6f4;background:#f7fafe;}
+.btrack{background:var(--bg4);border:1px solid var(--border);border-radius:6px;height:18px;}
+.bfill{border-radius:6px;}
+.mbar{border-radius:5px 5px 0 0;}
+.modal{border:1px solid var(--border);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.16);padding:22px;}
+.ov{background:rgba(4,10,17,.4);}
+.errbox{background:var(--red-bg);border:1px solid #f5bcc2;border-radius:12px;color:var(--red);}
+
+/* --- responsive --- */
+.side-scrim{display:none;position:fixed;inset:0;background:rgba(4,10,17,.35);z-index:70;}
+@media (max-width:1024px){
+  .side{transform:translateX(-100%);box-shadow:0 0 40px rgba(0,0,0,.18);}
+  body.side-open .side{transform:none;}
+  body.side-open .side-scrim{display:block;}
+  .shell{margin-left:0;}
+  .icon-btn{display:inline-flex;}
+  .main{padding:16px 14px 28px;}
+  .hdr{padding:0 14px;}
+  .summary{grid-template-columns:repeat(2,1fr);}
+  .four-col,.five-col,.three-col,.two-col{grid-template-columns:1fr 1fr;}
+  .pg-sub{display:none;}
+}
+@media (max-width:560px){
+  .summary,.four-col,.five-col,.three-col,.two-col{grid-template-columns:1fr;}
+  .upd{display:none;}
+}
+
+</style>
+</head>
+<body>
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+<symbol id="i-stock" viewBox="0 0 24 24"><svg class="lucide lucide-layers" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z" /> <path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12" /> <path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17" /></symbol>
+<symbol id="i-unlisted" viewBox="0 0 24 24"><svg class="lucide lucide-clipboard-list" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <rect width="8" height="4" x="8" y="2" rx="1" ry="1" /> <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /> <path d="M12 11h4" /> <path d="M12 16h4" /> <path d="M8 11h.01" /> <path d="M8 16h.01" /></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><svg class="lucide lucide-clock" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="12" cy="12" r="10" /> <path d="M12 6v6l4 2" /></symbol>
+<symbol id="i-action" viewBox="0 0 24 24"><svg class="lucide lucide-target" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="12" cy="12" r="10" /> <circle cx="12" cy="12" r="6" /> <circle cx="12" cy="12" r="2" /></symbol>
+<symbol id="i-balance" viewBox="0 0 24 24"><svg class="lucide lucide-scale" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 3v18" /> <path d="m19 8 3 8a5 5 0 0 1-6 0zV7" /> <path d="M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1" /> <path d="m5 8 3 8a5 5 0 0 1-6 0zV7" /> <path d="M7 21h10" /></symbol>
+<symbol id="i-sold" viewBox="0 0 24 24"><svg class="lucide lucide-trending-up" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M16 7h6v6" /> <path d="m22 7-8.5 8.5-5-5L2 17" /></symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24"><svg class="lucide lucide-refresh-cw" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /> <path d="M21 3v5h-5" /> <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /> <path d="M8 16H3v5" /></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24"><svg class="lucide lucide-settings" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" /> <circle cx="12" cy="12" r="3" /></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><svg class="lucide lucide-chart-column" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M3 3v16a2 2 0 0 0 2 2h16" /> <path d="M18 17V9" /> <path d="M13 17V5" /> <path d="M8 17v-3" /></symbol>
+<symbol id="i-wallet" viewBox="0 0 24 24"><svg class="lucide lucide-wallet" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" /> <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" /></symbol>
+<symbol id="i-truck" viewBox="0 0 24 24"><svg class="lucide lucide-truck" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" /> <path d="M15 18H9" /> <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14" /> <circle cx="17" cy="18" r="2" /> <circle cx="7" cy="18" r="2" /></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><svg class="lucide lucide-circle-check" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="12" cy="12" r="10" /> <path d="m9 12 2 2 4-4" /></symbol>
+<symbol id="i-sparkles" viewBox="0 0 24 24"><svg class="lucide lucide-sparkles" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" /> <path d="M20 2v4" /> <path d="M22 4h-4" /> <circle cx="4" cy="20" r="2" /></symbol>
+<symbol id="i-wrench" viewBox="0 0 24 24"><svg class="lucide lucide-wrench" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z" /></symbol>
+<symbol id="i-slash" viewBox="0 0 24 24"><svg class="lucide lucide-circle-slash" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="12" cy="12" r="10" /> <line x1="9" x2="15" y1="15" y2="9" /></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><svg class="lucide lucide-file-text" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /> <path d="M14 2v5a1 1 0 0 0 1 1h5" /> <path d="M10 9H8" /> <path d="M16 13H8" /> <path d="M16 17H8" /></symbol>
+<symbol id="i-cart" viewBox="0 0 24 24"><svg class="lucide lucide-shopping-cart" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="8" cy="21" r="1" /> <circle cx="19" cy="21" r="1" /> <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" /></symbol>
+<symbol id="i-down" viewBox="0 0 24 24"><svg class="lucide lucide-trending-down" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M16 17h6v-6" /> <path d="m22 17-8.5-8.5-5 5L2 7" /></symbol>
+<symbol id="i-calendar" viewBox="0 0 24 24"><svg class="lucide lucide-calendar" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M8 2v3" /> <path d="M16 2v3" /> <rect x="3" y="3" width="18" height="18" rx="2" /> <path d="M3 9h18" /></symbol>
+<symbol id="i-trophy" viewBox="0 0 24 24"><svg class="lucide lucide-trophy" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M10 14.66V17a1 1 0 0 1-1 1 2 2 0 0 0-2 2v2" /> <path d="M14 14.66V17a1 1 0 0 0 1 1 2 2 0 0 1 2 2v2" /> <path d="M17.916 10H19.5A2.5 2.5 0 0 0 22 7.5V5a1 1 0 0 0-1-1h-3" /> <path d="M4 22h16" /> <path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z" /> <path d="M6.084 10H4.5A2.5 2.5 0 0 1 2 7.5V5a1 1 0 0 1 1-1h3" /></symbol>
+<symbol id="i-zap" viewBox="0 0 24 24"><svg class="lucide lucide-zap" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z" /></symbol>
+<symbol id="i-palette" viewBox="0 0 24 24"><svg class="lucide lucide-palette" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z" /> <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" /> <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" /> <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" /> <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" /></symbol>
+<symbol id="i-route" viewBox="0 0 24 24"><svg class="lucide lucide-route" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="6" cy="19" r="3" /> <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15" /> <circle cx="18" cy="5" r="3" /></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><svg class="lucide lucide-search" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m21 21-4.34-4.34" /> <circle cx="11" cy="11" r="8" /></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><svg class="lucide lucide-menu" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M4 5h16" /> <path d="M4 12h16" /> <path d="M4 19h16" /></symbol>
+<symbol id="i-line" viewBox="0 0 24 24"><svg class="lucide lucide-chart-line" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M3 3v16a2 2 0 0 0 2 2h16" /> <path d="m19 9-5 5-4-4-3 3" /></symbol>
+<symbol id="i-package" viewBox="0 0 24 24"><svg class="lucide lucide-package" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z" /> <path d="M12 22V12" /> <polyline points="3.29 7 12 12 20.71 7" /> <path d="m7.5 4.27 9 5.15" /></symbol>
+<symbol id="i-warn" viewBox="0 0 24 24"><svg class="lucide lucide-triangle-alert" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /> <path d="M12 9v4" /> <path d="M12 17h.01" /></symbol>
+<symbol id="i-cl" viewBox="0 0 24 24"><svg class="lucide lucide-chevron-left" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m15 18-6-6 6-6" /></symbol>
+<symbol id="i-pdf" viewBox="0 0 24 24"><svg class="lucide lucide-file-down" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /> <path d="M14 2v5a1 1 0 0 0 1 1h5" /> <path d="M12 18v-6" /> <path d="m9 15 3 3 3-3" /></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><svg class="lucide lucide-info" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="12" cy="12" r="10" /> <path d="M12 16v-4" /> <path d="M12 8h.01" /></symbol>
+</svg>
+
+<aside class="side" id="side">
+  <div class="side-hd">
+    <span class="lg-mark">IN</span>
+    <span class="lg-txt"><b>INDIO</b><span>INVENTORY MANAGEMENT</span></span>
+  </div>
+  <nav class="side-nav">
+    <button class="nav-item active" onclick="showPage('stock')"><svg class="ic" aria-hidden="true"><use href="#i-stock"></use></svg><span>在庫現状</span></button>
+    <button class="nav-item" onclick="showPage('unlisted')"><svg class="ic" aria-hidden="true"><use href="#i-unlisted"></use></svg><span>未掲載管理</span><span class="nav-badge" id="navUl" style="display:none"></span></button>
+    <button class="nav-item" onclick="showPage('longstock')"><svg class="ic" aria-hidden="true"><use href="#i-clock"></use></svg><span>長期在庫</span></button>
+    <button class="nav-item" onclick="showPage('action')"><svg class="ic" aria-hidden="true"><use href="#i-action"></use></svg><span>在庫対策</span></button>
+    <button class="nav-item" onclick="showPage('balance')"><svg class="ic" aria-hidden="true"><use href="#i-balance"></use></svg><span>車種バランス</span></button>
+    <button class="nav-item" onclick="showPage('sold')"><svg class="ic" aria-hidden="true"><use href="#i-sold"></use></svg><span>売約分析</span></button>
+  </nav>
+  <div class="side-ft">
+    <button class="nav-item" onclick="openMarketModal()"><svg class="ic" aria-hidden="true"><use href="#i-line"></use></svg><span>市場分析</span></button>
+    <button class="nav-item" onclick="openApiModal()"><svg class="ic" aria-hidden="true"><use href="#i-settings"></use></svg><span>API設定</span></button>
+  </div>
+</aside>
+<div class="side-scrim" onclick="toggleSide(false)"></div>
+
+<div class="shell">
+<div class="hdr">
+  <button class="icon-btn" onclick="toggleSide()" aria-label="メニュー"><svg class="ic" aria-hidden="true"><use href="#i-menu"></use></svg></button>
+  <div>
+    <div class="pg-title" id="pgTitle">在庫現状</div>
+    <div class="pg-sub" id="pgSub">車種 × 年式 / 走行 / 価格帯のマトリクス</div>
+  </div>
+  <div class="hdr-r">
+    <div class="upd" id="upd">—</div>
+    <button class="rbtn" onclick="loadAll()">
+      <div class="spin" id="spin"></div>
+      <svg class="ic ic-s" aria-hidden="true"><use href="#i-refresh"></use></svg><span id="btntxt">更新</span>
+    </button>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- PAGE 1: 在庫現状 -->
+<div class="page active" id="page-stock">
+  <div class="summary">
+    <div class="card" onclick="showCatModal('ミニバン')"><div class="card-lbl">ミニバン</div><div class="card-val" id="sm">—</div>
+      <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap">
+        <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:#dbeafe;color:#1d4ed8" id="sm-hv">HV —</span>
+        <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:#d1fae5;color:#065f46" id="sm-fwd">4WD —</span>
+      </div></div>
+    <div class="card" onclick="showCatModal('SUV')"><div class="card-lbl">SUV</div><div class="card-val" id="ss">—</div>
+      <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap">
+        <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:#dbeafe;color:#1d4ed8" id="ss-hv">HV —</span>
+        <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:#d1fae5;color:#065f46" id="ss-fwd">4WD —</span>
+      </div></div>
+    <div class="card" onclick="showCatModal('HVCP')"><div class="card-lbl">HVCP</div><div class="card-val" id="sh">—</div>
+      <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap">
+        <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:#dbeafe;color:#1d4ed8" id="sh-hv">HV —</span>
+        <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:#d1fae5;color:#065f46" id="sh-fwd">4WD —</span>
+      </div></div>
+    <div class="card" onclick="showCatModal('軽')"><div class="card-lbl">軽</div><div class="card-val" id="sk">—</div>
+      <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap">
+        <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:#dbeafe;color:#1d4ed8" id="sk-hv">HV —</span>
+        <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:#d1fae5;color:#065f46" id="sk-fwd">4WD —</span>
+      </div></div>
+    <div class="card card-ul" onclick="showPage('unlisted')"><div class="card-lbl">未掲載</div><div class="card-val" id="su">—</div><div class="card-sub" id="su2">クリックで詳細</div></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-hdr">
+      <span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-package"></use></svg>車種 × マトリックス</span>
+      <div class="ctrls">
+        <select class="sel" id="catSel" onchange="renderMatrix()"><option value="">全カテゴリ</option><option>ミニバン</option><option>SUV</option><option>HVCP</option><option>軽</option></select>
+        <select class="sel" id="matrixType" onchange="renderMatrix()">
+          <option value="year">× 年式</option>
+          <option value="km">× 走行距離</option>
+          <option value="price">× 価格帯（20万毎）</option>
+        </select>
+        <select class="sel" id="viewSel" onchange="renderMatrix()"><option value="count">台数</option><option value="price">平均価格（万）</option><option value="km">平均走行（万km）</option></select>
+        <label class="chklbl"><input type="checkbox" id="showU" onchange="renderMatrix()"> 未掲載含む</label>
+        <label class="chklbl"><input type="checkbox" id="alertOnly" onchange="renderMatrix()"> アラートのみ</label>
+      </div>
+      <div class="legend">
+        <div class="leg"><div class="ld" style="background:#dbeafe;border:1px solid #bfdbfe"></div>1</div>
+        <div class="leg"><div class="ld" style="background:#bfdbfe"></div>2</div>
+        <div class="leg"><div class="ld" style="background:#3b82f6"></div>3〜4</div>
+        <div class="leg"><div class="ld" style="background:#2563eb"></div>5〜7</div>
+        <div class="leg"><div class="ld" style="background:#1d4ed8"></div>8+</div>
+        <div class="leg"><div class="ld" style="background:#fef3c7;border:1px solid #fde68a"></div>未掲載</div>
+      </div>
+    </div>
+    <div class="sec-body" style="padding:8px;">
+      <div class="tbl-wrap"><table id="MT"></table></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-wallet"></use></svg>ジャンル別 想定利益 / 在庫原価累計</span></div>
+    <div class="sec-body">
+      <div class="four-col" id="profitCards"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 2: 未掲載管理 -->
+<div class="page" id="page-unlisted">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:12px">
+    <div class="five-col" style="flex:1;margin-bottom:0">
+      <div class="kpi"><div class="kpi-lbl">未掲載 合計</div><div class="kpi-val" id="u-total" style="color:var(--red)">—</div><div class="kpi-sub">台</div></div>
+    <div class="kpi"><div class="kpi-lbl">入庫待ち</div><div class="kpi-val" id="u-wait" style="color:var(--amber)">—</div><div class="kpi-sub">台</div></div>
+    <div class="kpi"><div class="kpi-lbl">鈑金・仕上げ待ち</div><div class="kpi-val" id="u-sheet" style="color:var(--red)">—</div><div class="kpi-sub">台</div></div>
+    <div class="kpi"><div class="kpi-lbl">掲載可能</div><div class="kpi-val" id="u-ready" style="color:var(--green)">—</div><div class="kpi-sub">台（今すぐ掲載可）</div></div>
+    <div class="kpi"><div class="kpi-lbl">その他</div><div class="kpi-val" id="u-other" style="color:var(--text2)">—</div><div class="kpi-sub">台</div></div>
+    </div>
+    <button onclick="exportUnlistedPdf()" style="background:#2979d4;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500;white-space:nowrap;flex-shrink:0;height:fit-content;margin-top:4px">📄 PDF出力</button>
+  </div>
+  <div class="two-col">
+    <div class="sec">
+      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-truck"></use></svg>未入庫</span><span class="pill pill-b" id="cnt-p1">—台</span></div>
+      <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p1" style="max-width:500px"></div></div>
+    </div>
+    <div class="sec">
+      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-check"></use></svg>掲載待ち</span><span class="pill pill-g" id="cnt-p2">—台</span></div>
+      <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p2" style="max-width:500px"></div></div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="sec">
+      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-sparkles"></use></svg>未仕上</span><span class="pill pill-y" id="cnt-p3">—台</span></div>
+      <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p3" style="max-width:500px"></div></div>
+    </div>
+    <div class="sec">
+      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-wrench"></use></svg>BP入庫中</span><span class="pill pill-r" id="cnt-p4">—台</span></div>
+      <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p4" style="max-width:500px"></div></div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="sec">
+      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-slash"></use></svg>BP待ち</span><span class="pill pill-r" id="cnt-p5">—台</span></div>
+      <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p5" style="max-width:500px"></div></div>
+    </div>
+    <div class="sec">
+      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-file"></use></svg>その他</span><span class="pill pill-b" id="cnt-p6">—台</span></div>
+      <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p6" style="max-width:500px"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 3: 長期在庫 -->
+<div class="page" id="page-longstock">
+  <div class="four-col">
+    <div class="kpi"><div class="kpi-lbl">300日超</div><div class="kpi-val" id="l-300" style="color:var(--red)">—</div><div class="kpi-sub">早急に値下げ推奨</div></div>
+    <div class="kpi"><div class="kpi-lbl">150〜300日</div><div class="kpi-val" id="l-150" style="color:var(--amber)">—</div><div class="kpi-sub">価格見直し推奨</div></div>
+    <div class="kpi"><div class="kpi-lbl">100〜150日</div><div class="kpi-val" id="l-100" style="color:var(--purple)">—</div><div class="kpi-sub">要注意</div></div>
+    <div class="kpi"><div class="kpi-lbl">60〜100日</div><div class="kpi-val" id="l-60" style="color:var(--text2)">—</div><div class="kpi-sub">様子見</div></div>
+  </div>
+
+  <!-- マトリクス表 -->
+  <div class="sec">
+    <div class="sec-hdr">
+      <span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-chart"></use></svg>在庫日数 マトリクス</span>
+    </div>
+    <div class="sec-body" style="display:flex;gap:12px;flex-wrap:wrap">
+      <div style="flex:1;min-width:380px">
+        <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px">ジャンル × 日数</div>
+        <div id="mtxGenre" style="overflow-x:auto"></div>
+      </div>
+      <div style="flex:1;min-width:380px">
+        <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px">原価帯 × 日数</div>
+        <div id="mtxCost" style="overflow-x:auto"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-hdr">
+      <span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-clock"></use></svg>長期在庫一覧 <span id="longCount" style="font-size:13px;color:var(--text2);font-weight:600;margin-left:8px"></span></span>
+      <div class="ctrls">
+        <select class="sel" id="longThresh" onchange="renderLong()">
+          <option value="60">60日以上</option><option value="100" selected>100日以上</option>
+          <option value="150">150日以上</option><option value="300">300日以上</option>
+        </select>
+        <select class="sel" id="longCat" onchange="renderLong()">
+          <option value="">全カテゴリ</option><option>ミニバン</option><option>SUV</option><option>HVCP</option><option>軽</option>
+        </select>
+      </div>
+    </div>
+    <div class="sec-body" style="max-height:calc(100vh - 260px);overflow-y:auto;">
+      <div class="cards-grid" id="longL"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 4: 在庫対策 -->
+<div class="page" id="page-action">
+  <div class="four-col">
+    <div class="kpi"><div class="kpi-lbl">不足車種数</div><div class="kpi-val" id="k-short" style="color:var(--red)">—</div><div class="kpi-sub">即仕入れ必要</div></div>
+    <div class="kpi"><div class="kpi-lbl">過剰車種数</div><div class="kpi-val" id="k-excess" style="color:var(--amber)">—</div><div class="kpi-sub">販売促進が必要</div></div>
+    <div class="kpi"><div class="kpi-lbl">掲載可能台数</div><div class="kpi-val" id="k-ready" style="color:var(--teal)">—</div><div class="kpi-sub">今すぐ掲載できる</div></div>
+    <div class="kpi"><div class="kpi-lbl">長期在庫台数</div><div class="kpi-val" id="k-long" style="color:var(--purple)">—</div><div class="kpi-sub">100日超・要是正</div></div>
+  </div>
+  <div class="two-col">
+    <div class="sec">
+      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-cart"></use></svg>仕入れ優先リスト</span><span style="font-size:10px;color:var(--text3)">不足台数 × 売約実績で自動計算</span></div>
+      <div class="sec-body" style="max-height:360px;overflow-y:auto;"><div class="cards-grid" id="buyListL"></div></div>
+    </div>
+    <div class="sec">
+      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-down"></use></svg>過剰在庫 是正リスト</span><span style="font-size:10px;color:var(--text3)">価格見直し・販促推奨</span></div>
+      <div class="sec-body" style="max-height:360px;overflow-y:auto;"><div class="cards-grid" id="excessListL"></div></div>
+    </div>
+  </div>
+  
+</div>
+
+<!-- PAGE 5: 車種バランス -->
+<div class="page" id="page-balance">
+  <!-- ツールバー -->
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+    <button id="bv-diff" onclick="setBalView('diff')" style="padding:5px 12px;border-radius:6px;font-size:11px;cursor:pointer;border:1px solid var(--border);background:#1e3a5f;color:#fff">過不足</button>
+    <button id="bv-days" onclick="setBalView('days')" style="padding:5px 12px;border-radius:6px;font-size:11px;cursor:pointer;border:1px solid var(--border);background:var(--bg2);color:var(--text3)">在庫日数</button>
+    <button id="bv-profit" onclick="setBalView('profit')" style="padding:5px 12px;border-radius:6px;font-size:11px;cursor:pointer;border:1px solid var(--border);background:var(--bg2);color:var(--text3)">想定利益</button>
+    <div style="display:flex;align-items:center;gap:4px;margin-left:auto">
+      <span style="font-size:10px;color:var(--text3)" id="balLgMin">過剰</span>
+      <div id="balLgCells" style="display:flex;gap:2px"></div>
+      <span style="font-size:10px;color:var(--text3)" id="balLgMax">不足</span>
+    </div>
+  </div>
+
+  <!-- ツリーマップ -->
+  <div id="balanceOverview" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px"></div>
+
+  <!-- サマリー -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+    <div style="background:#fee2e2;border-radius:8px;padding:10px;text-align:center">
+      <div style="font-size:10px;color:#991b1b;font-weight:700;margin-bottom:4px">過剰</div>
+      <div style="font-size:22px;font-weight:700;color:#dc2626" id="balSurplusVal">—</div>
+      <div style="font-size:10px;color:#dc2626;margin-top:3px" id="balSurplusNames"></div>
+    </div>
+    <div style="background:#dcfce7;border-radius:8px;padding:10px;text-align:center">
+      <div style="font-size:10px;color:#166534;font-weight:700;margin-bottom:4px">適正</div>
+      <div style="font-size:22px;font-weight:700;color:#16a34a" id="balNormalVal">—</div>
+      <div style="font-size:10px;color:#16a34a;margin-top:3px" id="balNormalNames"></div>
+    </div>
+    <div style="background:#fef3c7;border-radius:8px;padding:10px;text-align:center">
+      <div style="font-size:10px;color:#92400e;font-weight:700;margin-bottom:4px">不足</div>
+      <div style="font-size:22px;font-weight:700;color:#d97706" id="balShortageVal">—</div>
+      <div style="font-size:10px;color:#d97706;margin-top:3px" id="balShortageNames"></div>
+    </div>
+  </div>
+
+  <!-- 詳細分析パネル（セルクリック時） -->
+  <div id="balanceDetail" style="display:none">
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:700;color:var(--text)" id="balDetailTitle">詳細分析</div>
+        <button onclick="document.getElementById('balanceDetail').style.display='none'" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px">×</button>
+      </div>
+      <div id="balKpiRow" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:14px"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div style="background:var(--bg);border-radius:8px;padding:10px">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">年式分布</div>
+          <div id="balYearChart"></div>
+        </div>
+        <div style="background:var(--bg);border-radius:8px;padding:10px">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">価格帯分布</div>
+          <div id="balPriceChart"></div>
+        </div>
+        <div style="background:var(--bg);border-radius:8px;padding:10px">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">走行距離分布</div>
+          <div id="balKmChart"></div>
+        </div>
+        <div style="background:var(--bg);border-radius:8px;padding:10px">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">色分布</div>
+          <div id="balColorChart"></div>
+        </div>
+      </div>
+      <div style="background:var(--bg);border-radius:8px;padding:10px;margin-bottom:10px">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">在庫日数分布</div>
+        <div id="balDaysChart"></div>
+      </div>
+      <div style="background:var(--bg);border-radius:8px;padding:10px">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px" id="balCompareTitle">在庫 vs 売約 年式比較</div>
+        <div style="display:flex;gap:8px;margin-bottom:6px">
+          <span style="font-size:10px;display:flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:2px;background:#2979d4;display:inline-block"></span>在庫</span>
+          <span style="font-size:10px;display:flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:2px;background:#16a34a;display:inline-block"></span>売約</span>
+        </div>
+        <div id="balCompareChart"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ツールチップ -->
+  <div id="balTip" style="position:fixed;background:#1a2332;color:#fff;font-size:11px;padding:8px 12px;border-radius:8px;pointer-events:none;display:none;z-index:100;line-height:1.7;box-shadow:0 2px 8px rgba(0,0,0,.3)"></div>
+</div>
+
+<!-- PAGE 6: 売約分析 -->
+<div class="page" id="page-sold">
+  <div class="four-col">
+    <div class="kpi"><div class="kpi-lbl">総売約台数</div><div class="kpi-val" id="kpi-total" style="color:var(--green)">—</div><div class="kpi-sub">全期間</div></div>
+    <div class="kpi"><div class="kpi-lbl">平均回転日数</div><div class="kpi-val" id="kpi-days">—</div><div class="kpi-sub">日で売れる</div></div>
+    <div class="kpi"><div class="kpi-lbl">平均利益</div><div class="kpi-val" id="kpi-profit" style="color:var(--amber)">—</div><div class="kpi-sub">万円 / 台</div></div>
+    <div class="kpi"><div class="kpi-lbl">直近12ヶ月</div><div class="kpi-val" id="kpi-recent" style="color:var(--accent)">—</div><div class="kpi-sub">台 売約</div></div>
+  </div>
+  <div class="sec" style="margin-bottom:10px;">
+    <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-calendar"></use></svg>月別売約台数（直近18ヶ月）</span></div>
+    <div class="sec-body"><div class="mbars" id="monthlyBars"></div></div>
+  </div>
+  <div class="two-col" style="margin-bottom:10px;">
+    <div class="sec">
+      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-trophy"></use></svg>車種別 売約数ランキング（上位20）</span></div>
+      <div class="sec-body"><div class="barchart" id="soldRank"></div></div>
+    </div>
+    <div class="sec">
+      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-zap"></use></svg>回転率ランキング（平均掲載日数が短い順）</span></div>
+      <div class="sec-body"><div class="barchart" id="rotationRank"></div></div>
+    </div>
+  </div>
+  <div class="three-col">
+    <div class="sec"><div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-palette"></use></svg>色別 売約数</span></div><div class="sec-body"><div class="barchart" id="soldColor"></div></div></div>
+    <div class="sec"><div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-calendar"></use></svg>年式別 売約数</span></div><div class="sec-body"><div class="barchart" id="soldYear"></div></div></div>
+    <div class="sec"><div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-route"></use></svg>走行距離帯 売約数</span></div><div class="sec-body"><div class="barchart" id="soldKm"></div></div></div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<div class="ov" id="ov" onclick="closeModal()"></div>
+<div class="modal" id="modal">
+  <span class="modal-x" onclick="closeModal()">×</span>
+  <h3 id="modal-title"></h3>
+  <div id="modal-body"></div>
+</div>
+
+<script>
+const SID='1688vaYsy-Ibhp9SaM875OzOrykJlfahVMIGteVclN3o';
+const GIDS={minivan:2047431649,suv:1044635441,hvcp:64189686,kei:1834933994,unlisted:1695712956,sold:222968280,master:790834883};
+const NAME_MAP={'ｳﾞｫｸｼｰ80系':'ヴォクシー80系','ｳﾞｫｸｼｰ90系':'ヴォクシー90系','ｳﾞｪﾙﾌｧｲｱ 30系':'ヴェルファイア30系','ﾉｱ80系':'ノア80系','ﾉｱ90系':'ノア90系','ｴｽｸｧｲｱ':'エスクァイア','ｼｴﾝﾀ':'シエンタ','ｽﾃｯﾌﾟﾜｺﾞﾝ':'ステップワゴン','ｾﾚﾅ 27前期':'セレナ27前期','ｾﾚﾅ 27後期':'セレナ27後期','ｾﾚﾅ 28現行':'セレナ28現行','ﾌﾘｰﾄﾞ':'フリード','ﾊﾘｱｰ80':'ハリアー80','ﾊﾘｱｰ80HV':'ハリアー80HV','ｳﾞｪｾﾞﾙ（現行）':'ヴェゼル現行','ｳﾞｪｾﾞﾙHV（現行）':'ヴェゼルHV現行','ｳﾞｪｾﾞﾙHV（前型）':'ヴェゼルHV前型','ｴｸｽﾄﾚｲﾙ32（前期）':'エクストレイル32前期','ｴｸｽﾄﾚｲﾙ32（後期）':'エクストレイル32後期','ｶﾛｰﾗｸﾛｽ':'カローラクロス','ﾌｫﾚｽﾀｰ':'フォレスター','ﾔﾘｽｸﾛｽ':'ヤリスクロス','ﾗｲｽﾞ':'ライズ','ｼﾞﾑニーﾉﾏﾄﾞ':'ジムニーノマド','ｱｸｱ前期':'アクア前期','ｱｸｱ中期':'アクア中期','ｱｸｱ後期':'アクア後期','ｱｸｱ現行':'アクア現行','ﾉｰﾄ前期':'ノート前期','ﾉｰﾄ中期':'ノート中期','ﾉｰﾄEpower':'ノートEpower','ﾉｰﾄEpower（現行）':'ノートEpower現行','ﾌﾟﾘｳｽ30系':'プリウス30系','ﾌﾟﾘｳｽ 50前期':'プリウス50前期','ﾌﾟﾘｳｽ 50後期':'プリウス50後期','ﾌﾟﾘｳｽ 50PHV':'プリウス50PHV','ﾌﾟﾘｳｽ 60':'プリウス60','ﾙｰﾐｰ':'ルーミー','ﾀﾝｸ':'タンク','ﾄｰﾙ':'トール','ｿﾘｵ':'ソリオ','ｽﾍﾟｲﾄﾞ':'スペイド','ｳﾞｨｯﾂ':'ヴィッツ','ｶﾛｰﾗｽﾎﾟｰﾂ':'カローラスポーツ','ｶﾛｰﾗﾂｰﾘﾝｸﾞ':'カローラツーリング','ﾏｰﾁ':'マーチ','ﾐﾗｰｼﾞｭ':'ミラージュ','N-BOXｶｽﾀﾑ':'N-BOXカスタム','Nﾜｺﾞﾝ':'Nワゴン','ｱﾙﾄ':'アルト','ｱﾙﾄﾗﾊﾟﾝ':'アルトラパン','ｴﾌﾞﾘｰ':'エブリー','ｷｬｽﾄ':'キャスト','ｷｬﾛﾙ':'キャロル','ｼﾞﾑﾆｰ':'ジムニー','ｽﾍﾟｰｼｱ':'スペーシア','ｽﾍﾟｰｼｱｶｽﾀﾑ':'スペーシアカスタム','ﾀﾝﾄ':'タント','ﾀﾝﾄｶｽﾀﾑ':'タントカスタム','ﾃﾞｲｽﾞ':'デイズ','ﾃﾞｲｽﾞﾙｰｸｽ':'デイズルークス','ﾊｽﾗｰ':'ハスラー','ﾐﾗｲｰｽ':'ミライース','ﾐﾗｼﾞｰﾉ':'ミラジーノ','ﾑｰｳﾞｺﾝﾃ':'ムーヴコンテ','ﾓｺ':'モコ','ﾙｰｸｽ':'ルークス','ﾙｰｸｽ\u3000ﾊｲｳｪｲｽﾀｰ':'ルークスHW','ﾜｺﾞﾝＲ':'ワゴンR','AZﾜｺﾞﾝ':'AZワゴン','EKﾜｺﾞﾝ':'EKワゴン','ｸﾘｯﾊﾟｰﾘｵ':'クリッパーリオ','ｵｰﾗ':'オーラ','ﾗﾝｸﾙ250':'ランクル250','ﾌｪｱﾚﾃﾞｨZ':'フェアレディZ','ﾛｰﾄﾞｽﾀｰ':'ロードスター','ｲﾝﾌﾟﾚｯｻｽﾎﾟｰﾂ':'インプレッサスポーツ','ﾌﾟﾘｳｽ60PHEV':'プリウス60PHEV'};
+const TEISU={};  // 車種マスタから動的読み込み
+const YEAR_ORDER=["H24以前","H24","H25","H26","H27","H28","H29","H30","H31/R1","R1","R2","R3","R4","R5","R6","R7","R8","不明"];
+const OLD_YEARS_SET=new Set(["H15","H19","H21","H22","H23"]);
+const CAT_ORDER=["ミニバン","SUV","HVCP","軽"];
+const KM_BANDS=["〜2万km","2〜4万km","4〜6万km","6〜8万km","8〜10万km","10万km超"];
+const PRICE_BANDS=["〜20万","20〜40万","40〜60万","60〜80万","80〜100万","100〜120万","120〜140万","140〜160万","160〜180万","180〜200万","200〜220万","220〜240万","240〜260万","260〜280万","280〜300万","300万超"];
+let STOCK=[],UNLISTED=[],SOLD=[];
+
+const csvUrl=gid=>`https://docs.google.com/spreadsheets/d/${SID}/export?format=csv&gid=${gid}`;
+function parseCsv(t){return t.split('\n').map(l=>{const c=[];let cur='',q=false;for(const ch of l){if(ch==='"')q=!q;else if(ch===','&&!q){c.push(cur.trim());cur='';}else cur+=ch;}c.push(cur.trim());return c;});}
+async function fetchCsv(gid){const r=await fetch(csvUrl(gid));if(!r.ok)throw new Error(`HTTP ${r.status}`);return parseCsv(await r.text());}
+const nn=v=>{const n=parseFloat(v);return isNaN(n)?null:n;};
+const nm=s=>{s=String(s).trim();return NAME_MAP[s]||s;};
+function parseYear(v){const s=String(v).trim();if(s.includes('/')){try{const y=parseInt(s);if(y<=8)return`R${y}`;if(y===31)return'H31/R1';return`H${y}`;}catch(e){}}const n=parseInt(s);if(isNaN(n))return'不明';if(n<=8)return`R${n}`;if(n===31)return'H31/R1';return`H${n}`;}
+function normY(y){return OLD_YEARS_SET.has(y)?'H24以前':y;}
+function kmBand(k){if(k==null)return null;if(k<20000)return'〜2万km';if(k<40000)return'2〜4万km';if(k<60000)return'4〜6万km';if(k<80000)return'6〜8万km';if(k<100000)return'8〜10万km';return'10万km超';}
+function pBand(p){if(p==null||p<=0)return null;const i=Math.floor(p/20);return i>=PRICE_BANDS.length-1?'300万超':PRICE_BANDS[i];}
+function parseDate(v){if(!v||v==='')return null;if(String(v).includes('-')&&String(v).length>=7){const d=new Date(v);return isNaN(d)?null:d;}const n=parseFloat(v);if(!isNaN(n)&&n>40000&&n<55000)return new Date((n-25569)*86400*1000);return null;}
+
+async function loadStock(){
+  const cfg=[{key:'minivan',cat:'ミニバン',carC:12,priceC:23,costC:21,profitC:27},{key:'suv',cat:'SUV',carC:12,priceC:22,costC:21,profitC:27},{key:'hvcp',cat:'HVCP',carC:12,priceC:22,costC:21,profitC:27},{key:'kei',cat:'軽',carC:13,priceC:23,costC:22,profitC:28}];
+  const res=[];
+  for(const c of cfg){const rows=await fetchCsv(GIDS[c.key]);for(let i=1;i<rows.length;i++){const r=rows[i];if(!r||r.length<5)continue;const name=nm(r[c.carC]);if(!name||name.length<=1)continue;const km=nn(r[19]);const price=nn(r[c.priceC]);const cost=nn(r[c.costC]);const profit=nn(r[c.profitC]);res.push({cat:c.cat,name,year:normY(parseYear(r[16])),km:(km&&km<500000)?km:null,price:(price&&price>0&&price<2000)?price:null,cost:(cost&&cost>0&&cost<2000)?cost:null,profit:(profit&&Math.abs(profit)<500)?profit:null,color:String(r[18]||'').trim(),days:nn(r[30]),unlisted:false});}}
+  return res;
+}
+async function loadUnlisted(){
+  const rows=await fetchCsv(GIDS.unlisted);const res=[];
+  for(let i=1;i<rows.length;i++){const r=rows[i];if(!r||r.length<5)continue;const name=nm(r[13]);if(!name||name.length<=1)continue;const km=nn(r[19]);res.push({cat:String(r[0]||'').trim().replace('ﾐﾆﾊﾞﾝ','ミニバン'),name,year:normY(parseYear(r[16])),km:(km&&km<500000)?km:null,price:nn(r[23]),color:String(r[18]||'').trim(),status:String(r[5]||'').trim(),unlisted:true});}
+  return res;
+}
+async function loadSold(){
+  const res=[];
+  for(const key of['sold','sold2025']){const rows=await fetchCsv(GIDS[key]);for(let i=1;i<rows.length;i++){const r=rows[i];if(!r||r.length<10)continue;const name=nm(r[7]);if(!name||name.length<=1)continue;if(['AA','買取','下取','B','S','A','C'].includes(name))continue;const km=nn(r[11]);const price=nn(r[15]);const profit=nn(r[17]);const ld=parseDate(r[3]);let days=null;if(key==='sold2025'){const d=nn(r[23]);if(d&&d>0&&d<3000)days=d;}res.push({name,year:normY(parseYear(r[9])),km:(km&&km<500000)?km:null,price:(price&&Math.abs(price)<5000)?price:null,profit:(profit&&Math.abs(profit)<5000)?profit:null,color:String(r[10]||'').trim(),days,month:ld?`${ld.getFullYear()}-${String(ld.getMonth()+1).padStart(2,'0')}`:null});}}
+  return res;
+}
+
+
+function updateSummary(){
+  const ids={'ミニバン':'sm','SUV':'ss','HVCP':'sh','軽':'sk'};
+  CAT_ORDER.forEach(c=>{
+    const items=STOCK.filter(d=>d.cat===c);
+    document.getElementById(ids[c]).textContent=items.length;
+    const hvEl=document.getElementById(ids[c]+'-hv');
+    const fwdEl=document.getElementById(ids[c]+'-fwd');
+    if(hvEl)hvEl.textContent='HV: '+items.filter(d=>d.hv==='〇').length;
+    if(fwdEl)fwdEl.textContent='4WD: '+items.filter(d=>d.fwd==='〇').length;
+  });
+  document.getElementById('su').textContent=UNLISTED.length;
+  const nb=document.getElementById('navUl');if(nb){nb.textContent=UNLISTED.length;nb.style.display=UNLISTED.length?'':'none';}
+  const byG={};UNLISTED.forEach(d=>{byG[d.cat]=(byG[d.cat]||0)+1;});
+  document.getElementById('su2').textContent=Object.entries(byG).map(([k,v])=>`${k}:${v}`).join(' ');
+}
+
+function showCatModal(cat){
+  const items=STOCK.filter(d=>d.cat===cat);
+  const tProfit=items.filter(d=>d.profit!=null).reduce((a,b)=>a+b.profit,0);
+  const tCost=items.filter(d=>d.cost!=null).reduce((a,b)=>a+b.cost,0);
+  const avgD=items.filter(d=>d.days!=null&&d.days<10000).reduce((a,b,_,arr)=>a+b.days/arr.length,0);
+  const lCnt=items.filter(d=>d.days!=null&&d.days>=100&&d.days<10000).length;
+  const byName={};items.forEach(d=>{if(!byName[d.name])byName[d.name]={cnt:0,profit:0,cost:0};byName[d.name].cnt++;if(d.profit)byName[d.name].profit+=d.profit;if(d.cost)byName[d.name].cost+=d.cost;});
+  const rows=Object.entries(byName).sort((a,b)=>b[1].cnt-a[1].cnt).map(([n,v])=>`<div class="drow"><span>${n}</span><span style="font-family:var(--mono)">${v.cnt}台 / 原価${v.cost.toFixed(0)}万 / 利益${v.profit.toFixed(1)}万</span></div>`).join('');
+  document.getElementById('modal-title').textContent=`${cat}（${items.length}台）`;
+  document.getElementById('modal-body').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+      <div style="background:var(--bg3);border-radius:6px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--text3)">在庫台数</div><div style="font-size:20px;font-weight:700;color:var(--accent);font-family:var(--mono)">${items.length}</div></div>
+      <div style="background:var(--bg3);border-radius:6px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--text3)">原価累計</div><div style="font-size:16px;font-weight:700;color:var(--red);font-family:var(--mono)">${tCost.toFixed(0)}万円</div></div>
+      <div style="background:var(--bg3);border-radius:6px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--text3)">想定利益計</div><div style="font-size:16px;font-weight:700;color:var(--green);font-family:var(--mono)">${tProfit.toFixed(1)}万円</div></div>
+    </div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:8px">平均在庫日数: ${Math.round(avgD)}日 / 長期在庫(100日超): ${lCnt}台</div>
+    <div style="max-height:320px;overflow-y:auto">${rows}</div>`;
+  document.getElementById('modal').style.display='block';document.getElementById('ov').style.display='block';
+}
+function closeModal(){document.getElementById('modal').style.display='none';document.getElementById('ov').style.display='none';}
+
+function cellCls(n,u){if(u)return'nu';if(!n)return'n0';return['','n1','n2','n3','n3','n4','n4','n4','n5'][Math.min(n,8)];}
+function axisKeys(t){if(t==='year')return YEAR_ORDER;if(t==='km')return KM_BANDS;return PRICE_BANDS;}
+function axisVal(d,t){if(t==='year')return d.year;if(t==='km')return kmBand(d.km);return pBand(d.price);}
+
+function renderMatrix(){
+  const cf=document.getElementById('catSel').value;
+  const type=document.getElementById('matrixType').value;
+  const vf=document.getElementById('viewSel').value;
+  const su=document.getElementById('showU').checked;
+  const ao=document.getElementById('alertOnly').checked;
+  let data=su?[...STOCK,...UNLISTED.map(d=>({...d}))]:[...STOCK];
+  if(cf)data=data.filter(d=>d.cat===cf);
+  const keys=axisKeys(type).filter(k=>data.some(d=>axisVal(d,type)===k));
+  const cats=cf?[cf]:CAT_ORDER;
+  const g={};
+  data.forEach(d=>{if(!g[d.cat])g[d.cat]={};if(!g[d.cat][d.name])g[d.cat][d.name]={};const k=axisVal(d,type);if(!k)return;if(!g[d.cat][d.name][k])g[d.cat][d.name][k]=[];g[d.cat][d.name][k].push(d);});
+
+  // ① 縦軸（列）ごとの合計を集計
+  const colTotals={};
+  keys.forEach(key=>{
+    let tot=0;
+    cats.forEach(cat=>{if(!g[cat])return;Object.values(g[cat]).forEach(ym=>{tot+=(ym[key]||[]).filter(i=>!i.unlisted).length;});});
+    colTotals[key]=tot;
+  });
+
+  // ② ヘッダー：車種 | 計 | 既定 | 過不足 | 年式列...
+  let h=`<thead><tr>
+    <th>車種</th>
+    <th>計</th><th>既定</th><th>過不足</th>
+    ${keys.map(k=>`<th>${k}</th>`).join('')}
+  </tr></thead><tbody>
+  <tr style="background:#fff;font-weight:700;border-bottom:2px solid var(--border2)">
+    <td style="position:sticky;left:0;background:#f7f9fc;font-size:10px;font-weight:700;padding:3px 8px;color:var(--accent);border-right:1.5px solid var(--border)">縦計</td>
+    <td></td><td></td><td></td>
+    ${keys.map(k=>`<td style="text-align:center;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent);border:1px solid var(--border)">${colTotals[k]||''}</td>`).join('')}
+  </tr>`;
+
+  cats.forEach(cat=>{
+    if(!g[cat])return;
+    let names=Object.keys(g[cat]).sort((a,b)=>{
+      const ta=Object.values(g[cat][a]).flat().filter(i=>!i.unlisted).length;
+      const tb=Object.values(g[cat][b]).flat().filter(i=>!i.unlisted).length;
+      return tb-ta;
+    });
+    if(ao)names=names.filter(n=>{const t=TEISU[`${cat}_${n}`];const tot=Object.values(g[cat][n]).flat().filter(i=>!i.unlisted).length;return t!=null&&Math.abs(tot-t)>=2;});
+    if(!names.length)return;
+    h+=`<tr class="cat-row"><td colspan="${keys.length+4}">${cat}</td></tr>`;
+    names.forEach(name=>{
+      const ym=g[cat][name];const k=`${cat}_${name}`;const t=TEISU[k];
+      const tot=Object.values(ym).flat().filter(i=>!i.unlisted).length;
+      const diff=t!=null?tot-t:null;
+      // 過不足バッジ（過不足列のみ）
+      let diffBadge='—';
+      if(diff!=null){
+        const cls=diff<=-3?'abr':diff<0?'aby':diff>=3?'abg':'';
+        const sign=diff>0?'+':'';
+        diffBadge=cls?`<span class="ab ${cls}">${sign}${diff}</span>`:`<span style="font-family:var(--mono);font-size:11px">${sign}${diff}</span>`;
+      }
+      h+=`<tr>
+        <td>${name}</td>
+        <td class="tcol">${tot}</td>
+        <td class="dcol">${t!=null?t:'—'}</td>
+        <td style="text-align:center">${diffBadge}</td>`;
+      keys.forEach(key=>{
+        const its=ym[key]||[];const li=its.filter(i=>!i.unlisted);const ul=its.filter(i=>i.unlisted);
+        if(!its.length){h+='<td></td>';return;}
+        let val='',cls='';
+        if(vf==='count'){val=its.length;cls=cellCls(li.length||its.length,ul.length>0&&li.length===0);}
+        else if(vf==='price'){const ps=its.filter(i=>i.price!=null).map(i=>i.price);val=ps.length?Math.round(ps.reduce((a,b)=>a+b)/ps.length):'—';cls='n2';}
+        else{const ks=its.filter(i=>i.km!=null).map(i=>i.km);val=ks.length?(ks.reduce((a,b)=>a+b)/ks.length/10000).toFixed(1):'—';cls='n2';}
+        const uLbl=ul.length?`<div class="u">未${ul.length}</div>`:'';
+        h+=`<td><div class="cell ${cls}" onclick="showCell('${encodeURIComponent(cat)}','${encodeURIComponent(name)}','${encodeURIComponent(key)}','${type}',${su})">${val}${uLbl}</div></td>`;
+      });
+      h+=`</tr>`;
+    });
+  });
+
+  // ① 縦軸合計行
+
+
+  h+='</tbody>';
+  document.getElementById('MT').innerHTML=h;
+}
+
+function showCell(cat,name,key,type,su){
+  cat=decodeURIComponent(cat);name=decodeURIComponent(name);key=decodeURIComponent(key);
+  let its=STOCK.filter(d=>d.cat===cat&&d.name===name&&axisVal(d,type)===key);
+  if(su)its=[...its,...UNLISTED.filter(d=>d.cat===cat&&d.name===name&&axisVal(d,type)===key)];
+  if(!its.length)return;
+  document.getElementById('modal-title').textContent=`${name} / ${key}（${its.length}台）`;
+  document.getElementById('modal-body').innerHTML=its.map((d,i)=>{
+    const km=d.km!=null?(d.km/10000).toFixed(1)+'万km':'—';
+    const pr=d.price!=null?d.price+'万円':'—';
+    const cost=d.cost!=null?d.cost+'万円':'—';
+    const profit=d.profit!=null?d.profit+'万円':'—';
+    const dy=d.days!=null?d.days+'日':(d.unlisted?'未掲載':'—');
+    const dw=d.days!=null&&d.days>=100?'dwarn':'';
+    return `<div class="drow"><span class="dlbl">#${i+1} ${d.color||'—'} / ${d.year}</span><span>${km} / 売${pr} / 原${cost} / <span class="${dw}">${dy}</span></span></div>`;
+  }).join('');
+  document.getElementById('modal').style.display='block';document.getElementById('ov').style.display='block';
+}
+
+function renderProfitCards(){
+  document.getElementById('profitCards').innerHTML=CAT_ORDER.map(cat=>{
+    const items=STOCK.filter(d=>d.cat===cat);
+    const tP=items.filter(d=>d.profit!=null).reduce((a,b)=>a+b.profit,0);
+    const tC=items.filter(d=>d.cost!=null).reduce((a,b)=>a+b.cost,0);
+    const cnt=items.length;
+    return `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+      <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">${cat}（${cnt}台）</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;justify-content:space-between"><span style="font-size:10px;color:var(--text3)">在庫原価累計</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--red)">${tC.toFixed(0)}万円</span></div>
+        <div style="display:flex;justify-content:space-between"><span style="font-size:10px;color:var(--text3)">想定利益累計</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">${tP.toFixed(1)}万円</span></div>
+        <div style="display:flex;justify-content:space-between"><span style="font-size:10px;color:var(--text3)">台あたり利益</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--amber)">${cnt>0?(tP/cnt).toFixed(1):'—'}万円</span></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderUnlisted(){
+  const tags=d=>(d.hv==='〇'?'<span class="ctag ctag-hv" style="margin-left:4px">HV</span>':'')+(d.fwd==='〇'?'<span class="ctag ctag-fwd" style="margin-left:4px">4WD</span>':'');
+  const fmt=(d,pill,lbl)=>{
+    const lower4str=d.lower4?` ／ 下4桁${d.lower4}`:'';
+    const km=d.km?(d.km/10000).toFixed(1)+'万km':'—';
+    const nameText=`${d.name}${lower4str}`;
+    const detText=`${d.cat} / ${d.year} / ${km} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'}`;
+    return `<div class="aitem" style="padding:6px 12px;max-width:500px" data-name="${nameText.replace(/"/g,'&quot;')}" data-det="${detText.replace(/"/g,'&quot;')}" data-lbl="${lbl}"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex:1"><span class="aname" style="font-size:12px;font-weight:500">${nameText}</span><span class="adet" style="font-size:10px;color:var(--text2);font-family:var(--mono)">${detText}</span></div><span class="pill ${pill}" style="flex-shrink:0;margin-left:8px">${lbl}</span></div>`;
+  };
+
+  const p1=UNLISTED.filter(d=>d.status==='未入庫');
+  const p2=UNLISTED.filter(d=>d.status==='掲載待'||d.status==='掲載待ち');
+  const p3=UNLISTED.filter(d=>d.status==='未仕上');
+  const p4=UNLISTED.filter(d=>d.status==='BP入庫中');
+  const p5=UNLISTED.filter(d=>d.status==='BP待ち'||d.status==='鈑金待ち'||d.status==='鈑金');
+  const p6=UNLISTED.filter(d=>!['未入庫','掲載待','掲載待ち','未仕上','BP入庫中','BP待ち','鈑金待ち','鈑金'].includes(d.status));
+
+  document.getElementById('u-total').textContent=UNLISTED.length;
+  document.getElementById('u-wait').textContent=p1.length;
+  document.getElementById('u-sheet').textContent=p2.length+p3.length;
+  document.getElementById('u-ready').textContent=p2.length;
+  document.getElementById('u-other').textContent=p4.length+p5.length+p6.length;
+
+  ['p1','p2','p3','p4','p5','p6'].forEach((k,i)=>{
+    const cnt=document.getElementById('cnt-'+k);
+    if(cnt)cnt.textContent=[p1,p2,p3,p4,p5,p6][i].length+'台';
+  });
+
+  document.getElementById('phase-p1').innerHTML=p1.map(d=>fmt(d,'pill-b','未入庫')).join('');
+  document.getElementById('phase-p2').innerHTML=p2.map(d=>fmt(d,'pill-g','掲載待ち')).join('');
+  document.getElementById('phase-p3').innerHTML=p3.map(d=>fmt(d,'pill-y','未仕上')).join('');
+  document.getElementById('phase-p4').innerHTML=p4.map(d=>fmt(d,'pill-r','BP入庫中')).join('');
+  document.getElementById('phase-p5').innerHTML=p5.map(d=>fmt(d,'pill-r','BP待ち')).join('');
+  document.getElementById('phase-p6').innerHTML=p6.map(d=>fmt(d,'pill-b',d.status||'その他')).join('');
+}
+
+
+function renderLongMatrix() {
+  const dayBands = [
+    { lbl:'60〜100日', min:60,  max:100 },
+    { lbl:'100〜150日', min:100, max:150 },
+    { lbl:'150〜300日', min:150, max:300 },
+    { lbl:'300日超',    min:300, max:99999 },
+  ];
+  const genres = ['ミニバン', 'SUV', 'HVCP', '軽'];
+  const costBands = [
+    { lbl:'〜50万',     min:0,    max:50 },
+    { lbl:'50〜100万',  min:50,   max:100 },
+    { lbl:'100〜150万', min:100,  max:150 },
+    { lbl:'150〜200万', min:150,  max:200 },
+    { lbl:'200万〜',    min:200,  max:99999 },
+  ];
+
+  const longItems = STOCK.filter(d => d.days != null && d.days >= 60 && d.days < 10000);
+
+  // ジャンル×日数
+  const buildMatrix = (rows, getCount, totalLbl) => {
+    const cellStyle = 'padding:6px 10px;text-align:center;border:1px solid var(--border);font-size:12px;font-family:var(--mono)';
+    const headerStyle = cellStyle + ';background:var(--bg2);font-weight:700;color:var(--text2);font-family:inherit';
+    const labelStyle = cellStyle + ';background:var(--bg2);font-weight:700;color:var(--text);text-align:left;font-family:inherit';
+    const totalStyle = cellStyle + ';background:#fef3c7;font-weight:700';
+
+    let html = '<table style="border-collapse:collapse;width:100%;table-layout:fixed">';
+    html += '<thead><tr><th style="' + headerStyle + ';width:90px"></th>';
+    dayBands.forEach(b => html += '<th style="' + headerStyle + '">' + b.lbl + '</th>');
+    html += '<th style="' + headerStyle + ';background:#fef3c7">計</th></tr></thead><tbody>';
+
+    let colTotals = dayBands.map(() => 0);
+    let grandTotal = 0;
+
+    rows.forEach(row => {
+      let rowTotal = 0;
+      html += '<tr><td style="' + labelStyle + '">' + row.lbl + '</td>';
+      dayBands.forEach((b, bi) => {
+        const cnt = getCount(row, b);
+        rowTotal += cnt;
+        colTotals[bi] += cnt;
+        const bgColor = cnt > 5 ? '#fee2e2' : cnt > 2 ? '#fef3c7' : cnt > 0 ? '#dcfce7' : '';
+        const color = cnt > 5 ? '#991b1b' : cnt > 2 ? '#92400e' : cnt > 0 ? '#166534' : 'var(--text3)';
+        html += '<td style="' + cellStyle + ';background:' + bgColor + ';color:' + color + ';font-weight:' + (cnt > 0 ? '700' : '400') + '">' + (cnt || '—') + '</td>';
+      });
+      grandTotal += rowTotal;
+      html += '<td style="' + totalStyle + '">' + (rowTotal || '—') + '</td></tr>';
+    });
+
+    html += '<tr><td style="' + totalStyle + '">計</td>';
+    colTotals.forEach(t => html += '<td style="' + totalStyle + '">' + (t || '—') + '</td>');
+    html += '<td style="' + totalStyle + ';background:#dc2626;color:#fff">' + grandTotal + '</td></tr>';
+    html += '</tbody></table>';
+    return html;
+  };
+
+  // ジャンル×日数
+  const genreRows = genres.map(g => ({ lbl: g, key: g }));
+  document.getElementById('mtxGenre').innerHTML = buildMatrix(
+    genreRows,
+    (row, b) => longItems.filter(d => d.cat === row.key && d.days >= b.min && d.days < b.max).length
+  );
+
+  // 原価帯×日数（cost列がない場合はprice列で代用）
+  document.getElementById('mtxCost').innerHTML = buildMatrix(
+    costBands,
+    (row, b) => longItems.filter(d => {
+      let cost = d.cost != null ? d.cost : d.price;
+      if (cost === null || cost === undefined || cost === '') return false;
+      cost = Number(cost);
+      if (isNaN(cost)) return false;
+      return cost >= row.min && cost < row.max && d.days >= b.min && d.days < b.max;
+    }).length
+  );
+}
+
+function renderLong(){
+  const th=parseInt(document.getElementById('longThresh').value);
+  const cf=document.getElementById('longCat').value;
+  let items=STOCK.filter(d=>d.days!=null&&d.days>=th&&d.days<10000);
+  if(cf)items=items.filter(d=>d.cat===cf);
+  items.sort((a,b)=>b.days-a.days);
+  const cntEl=document.getElementById('longCount');
+  if(cntEl)cntEl.textContent=`(${items.length}台${items.length>60?' / 上位60台表示':''})`;
+  renderLongMatrix();
+  document.getElementById('l-300').textContent=STOCK.filter(d=>d.days!=null&&d.days>=300&&d.days<10000).length;
+  document.getElementById('l-150').textContent=STOCK.filter(d=>d.days!=null&&d.days>=150&&d.days<300).length;
+  document.getElementById('l-100').textContent=STOCK.filter(d=>d.days!=null&&d.days>=100&&d.days<150).length;
+  document.getElementById('l-60').textContent=STOCK.filter(d=>d.days!=null&&d.days>=60&&d.days<100).length;
+  document.getElementById('longL').innerHTML=items.slice(0,60).map(d=>{
+    const km=d.km?(d.km/10000).toFixed(1)+'万km':'—';
+    const cls=d.days>=300?'pill-r':d.days>=150?'pill-y':d.days>=100?'pill-p':'pill-b';
+    const msg=d.days>=300?'早急値下げ推奨':d.days>=150?'価格見直し推奨':d.days>=100?'要注意':'様子見';
+    const vd=encodeURIComponent(JSON.stringify({name:d.name,cat:d.cat,year:d.year,km:d.km,price:d.price,color:d.color,days:d.days,hv:d.hv,fwd:d.fwd}));
+    return `<div class="aitem" style="gap:8px;max-width:70%;margin:0 0 6px 0;align-items:center"><div style="flex:1"><div class="aname" style="font-size:14px;font-weight:700">${d.name} <span style="font-size:12px;color:var(--text2);font-weight:400">${d.cat} / ${d.year} / ${km} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'} → ${msg}</span></div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span class="pill ${cls}">${d.days}日</span><button onclick='runAiDiagnosis("${vd}")' style="background:var(--accent);color:#fff;border:none;padding:3px 9px;border-radius:5px;cursor:pointer;font-size:10px;white-space:nowrap">AI診断</button></div></div>`;
+  }).join('');
+}
+
+function renderAction(){
+  const sc={};SOLD.forEach(d=>{sc[d.name]=(sc[d.name]||0)+1;});
+  const srt=[],exc=[];
+  const sm={};STOCK.forEach(d=>{const k=`${d.cat}_${d.name}`;if(!sm[k])sm[k]={cat:d.cat,name:d.name,cnt:0};sm[k].cnt++;});
+  Object.entries(sm).forEach(([k,v])=>{const t=TEISU[k];if(t==null)return;const diff=v.cnt-t;if(diff<=-1)srt.push({...v,diff,t,sc:sc[v.name]||0});else if(diff>=2)exc.push({...v,diff,t});});
+  document.getElementById('k-short').textContent=srt.length;
+  document.getElementById('k-excess').textContent=exc.length;
+  const noSt=['未入庫','鈑金','未仕上','不明','鈑金入庫中'];
+  document.getElementById('k-ready').textContent=UNLISTED.filter(d=>!noSt.includes(d.status)&&d.name&&d.name.length>1).length;
+  document.getElementById('k-long').textContent=STOCK.filter(d=>d.days!=null&&d.days>=100&&d.days<10000).length;
+  const bl=srt.map(d=>{const s=Math.abs(d.diff)*2+(d.sc||0);const p=s>=20?'S':s>=10?'A':'B';return{...d,s,p};}).sort((a,b)=>b.s-a.s);
+  document.getElementById('buyListL').innerHTML=bl.map(d=>{const pc=d.p==='S'?'pri-s':d.p==='A'?'pri-a':'pri-b';return `<div class="aitem"><div><div class="aname"><span class="pri ${pc}">${d.p}級</span>${d.name}</div><div class="adet">${d.cat} / 規定${d.t}台→実${d.cnt}台（${d.diff}） / 売約実績${d.sc}台</div><div class="score-bar"><div class="score-fill" style="width:${Math.min(d.s/30*100,100)}%;background:${d.p==='S'?'var(--red)':d.p==='A'?'var(--amber)':'var(--accent)'}"></div></div></div><span class="pill pill-r">${d.diff}</span></div>`;}).join('');
+  exc.sort((a,b)=>b.diff-a.diff);
+  document.getElementById('excessListL').innerHTML=exc.map(d=>{const avg=STOCK.filter(s=>s.name===d.name&&s.days!=null&&s.days<10000).reduce((a,b,_,arr)=>a+b.days/arr.length,0);return `<div class="aitem"><div><div class="aname">${d.name}</div><div class="adet">${d.cat} / 規定${d.t}台→実${d.cnt}台 / 平均${Math.round(avg)}日在庫</div></div><span class="pill pill-y">+${d.diff}</span></div>`;}).join('');
+  document.getElementById('longActionL').innerHTML=STOCK.filter(d=>d.days!=null&&d.days>=100&&d.days<10000).sort((a,b)=>b.days-a.days).slice(0,30).map(d=>{const cls=d.days>=300?'pill-r':d.days>=150?'pill-y':'pill-p';const msg=d.days>=300?'早急値下げ推奨':d.days>=150?'価格見直し推奨':'要注意';return `<div class="aitem"><div><div class="aname">${d.name}</div><div class="adet">${d.year} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'} → ${msg}</div></div><span class="pill ${cls}">${d.days}日</span></div>`;}).join('');
+  document.getElementById('readyListL').innerHTML=UNLISTED.filter(d=>!noSt.includes(d.status)&&d.name&&d.name.length>1).map(d=>{const k=`${d.cat}_${d.name}`;const stk=sm[k];const t=TEISU[k];const need=t!=null&&stk&&stk.cnt<t;return `<div class="aitem"><div><div class="aname">${d.name}</div><div class="adet">${d.cat} / ${d.year} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'}</div></div><span class="pill ${need?'pill-r':'pill-g'}">${need?'不足中・急ぎ':'掲載推奨'}</span></div>`;}).join('');
+}
+
+function renderSold(){
+  const sd=SOLD;
+  document.getElementById('kpi-total').textContent=sd.length.toLocaleString();
+  const dA=sd.filter(d=>d.days!=null).map(d=>d.days);document.getElementById('kpi-days').textContent=dA.length?Math.round(dA.reduce((a,b)=>a+b)/dA.length)+'日':'—';
+  const pA=sd.filter(d=>d.profit!=null&&d.profit>-1000&&d.profit<10000).map(d=>d.profit);document.getElementById('kpi-profit').textContent=pA.length?(pA.reduce((a,b)=>a+b)/pA.length).toFixed(1):'—';
+  const now=new Date();const y1=`${now.getFullYear()-1}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  document.getElementById('kpi-recent').textContent=sd.filter(d=>d.month&&d.month>=y1).length;
+  const mo={};sd.forEach(d=>{if(d.month)mo[d.month]=(mo[d.month]||0)+1;});
+  const sm2=Object.keys(mo).sort().slice(-18);const mm=Math.max(...sm2.map(m=>mo[m]),1);
+  document.getElementById('monthlyBars').innerHTML=sm2.map(m=>{const v=mo[m];const h=Math.round(v/mm*100);const l=m.replace(/^\d{4}-/,'');return `<div class="mbar-wrap"><div class="mbar" style="height:${h}%;background:var(--accent)" title="${m}: ${v}台"></div><div class="mbar-lbl">${l}</div><div class="mbar-val">${v}</div></div>`;}).join('');
+  const nc={};sd.forEach(d=>{nc[d.name]=(nc[d.name]||0)+1;});
+  barChart('soldRank',Object.entries(nc).sort((a,b)=>b[1]-a[1]).slice(0,20).map(([k,v])=>({l:k,v})),'#2979d4');
+  const dn={};sd.filter(d=>d.days!=null).forEach(d=>{if(!dn[d.name])dn[d.name]=[];dn[d.name].push(d.days);});
+  const rot=Object.entries(dn).filter(([,a])=>a.length>=5).map(([n,a])=>({l:n,v:Math.round(a.reduce((a,b)=>a+b)/a.length)})).sort((a,b)=>a.v-b.v).slice(0,15);
+  barChart('rotationRank',rot,'#16a34a');
+  const cc={};sd.forEach(d=>{if(d.color&&d.color.length>0&&d.color!='nan')cc[d.color]=(cc[d.color]||0)+1;});
+  barChart('soldColor',Object.entries(cc).sort((a,b)=>b[1]-a[1]).slice(0,12).map(([k,v])=>({l:k,v})),'#0891b2');
+  const yc={};sd.forEach(d=>{yc[d.year]=(yc[d.year]||0)+1;});
+  barChart('soldYear',YEAR_ORDER.filter(y=>yc[y]).map(y=>({l:y,v:yc[y]})),'#7c3aed');
+  const bands=[['〜2万',0,20000],['〜4万',20000,40000],['〜6万',40000,60000],['〜8万',60000,80000],['8万超',80000,Infinity]];
+  barChart('soldKm',bands.map(([l,lo,hi])=>({l,v:sd.filter(d=>d.km!=null&&d.km>=lo&&d.km<hi).length})),'#d97706');
+}
+
+function barChart(id,items,color){
+  const max=Math.max(...items.map(i=>i.v),1);
+  document.getElementById(id).innerHTML=items.map(({l,v})=>`<div class="brow"><div class="blbl" title="${l}">${l}</div><div class="btrack"><div class="bfill" style="width:${Math.round(v/max*100)}%;background:${color}">${v}</div></div></div>`).join('');
+}
+
+
+
+
+// ═══ v4追加: 正しい列インデックスでデータロード ═══
+const NM_V4={'ｳﾞｫｸｼｰ80系':'ヴォクシー80系','ｳﾞｫｸｼｰ90系':'ヴォクシー90系','ｳﾞｪﾙﾌｧｲｱ 30系':'ヴェルファイア30系','ﾉｱ80系':'ノア80系','ﾉｱ90系':'ノア90系','ｴｽｸｧｲｱ':'エスクァイア','ｼｴﾝﾀ':'シエンタ','ｽﾃｯﾌﾟﾜｺﾞﾝ':'ステップワゴン','ｾﾚﾅ 27前期':'セレナ27前期','ｾﾚﾅ 27後期':'セレナ27後期','ｾﾚﾅ 28現行':'セレナ28現行','ﾌﾘｰﾄﾞ':'フリード','ﾊﾘｱｰ80':'ハリアー80','ﾊﾘｱｰ80HV':'ハリアー80HV','ｳﾞｪｾﾞﾙ（現行）':'ヴェゼル現行','ｳﾞｪｾﾞﾙHV（現行）':'ヴェゼルHV現行','ｳﾞｪｾﾞﾙHV（前型）':'ヴェゼルHV前型','ｴｸｽﾄﾚｲﾙ32（前期）':'エクストレイル32前期','ｴｸｽﾄﾚｲﾙ32（後期）':'エクストレイル32後期','ｶﾛｰﾗｸﾛｽ':'カローラクロス','ﾌｫﾚｽﾀｰ':'フォレスター','ﾔﾘｽｸﾛｽ':'ヤリスクロス','ﾗｲｽﾞ':'ライズ','ｼﾞﾑニーﾉﾏﾄﾞ':'ジムニーノマド','ｱｸｱ前期':'アクア10前期','ｱｸｱ中期':'アクア10中期','ｱｸｱ後期':'アクア10後期','ｱｸｱ現行':'アクア20現行','ｱｸｱ10前期':'アクア10前期','ｱｸｱ10中期':'アクア10中期','ｱｸｱ10後期':'アクア10後期','ｱｸｱ20現行':'アクア20現行','ﾉｰﾄ前期':'ノート前期','ﾉｰﾄ中期':'ノート中期','ﾉｰﾄEpower':'ノートEpower','ﾉｰﾄEpower（現行）':'ノートEpower現行','ﾌﾟﾘｳｽ30系':'プリウス30系','ﾌﾟﾘｳｽ 50前期':'プリウス50前期','ﾌﾟﾘｳｽ 50後期':'プリウス50後期','ﾌﾟﾘｳｽ 50PHV':'プリウス50PHV','ﾌﾟﾘｳｽ 60':'プリウス60','ﾙｰﾐｰ':'ルーミー','ﾀﾝｸ':'タンク','ﾄｰﾙ':'トール','ｿﾘｵ':'ソリオ','ｽﾍﾟｲﾄﾞ':'スペイド','ｳﾞｨｯﾂ':'ヴィッツ','ｶﾛｰﾗｽﾎﾟｰﾂ':'カローラスポーツ','ｶﾛｰﾗﾂｰﾘﾝｸﾞ':'カローラツーリング','ﾏｰﾁ':'マーチ','ﾐﾗｰｼﾞｭ':'ミラージュ','N-BOXｶｽﾀﾑ':'N-BOXカスタム','Nﾜｺﾞﾝ':'Nワゴン','ｱﾙﾄ':'アルト','ｱﾙﾄﾗﾊﾟﾝ':'アルトラパン','ｴﾌﾞﾘｰ':'エブリー','ｷｬｽﾄ':'キャスト','ｷｬﾛﾙ':'キャロル','ｼﾞﾑﾆｰ':'ジムニー','ｽﾍﾟｰｼｱ':'スペーシア','ｽﾍﾟｰｼｱｶｽﾀﾑ':'スペーシアカスタム','ﾀﾝﾄ':'タント','ﾀﾝﾄｶｽﾀﾑ':'タントカスタム','ﾃﾞｲｽﾞ':'デイズ','ﾃﾞｲｽﾞﾙｰｸｽ':'デイズルークス','ﾊｽﾗｰ':'ハスラー','ﾐﾗｲｰｽ':'ミライース','ﾐﾗｼﾞｰﾉ':'ミラジーノ','ﾑｰｳﾞｺﾝﾃ':'ムーヴコンテ','ﾓｺ':'モコ','ﾙｰｸｽ':'ルークス','ﾙｰｸｽ　ﾊｲｳｪｲｽﾀｰ':'ルークスHW','ﾜｺﾞﾝＲ':'ワゴンR','AZﾜｺﾞﾝ':'AZワゴン','EKﾜｺﾞﾝ':'EKワゴン','ｸﾘｯﾊﾟｰﾘｵ':'クリッパーリオ','ｵｰﾗ':'オーラ','ﾗﾝｸﾙ250':'ランクル250','ﾌｪｱﾚﾃﾞｨZ':'フェアレディZ','ﾛｰﾄﾞｽﾀｰ':'ロードスター','ｲﾝﾌﾟﾚｯｻｽﾎﾟｰﾂ':'インプレッサスポーツ','ﾌﾟﾘｳｽ60PHEV':'プリウス60PHEV'};
+
+const YEAR_ORDER_V4=["H23以前","H24","H25","H26","H27","H28","H29","H30","H31/R1","R1","R2","R3","R4","R5","R6","R7","R8","不明"];
+const OLD_Y_V4=new Set(["H15","H16","H17","H18","H19","H20","H21","H22","H23"]);
+const KM_BANDS_V4=["〜2万km","2〜4万km","4〜6万km","6〜8万km","8〜10万km","10万km超"];
+const PRICE_BANDS_V4=["〜20万","20〜40万","40〜60万","60〜80万","80〜100万","100〜120万","120〜140万","140〜160万","160〜180万","180〜200万","200〜220万","220〜240万","240〜260万","260〜280万","280〜300万","300万超"];
+
+function nmV4(s){s=String(s||'').trim();return NM_V4[s]||s;}
+function parseYearV4(v){if(v==null||v==='')return'不明';const s=String(v).trim();if(s.includes('/')){try{const y=parseInt(s);if(y<=8)return`R${y}`;if(y===31)return'H31/R1';return`H${y}`;}catch(e){}}try{const n=parseInt(s);if(isNaN(n))return'不明';if(n<=8)return`R${n}`;if(n===31)return'H31/R1';return`H${n}`;}catch(e){return'不明';}}
+const normYV4=y=>OLD_Y_V4.has(y)?'H23以前':y;
+function kmBandV4(k){if(k==null)return null;if(k<20000)return'〜2万km';if(k<40000)return'2〜4万km';if(k<60000)return'4〜6万km';if(k<80000)return'6〜8万km';if(k<100000)return'8〜10万km';return'10万km超';}
+function pBandV4(p){if(p==null||p<=0)return null;const i=Math.floor(p/20);return i>=PRICE_BANDS_V4.length-1?'300万超':PRICE_BANDS_V4[i];}
+
+// CSVの数値パース（日時シリアル値対応）
+function parseNumV4(v){
+  if(v===null||v===''||v===undefined)return null;
+  const n=parseFloat(v);
+  if(!isNaN(n))return n;
+  const s=String(v).trim();
+  const m=s.match(/^1900[/\-]0*([0-9]+)[/\-]0*([0-9]+)/);
+  if(m){
+    const mo=parseInt(m[1]);const dy=parseInt(m[2]);
+    const dpm=[0,31,28,31,30,31,30,31,31,30,31,30,31];
+    let total=dy+1;
+    for(let i=1;i<mo;i++)total+=dpm[i];
+    return total;
+  }
+  return null;
+}
+
+
+// ─ 車種マスタ読み込み（既定数をTEISUに格納）
+async function loadMasterV4(){
+  try{
+    const rows=await fetchCsv(GIDS.master);
+    // TEISUをリセット
+    Object.keys(TEISU).forEach(k=>delete TEISU[k]);
+    let currentCat='';
+    for(let i=1;i<rows.length;i++){
+      const r=rows[i];if(!r||r.length<4)continue;
+      const cat=r[0]?.trim()||'';
+      const name=r[2]?.trim()||'';
+      const teisu=parseFloat(r[3]);
+      // カテゴリ行をスキップ
+      if(name.startsWith('▼')||!name)continue;
+      if(['ミニバン','SUV','HVCP','軽'].includes(cat))currentCat=cat;
+      if(currentCat&&name&&!isNaN(teisu)&&teisu>0){
+        TEISU[currentCat+'_'+name]=Math.round(teisu);
+      }
+    }
+    console.log('既定数読み込み完了:', Object.keys(TEISU).length+'件');
+  }catch(e){
+    console.warn('車種マスタ読み込みエラー（ハードコード使用）:', e.message);
+    // フォールバック: ハードコードの既定数
+    const FB={'ミニバン_ヴォクシー80系':10,'ミニバン_ヴォクシー90系':4,'ミニバン_ノア80系':3,'ミニバン_ノア90系':2,'ミニバン_エスクァイア':4,'ミニバン_セレナ27前期':6,'ミニバン_セレナ27後期':6,'ミニバン_セレナ28現行':5,'ミニバン_シエンタ':8,'ミニバン_フリード':8,'ミニバン_ステップワゴン':3,'ミニバン_ヴェルファイア30系':1,'SUV_ハリアー80':6,'SUV_ハリアー80HV':5,'SUV_RAV4':4,'SUV_ヴェゼルHV前型':4,'SUV_ヴェゼル現行':3,'SUV_ヴェゼルHV現行':3,'SUV_エクストレイル32前期':3,'SUV_エクストレイル32後期':5,'SUV_ライズ':4,'SUV_ヤリスクロス':4,'SUV_カローラクロス':4,'SUV_フォレスター':5,'SUV_CX-5':7,'SUV_CX30':1,'HVCP_アクア10前期':6,'HVCP_アクア10中期':6,'HVCP_アクア10後期':7,'HVCP_アクア20現行':3,'HVCP_ノート前期':3,'HVCP_ノート中期':3,'HVCP_ノートEpower':10,'HVCP_ノートEpower現行':4,'HVCP_プリウス50前期':7,'HVCP_プリウス50後期':6,'HVCP_プリウス60':3,'HVCP_ルーミー':4,'HVCP_タンク':4,'HVCP_ソリオ':4,'軽_N-BOX':15,'軽_N-BOXカスタム':8,'軽_タント':8,'軽_タントカスタム':5,'軽_ルークス':3,'軽_ルークスHW':5,'軽_デイズルークス':3,'軽_スペーシア':6,'軽_スペーシアカスタム':4,'軽_ハスラー':8,'軽_ジムニー':3,'軽_デイズ':15,'軽_ワゴンR':10,'軽_Nワゴン':5,'軽_ミライース':8,'軽_アルト':5,'軽_アルトラパン':5,'軽_N-ONE':3,'軽_キャスト':5,'軽_モコ':2,'軽_EKワゴン':2};
+    Object.assign(TEISU, FB);
+  }
+}
+
+async function loadStockV4(){
+  const cfg=[
+    {key:'minivan',cat:'ミニバン',carC:13,costC:24,prC:25,prfC:30,dC:32},
+    {key:'suv',    cat:'SUV',    carC:13,costC:24,prC:25,prfC:30,dC:32},
+    {key:'hvcp',   cat:'HVCP',  carC:13,costC:24,prC:25,prfC:30,dC:32},
+    {key:'kei',    cat:'軽',    carC:13,costC:24,prC:25,prfC:30,dC:32},
+  ];
+  const res=[];
+  for(const c of cfg){
+    const rows=await fetchCsv(GIDS[c.key]);
+    for(let i=1;i<rows.length;i++){
+      const r=rows[i];if(!r||r.length<5)continue;
+      const name=nmV4(r[c.carC]);if(!name||name.length<=1)continue;
+      const km=parseNumV4(r[21]);
+      const cost=parseNumV4(r[c.costC]);
+      const price=parseNumV4(r[c.prC]);
+      const profit=parseNumV4(r[c.prfC]);
+      const days=parseNumV4(r[c.dC]);
+      res.push({
+        cat:c.cat,name,
+        year:normYV4(parseYearV4(r[18])),
+        km:(km&&km<500000)?km:null,
+        price:(price&&price>0&&price<2000)?price:null,
+        cost:(cost&&cost>0&&cost<2000)?cost:null,
+        profit:(profit&&Math.abs(profit)<500)?profit:null,
+        days:(days&&days>=1&&days<2000)?Math.round(days):null,
+        hv:r[14]?.trim()==='〇'?'〇':'',
+        fwd:r[15]?.trim()==='〇'?'〇':'',
+        color:r[20]?.trim()||'',
+        unlisted:false
+      });
+    }
+  }
+  return res;
+}
+
+async function loadUnlistedV4(){
+  const rows=await fetchCsv(GIDS.unlisted);const res=[];
+  for(let i=1;i<rows.length;i++){
+    const r=rows[i];if(!r||r.length<5)continue;
+    const name=nmV4(r[13]);if(!name||name.length<=1)continue;
+    const km=parseNumV4(r[21]);
+    const cost=parseNumV4(r[24]);
+    const price=parseNumV4(r[25]);
+    const lower4=parseNumV4(r[23]);
+    res.push({
+      cat:r[0]?.trim().replace('ﾐﾆﾊﾞﾝ','ミニバン')||'',
+      name,year:normYV4(parseYearV4(r[18])),
+      km:(km&&km<500000)?km:null,
+      price:(price&&price>0&&price<2000)?price:null,
+      cost:(cost&&cost>0&&cost<2000)?cost:null,
+      hv:r[14]?.trim()==='〇'?'〇':'',
+      fwd:r[15]?.trim()==='〇'?'〇':'',
+      color:r[20]?.trim()||'',
+      status:r[4]?.trim()||'',
+      lower4:lower4?String(Math.round(lower4)).padStart(4,'0'):'',
+      unlisted:true
+    });
+  }
+  return res;
+}
+
+async function loadSoldV4(){
+  const res=[];
+  const rows=await fetchCsv(GIDS.sold);
+  for(let i=1;i<rows.length;i++){
+    const r=rows[i];if(!r||r.length<5)continue;
+    const name=nmV4(r[13]);if(!name||name.length<=1)continue;
+    // ミニバン・SUV・HVCP・軽のみ対象（買取・下取などを除外）
+    const genre=r[0]?.trim().replace('ﾐﾆﾊﾞﾝ','ミニバン')||'';
+    if(!['ミニバン','SUV','HVCP','軽'].includes(genre))continue;
+    const km=parseNumV4(r[21]);
+    const price=parseNumV4(r[25]);
+    const cost=parseNumV4(r[24]);
+    const profit=parseNumV4(r[30]);
+    const dv=parseNumV4(r[32]);
+    const days=dv&&dv>0&&dv<3000?Math.round(dv):null;
+    const ld=parseDate(r[7]);
+    const month=ld?`${ld.getFullYear()}-${String(ld.getMonth()+1).padStart(2,'0')}`:null;
+    res.push({
+      name,year:normYV4(parseYearV4(r[18])),
+      km:(km&&km<500000)?km:null,
+      price:(price&&price>0&&price<2000)?price:null,
+      cost:(cost&&cost>0&&cost<2000)?cost:null,
+      profit:(profit&&Math.abs(profit)<500)?profit:null,
+      color:r[20]?.trim()||'',
+      hv:r[14]?.trim()==='〇'?'〇':'',
+      fwd:r[15]?.trim()==='〇'?'〇':'',
+      days,month
+    });
+  }
+  return res;
+}
+
+async function loadAll(){
+  const btn=document.getElementById('btntxt');const sp=document.getElementById('spin');
+  btn.textContent='読込中...';sp.style.display='block';
+  try{
+    // 車種マスタから既定数を読み込んでからデータロード
+    await loadMasterV4();
+    [STOCK,UNLISTED,SOLD]=await Promise.all([loadStockV4(),loadUnlistedV4(),loadSoldV4()]);
+    YEAR_ORDER.length=0;YEAR_ORDER_V4.forEach(y=>YEAR_ORDER.push(y));
+    KM_BANDS.length=0;KM_BANDS_V4.forEach(k=>KM_BANDS.push(k));
+    PRICE_BANDS.length=0;PRICE_BANDS_V4.forEach(p=>PRICE_BANDS.push(p));
+    updateSummary();renderMatrix();renderProfitCards();renderUnlisted();renderLong();renderAction();renderSold();
+    if(document.getElementById('page-balance').classList.contains('active'))renderBalance();
+    document.getElementById('upd').textContent='更新: '+new Date().toLocaleString('ja-JP',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+  }catch(e){
+    document.getElementById('MT').innerHTML=`<tr><td colspan="30"><div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:14px;color:#dc2626;margin:10px"><b>⚠ エラー: </b>${e.message}</div></td></tr>`;
+  }finally{btn.textContent='更新';sp.style.display='none';}
+}
+
+// ─── 車種バランス（ツリーマップ）───
+const BAL_CAT_BG={ミニバン:'#1e3a5f',SUV:'#065f46',HVCP:'#4c1d95',軽:'#7c2d12'};
+const BAL_PALETTES={
+  diff:[
+    {min:-99,max:-3,bg:'#b91c1c',tc:'#fff'},
+    {min:-3,max:-2,bg:'#dc2626',tc:'#fff'},
+    {min:-2,max:-1,bg:'#fca5a5',tc:'#7f1d1d'},
+    {min:-1,max:1, bg:'#d1fae5',tc:'#065f46'},
+    {min:1, max:2, bg:'#6ee7b7',tc:'#065f46'},
+    {min:2, max:3, bg:'#10b981',tc:'#fff'},
+    {min:3, max:99,bg:'#059669',tc:'#fff'},
+  ],
+  days:[
+    {min:0,  max:30, bg:'#d1fae5',tc:'#065f46'},
+    {min:30, max:60, bg:'#6ee7b7',tc:'#065f46'},
+    {min:60, max:90, bg:'#fbbf24',tc:'#78350f'},
+    {min:90, max:120,bg:'#f97316',tc:'#fff'},
+    {min:120,max:999,bg:'#dc2626',tc:'#fff'},
+  ],
+  profit:[
+    {min:-999,max:10, bg:'#fef3c7',tc:'#78350f'},
+    {min:10,  max:25, bg:'#6ee7b7',tc:'#065f46'},
+    {min:25,  max:50, bg:'#10b981',tc:'#fff'},
+    {min:50,  max:999,bg:'#059669',tc:'#fff'},
+  ],
+};
+let BAL_VIEW='diff';
+
+function getBalColor(val,view){
+  const pal=BAL_PALETTES[view];
+  for(const p of pal){if(val>=p.min&&val<p.max)return{bg:p.bg,tc:p.tc};}
+  return{bg:'#d1d5db',tc:'#374151'};
+}
+
+function setBalView(v){
+  BAL_VIEW=v;
+  ['diff','days','profit'].forEach(id=>{
+    const b=document.getElementById('bv-'+id);
+    if(!b)return;
+    b.style.background=id===v?'#1e3a5f':'var(--bg2)';
+    b.style.color=id===v?'#fff':'var(--text3)';
+  });
+  renderBalance();
+}
+
+function renderBalance(){
+  const cats=[...new Set(STOCK.map(d=>d.cat))].filter(Boolean);
+
+  let html='';
+  cats.forEach(cat=>{
+    const items=STOCK.filter(d=>d.cat===cat);
+    const names=[...new Set(items.map(d=>d.name))].filter(Boolean);
+    const catBg=BAL_CAT_BG[cat]||'#374151';
+    const total=items.length;
+    const MASTER=getMasterData(cat);
+    const catDiff=names.reduce((s,n)=>{
+      const stock=items.filter(d=>d.name===n).length;
+      const target=MASTER[n]||0;
+      return s+(stock-target);
+    },0);
+    const diffStr=(catDiff>0?'+':'')+catDiff;
+
+    html+=`<div style="border-radius:8px;overflow:hidden;flex:${Math.max(total,3)};min-width:120px;background:${catBg}18;border:1px solid ${catBg}44">`;
+    html+=`<div style="padding:4px 8px;background:${catBg};display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:10px;font-weight:700;color:#fff">${cat}</span>
+      <span style="font-size:9px;color:rgba(255,255,255,.75)">${total}台 ${diffStr}</span>
+    </div>`;
+    html+=`<div style="display:flex;flex-wrap:wrap;gap:2px;padding:3px">`;
+
+    names.sort((a,b)=>items.filter(d=>d.name===b).length-items.filter(d=>d.name===a).length)
+    .forEach(name=>{
+      const its=items.filter(d=>d.name===name);
+      const stock=its.length;
+      const target=MASTER[name]||0;
+      const avgDays=its.filter(d=>d.days!=null).reduce((s,d,_,a)=>s+d.days/a.length,0)||0;
+      const avgProfit=its.filter(d=>d.profit!=null).reduce((s,d,_,a)=>s+d.profit/a.length,0)||0;
+      const diff=stock-target;
+
+      let val,valStr,sub;
+      if(BAL_VIEW==='diff'){val=diff;valStr=(diff>0?'+':'')+diff+'台';sub='目標'+target+'台';}
+      else if(BAL_VIEW==='days'){val=Math.round(avgDays);valStr=Math.round(avgDays)+'日';sub=stock+'台';}
+      else{val=Math.round(avgProfit);valStr=Math.round(avgProfit)+'万';sub=stock+'台';}
+
+      const {bg,tc}=getBalColor(val,BAL_VIEW);
+      const sz=Math.max(stock*13,52);
+
+      html+=`<div style="border-radius:4px;background:${bg};width:${sz}px;height:${sz}px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:3px;overflow:hidden;transition:filter .15s"
+        onmouseover="this.style.filter='brightness(1.1)';showBalTip(event,'${name}',${stock},${target},${Math.round(avgDays)},${Math.round(avgProfit)})"
+        onmouseout="this.style.filter='';hideBalTip()"
+        onclick="selectBalVehicle('${name}')">
+        <div style="font-size:9px;font-weight:500;color:${tc};text-align:center;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">${name}</div>
+        <div style="font-size:${sz>70?14:11}px;font-weight:700;color:${tc};line-height:1;margin:2px 0">${valStr}</div>
+        <div style="font-size:8px;color:${tc};opacity:.8">${sub}</div>
+      </div>`;
+    });
+    html+='</div></div>';
+  });
+
+  document.getElementById('balanceOverview').innerHTML=html;
+
+  // サマリー更新
+  const surplus=[],shortage=[],normal=[];
+  cats.forEach(cat=>{
+    const M=getMasterData(cat);
+    const itms=STOCK.filter(d=>d.cat===cat);
+    const ns=[...new Set(itms.map(d=>d.name))].filter(Boolean);
+    ns.forEach(n=>{
+      const stock=itms.filter(d=>d.name===n).length;
+      const target=M[n]||0;
+      const diff=stock-target;
+      if(diff>1)surplus.push(n);
+      else if(diff<-1)shortage.push(n);
+      else normal.push(n);
+    });
+  });
+  document.getElementById('balSurplusVal').textContent=surplus.length+'車種';
+  document.getElementById('balNormalVal').textContent=normal.length+'車種';
+  document.getElementById('balShortageVal').textContent=shortage.length+'車種';
+  document.getElementById('balSurplusNames').textContent=surplus.slice(0,3).join('・')+(surplus.length>3?'他':'');
+  document.getElementById('balNormalNames').textContent='';
+  document.getElementById('balShortageNames').textContent=shortage.slice(0,3).join('・')+(shortage.length>3?'他':'');
+
+  // 凡例
+  const lgDefs={
+    diff:{cells:['#b91c1c','#fca5a5','#d1fae5','#10b981','#059669'],min:'過剰（−2以上）',max:'不足（+2以上）'},
+    days:{cells:['#d1fae5','#6ee7b7','#fbbf24','#f97316','#dc2626'],min:'短期（〜30日）',max:'長期（120日〜）'},
+    profit:{cells:['#fef3c7','#6ee7b7','#10b981','#059669'],min:'低利益',max:'高利益'},
+  };
+  const lg=lgDefs[BAL_VIEW];
+  const lgEl=document.getElementById('balLgCells');
+  if(lgEl)lgEl.innerHTML=lg.cells.map(c=>`<div style="width:18px;height:11px;border-radius:2px;background:${c}"></div>`).join('');
+  if(document.getElementById('balLgMin'))document.getElementById('balLgMin').textContent=lg.min;
+  if(document.getElementById('balLgMax'))document.getElementById('balLgMax').textContent=lg.max;
+}
+
+function getMasterData(cat){
+  // TEISUはキーが `${cat}_${name}` 形式
+  // catが指定されていれば、そのcatの既定数オブジェクトを返す
+  const master={};
+  if(typeof TEISU!=='undefined'){
+    Object.keys(TEISU).forEach(k=>{
+      const idx=k.indexOf('_');
+      if(idx<0)return;
+      const c=k.substring(0,idx);
+      const n=k.substring(idx+1);
+      if(cat){
+        if(c===cat)master[n]=Number(TEISU[k])||0;
+      }else{
+        // catなしの場合は名前のみで集約（複数catに同名がある場合は後勝ち）
+        master[n]=Number(TEISU[k])||0;
+      }
+    });
+  }
+  return master;
+}
+
+function showBalTip(e,name,stock,target,days,profit){
+  const tip=document.getElementById('balTip');
+  if(!tip)return;
+  const diff=stock-target;
+  const status=diff>1?'過剰 ▲':diff<-1?'不足 ▼':'適正 ✓';
+  tip.innerHTML=`<b>${name}</b><br>在庫: ${stock}台 ／ 目標: ${target}台 ／ 過不足: ${diff>0?'+':''}${diff} ${status}<br>平均在庫日数: ${days}日 ／ 平均利益: ${profit}万`;
+  tip.style.display='block';
+  tip.style.left=Math.min(e.clientX+14,window.innerWidth-200)+'px';
+  tip.style.top=(e.clientY-60)+'px';
+}
+function hideBalTip(){
+  const tip=document.getElementById('balTip');
+  if(tip)tip.style.display='none';
+}
+
+function selectBalVehicle(name){
+  renderBalanceDetail(name);
+}
+
+function renderBalanceDetail(nameArg){
+  const name=nameArg||'';
+  if(!name){document.getElementById('balanceDetail').style.display='none';return;}
+  document.getElementById('balanceDetail').style.display='block';
+  document.getElementById('balDetailTitle').textContent=`📊 ${name} 在庫構成分析`;
+  document.getElementById('balCompareTitle').textContent=`📊 ${name}: 在庫 vs 売約 年式比較`;
+  const items=STOCK.filter(d=>d.name===name);
+  const soldItems=SOLD.filter(d=>d.name===name);
+
+  // KPIサマリー
+  const avgP=items.filter(d=>d.price!=null).reduce((s,d,_,a)=>s+d.price/a.length,0)||0;
+  const avgKm=items.filter(d=>d.km!=null).reduce((s,d,_,a)=>s+d.km/a.length,0)||0;
+  const avgDays=items.filter(d=>d.days!=null).reduce((s,d,_,a)=>s+d.days/a.length,0)||0;
+  const hvCnt=items.filter(d=>d.hv==='〇').length;
+  const fwdCnt=items.filter(d=>d.fwd==='〇').length;
+  document.getElementById('balKpiRow').innerHTML=`
+    <div style="background:var(--bg2);border-radius:7px;padding:8px;text-align:center">
+      <div style="font-size:10px;color:var(--text3)">在庫台数</div>
+      <div style="font-size:20px;font-weight:700;color:#2979d4">${items.length}</div>
+      <div style="font-size:10px;color:var(--text3)">台</div>
+    </div>
+    <div style="background:var(--bg2);border-radius:7px;padding:8px;text-align:center">
+      <div style="font-size:10px;color:var(--text3)">平均価格</div>
+      <div style="font-size:20px;font-weight:700;color:#7c3aed">${avgP>0?avgP.toFixed(0):'—'}</div>
+      <div style="font-size:10px;color:var(--text3)">万円</div>
+    </div>
+    <div style="background:var(--bg2);border-radius:7px;padding:8px;text-align:center">
+      <div style="font-size:10px;color:var(--text3)">平均走行</div>
+      <div style="font-size:20px;font-weight:700;color:#d97706">${avgKm>0?(avgKm/10000).toFixed(1):'—'}</div>
+      <div style="font-size:10px;color:var(--text3)">万km</div>
+    </div>
+    <div style="background:var(--bg2);border-radius:7px;padding:8px;text-align:center">
+      <div style="font-size:10px;color:var(--text3)">平均在庫日数</div>
+      <div style="font-size:20px;font-weight:700;color:#dc2626">${avgDays>0?Math.round(avgDays):'—'}</div>
+      <div style="font-size:10px;color:var(--text3)">日</div>
+    </div>
+    <div style="background:var(--bg2);border-radius:7px;padding:8px;text-align:center">
+      <div style="font-size:10px;color:var(--text3)">HV台数</div>
+      <div style="font-size:20px;font-weight:700;color:#1d4ed8">${hvCnt}</div>
+      <div style="font-size:10px;color:var(--text3)">台</div>
+    </div>
+    <div style="background:var(--bg2);border-radius:7px;padding:8px;text-align:center">
+      <div style="font-size:10px;color:var(--text3)">4WD台数</div>
+      <div style="font-size:20px;font-weight:700;color:#065f46">${fwdCnt}</div>
+      <div style="font-size:10px;color:var(--text3)">台</div>
+    </div>
+    <div style="background:var(--bg2);border-radius:7px;padding:8px;text-align:center">
+      <div style="font-size:10px;color:var(--text3)">売約実績</div>
+      <div style="font-size:20px;font-weight:700;color:#16a34a">${soldItems.length}</div>
+      <div style="font-size:10px;color:var(--text3)">台</div>
+    </div>
+    <div style="background:var(--bg2);border-radius:7px;padding:8px;text-align:center">
+      <div style="font-size:10px;color:var(--text3)">回転率</div>
+      <div style="font-size:20px;font-weight:700;color:#0891b2">${items.length>0?(soldItems.length/items.length).toFixed(1):'—'}</div>
+      <div style="font-size:10px;color:var(--text3)">倍</div>
+    </div>`;
+
+  // 年式分布
+  const yc={};items.forEach(d=>{yc[d.year]=(yc[d.year]||0)+1;});
+  const yKeys=YEAR_ORDER.filter(y=>yc[y]);
+  balBarChart('balYearChart',yKeys.map(y=>({l:y,v:yc[y]})),'#2979d4');
+
+  // 価格帯分布
+  const pc={};items.filter(d=>d.price!=null).forEach(d=>{const b=pBandV4(d.price);if(b)pc[b]=(pc[b]||0)+1;});
+  balBarChart('balPriceChart',PRICE_BANDS_V4.filter(p=>pc[p]).map(p=>({l:p,v:pc[p]})),'#7c3aed');
+
+  // 走行距離分布
+  const kc={};items.filter(d=>d.km!=null).forEach(d=>{const b=kmBandV4(d.km);if(b)kc[b]=(kc[b]||0)+1;});
+  balBarChart('balKmChart',KM_BANDS_V4.filter(k=>kc[k]).map(k=>({l:k,v:kc[k]})),'#d97706');
+
+  // 色分布
+  const cc={};items.forEach(d=>{if(d.color&&d.color!='nan'&&d.color.length>0)cc[d.color]=(cc[d.color]||0)+1;});
+  balBarChart('balColorChart',Object.entries(cc).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([k,v])=>({l:k,v})),'#0891b2');
+
+  // 在庫日数分布
+  const dc={'~30日':0,'31~60日':0,'61~100日':0,'101~150日':0,'151日~':0};
+  items.filter(d=>d.days!=null).forEach(d=>{
+    if(d.days<=30)dc['~30日']++;
+    else if(d.days<=60)dc['31~60日']++;
+    else if(d.days<=100)dc['61~100日']++;
+    else if(d.days<=150)dc['101~150日']++;
+    else dc['151日~']++;
+  });
+  balBarChart('balDaysChart',Object.entries(dc).filter(([,v])=>v>0).map(([l,v])=>({l,v,color:l==='151日~'?'#dc2626':l==='101~150日'?'#d97706':'#2979d4'})),'#2979d4',true);
+
+  // 在庫vs売約
+  const syc={};items.forEach(d=>{syc[d.year]=(syc[d.year]||0)+1;});
+  const sdyc={};soldItems.forEach(d=>{sdyc[d.year]=(sdyc[d.year]||0)+1;});
+  const allY=new Set([...Object.keys(syc),...Object.keys(sdyc)]);
+  const yOrd=YEAR_ORDER.filter(y=>allY.has(y));
+  const cmpData=[];
+  yOrd.forEach(y=>{
+    if(syc[y])cmpData.push({l:`在${y}`,v:syc[y],color:'#2979d4'});
+    if(sdyc[y])cmpData.push({l:`売${y}`,v:sdyc[y],color:'#16a34a'});
+  });
+  balBarChart2('balCompareChart',cmpData);
+
+  // スクロール
+  document.getElementById('balanceDetail').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function balBarChart(id,items,color,useItemColor){
+  const el=document.getElementById(id);if(!el)return;
+  if(!items.length){el.innerHTML='<div style="color:var(--text3);font-size:11px;padding:8px">データなし</div>';return;}
+  const max=Math.max(...items.map(i=>i.v),1);
+  el.innerHTML=items.map(({l,v,color:ic})=>{
+    const c=useItemColor&&ic?ic:color;
+    return `<div class="brow"><div class="blbl" title="${l}">${l}</div><div class="btrack"><div class="bfill" style="width:${Math.round(v/max*100)}%;background:${c}">${v}</div></div></div>`;
+  }).join('');
+}
+
+function balBarChart2(id,items){
+  const el=document.getElementById(id);if(!el)return;
+  if(!items.length){el.innerHTML='<div style="color:var(--text3);font-size:11px;padding:8px">データなし</div>';return;}
+  const max=Math.max(...items.map(i=>i.v),1);
+  el.innerHTML=items.map(({l,v,color})=>`<div class="brow"><div class="blbl" title="${l}">${l}</div><div class="btrack"><div class="bfill" style="width:${Math.round(v/max*100)}%;background:${color||'#2979d4'}">${v}</div></div></div>`).join('');
+}
+
+const PAGE_META={
+  stock:['在庫現状','車種 × 年式 / 走行 / 価格帯のマトリクス'],
+  unlisted:['未掲載管理','未入庫・掲載待ち・仕上待ちのフェーズ別一覧'],
+  longstock:['長期在庫','在庫日数マトリクスと長期滞留車の一覧'],
+  action:['在庫対策','仕入れ優先リストと過剰在庫の是正リスト'],
+  balance:['車種バランス','適正台数に対する過不足の可視化'],
+  sold:['売約分析','売約実績の推移とランキング']
+};
+function toggleSide(force){
+  const open=(force===undefined)?!document.body.classList.contains('side-open'):force;
+  document.body.classList.toggle('side-open',open);
+}
+function showPage(n){
+  document.querySelectorAll('.nav-item').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const btn=document.querySelector(`.nav-item[onclick="showPage('${n}')"]`);
+  if(btn)btn.classList.add('active');
+  document.getElementById(`page-${n}`).classList.add('active');
+  const m=PAGE_META[n];
+  if(m){document.getElementById('pgTitle').textContent=m[0];document.getElementById('pgSub').textContent=m[1];}
+  toggleSide(false);
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(n==='balance')renderBalance();
+}
+
+
+// ═══ API設定 ═══
+function openApiModal(){
+  const saved=localStorage.getItem('anthropic_api_key');
+  if(saved)document.getElementById('apiKeyInput').value=saved;
+  document.getElementById('modal-api').style.display='block';
+  document.getElementById('ov-api').style.display='block';
+}
+function closeApiModal(){
+  document.getElementById('modal-api').style.display='none';
+  document.getElementById('ov-api').style.display='none';
+}
+function saveApiKey(){
+  const key=document.getElementById('apiKeyInput').value.trim();
+  if(!key.startsWith('sk-ant')){document.getElementById('apiKeyStatus').textContent='キーの形式が正しくありません（sk-ant...で始まるキーを入力）';document.getElementById('apiKeyStatus').style.color='var(--red)';return;}
+  localStorage.setItem('anthropic_api_key',key);
+  document.getElementById('apiKeyStatus').textContent='✅ 保存しました';
+  document.getElementById('apiKeyStatus').style.color='var(--green)';
+  setTimeout(closeApiModal,1000);
+}
+function clearApiKey(){
+  localStorage.removeItem('anthropic_api_key');
+  document.getElementById('apiKeyInput').value='';
+  document.getElementById('apiKeyStatus').textContent='🗑 削除しました';
+  document.getElementById('apiKeyStatus').style.color='var(--red)';
+}
+function closeAiModal(){
+  document.getElementById('modal-ai').style.display='none';
+  document.getElementById('ov-ai').style.display='none';
+}
+
+// ═══ AI価格診断 ═══
+async function runAiDiagnosis(vehicleData){
+  const apiKey=localStorage.getItem('anthropic_api_key');
+  if(!apiKey){
+    alert('APIキーが設定されていません。\n左メニューの「API設定」からキーを入力してください。');
+    openApiModal();
+    return;
+  }
+
+  let d;
+  try{d=typeof vehicleData==='string'?JSON.parse(decodeURIComponent(vehicleData)):vehicleData;}
+  catch(e){d=vehicleData;}
+
+  const km=d.km?(d.km/10000).toFixed(1)+'万km':'不明';
+  const title=`${d.name} ${d.year} ${km} ${d.price?d.price+'万円':''} ${d.color||''}`;
+
+  document.getElementById('ai-modal-title').textContent='AI価格診断中...';
+  document.getElementById('ai-modal-body').innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;padding:20px;color:var(--text2)">
+      <div class="spin" style="display:block;width:20px;height:20px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite"></div>
+      <span>カーセンサー等で相場を調査中...</span>
+    </div>`;
+  document.getElementById('modal-ai').style.display='block';
+  document.getElementById('ov-ai').style.display='block';
+
+  // エリア判定
+  function getSearchArea(cat, days){
+    const isKei = cat==='軽';
+    if(isKei){
+      if(days>=150) return '北陸・甲信越／東海エリア';
+      if(days>=100) return '北陸・甲信越エリア';
+      return '石川県・富山県（北陸・甲信越）';
+    } else {
+      if(days>=180) return '北陸・甲信越／関東／東海エリア';
+      if(days>=100) return '北陸・甲信越／東海エリア';
+      return '北陸・甲信越エリア';
+    }
+  }
+  const searchArea = getSearchArea(d.cat, d.days||0);
+
+  const prompt=`あなたは中古車価格の専門アドバイザーです。
+以下の車両について、カーセンサーやグーネット等の相場情報をweb検索で調べ、価格診断を行ってください。
+
+【対象車両】
+- 車種: ${d.name}
+- カテゴリ: ${d.cat}
+- 年式: ${d.year}
+- 走行距離: ${km}
+- 現在のプライス: ${d.price?d.price+'万円':'不明'}
+- 色: ${d.color||'不明'}
+- HV: ${d.hv==='〇'?'あり':'なし'}
+- 4WD: ${d.fwd==='〇'?'あり':'なし'}
+- 掲載日数: ${d.days?d.days+'日':'不明'}
+
+【検索エリア】${searchArea}
+※このエリアの相場を優先的に調べてください。
+
+【エリア選定理由】
+${d.cat==='軽'?
+  (d.days>=150?'軽自動車・在庫150日以上のため北陸・甲信越・中部まで拡大':
+   d.days>=100?'軽自動車・在庫100日以上のため北陸・甲信越まで拡大':
+   '軽自動車・在庫99日以内のため石川県・富山県中心'):
+  (d.days>=180?'在庫180日以上のため北陸・甲信越・関東・中部まで拡大':
+   d.days>=100?'在庫100日以上のため北陸・甲信越・中部まで拡大':
+   '在庫99日以内のため北陸・甲信越エリア中心')}
+
+【検索条件の絞り込み】
+- 年式：${d.year}の前後1年以内
+- 走行距離：${d.km?(Math.max(0,d.km/10000-1).toFixed(0)+'万km〜'+(d.km/10000+1).toFixed(0)+'万km'):'不明'}
+- 色：${['白','パール','黒','ホワイト','ブラック','白パール'].some(c=>d.color&&d.color.includes(c))?'【人気色】白・パール・黒のみで検索（他の色と混合しないこと）':'【非人気色】全カラーで検索'}
+- 駆動方式：${d.fwd==='〇'?'4WDのみで検索（2WDと混合しないこと）':'2WD（FF/FR）のみで検索（4WDと混合しないこと）'}
+- 修復歴：【修復歴なし】のみで検索（カーセンサーの「修復歴なし」チェックを必ず入れること）
+
+【指示】
+1. web検索で上記エリア・条件のカーセンサー・グーネット等の相場を調べる
+2. 同条件（車種・年式±1年・走行距離±1万km）の相場価格帯を提示
+3. 現在価格との比較（高い/安い/適正）
+4. 具体的な推奨価格と理由（値上げ・値下げの根拠を明確に）
+5. 売却促進のためのアドバイス
+
+日本語で回答してください。`;
+
+  try{
+    const cleanKey=apiKey.trim().replace(/[^a-zA-Z0-9\-_]/g,'');
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':cleanKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-haiku-4-5-20251001',
+        max_tokens:1500,
+        tools:[{type:'web_search_20250305',name:'web_search'}],
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+
+    if(!res.ok){
+      const err=await res.json();
+      throw new Error(err.error?.message||'API Error');
+    }
+
+    const data=await res.json();
+    const text=data.content.filter(b=>b.type==='text').map(b=>b.text).join('\n');
+
+    const areaLabel=getSearchArea(d.cat,d.days||0);
+    document.getElementById('ai-modal-title').textContent=`AI価格診断: ${d.name}`;
+
+    // グラフ用データ準備
+    const soldData=SOLD.filter(s=>s.name===d.name);
+    const avgSoldDays=soldData.filter(s=>s.days!=null).reduce((a,b,_,arr)=>a+b.days/arr.length,0)||0;
+    const avgSoldPrice=soldData.filter(s=>s.price!=null).reduce((a,b,_,arr)=>a+b.price/arr.length,0)||0;
+
+    // 価格帯グラフデータ
+    const priceRanges=['〜50万','50〜100万','100〜150万','150〜200万','200〜250万','250〜300万','300万超'];
+    const priceThresholds=[50,100,150,200,250,300,Infinity];
+    const priceCounts=priceThresholds.map((t,i)=>soldData.filter(s=>s.price!=null&&s.price<t&&(i===0||s.price>=priceThresholds[i-1])).length);
+    const maxPriceCount=Math.max(...priceCounts,1);
+
+    // 走行距離グラフデータ
+    const kmRanges=['〜1万','1〜2万','2〜3万','3〜4万','4〜5万','5〜6万','6〜7万','7万超'];
+    const kmThresholds=[10000,20000,30000,40000,50000,60000,70000,Infinity];
+    const kmCounts=kmThresholds.map((t,i)=>soldData.filter(s=>s.km!=null&&s.km<t&&(i===0||s.km>=kmThresholds[i-1])).length);
+    const maxKmCount=Math.max(...kmCounts,1);
+
+    const priceBar=priceRanges.map((r,i)=>`
+      <div class="bar-row">
+        <span class="bar-lbl">${r}</span>
+        <div class="bar-track"><div class="bar-fill-p" style="width:${Math.round(priceCounts[i]/maxPriceCount*100)}%"></div></div>
+        <span class="bar-num">${priceCounts[i]}</span>
+      </div>`).join('');
+
+    const kmBar=kmRanges.map((r,i)=>`
+      <div class="bar-row">
+        <span class="bar-lbl">${r}km</span>
+        <div class="bar-track"><div class="bar-fill-k" style="width:${Math.round(kmCounts[i]/maxKmCount*100)}%"></div></div>
+        <span class="bar-num">${kmCounts[i]}</span>
+      </div>`).join('');
+
+    const isPopularColor=['白','パール','黒','ホワイト','ブラック','白パール'].some(c=>d.color&&d.color.includes(c));
+    const colorCond=isPopularColor?'白・パール・黒のみ':'全カラー';
+    const driveCond=d.fwd==='〇'?'4WDのみ':'2WDのみ';
+
+    const reportHtml=`
+      <div id="ai-report-content">
+        <div class="area-box" data-area="1">検索エリア: ${areaLabel}（在庫${d.days}日 / ${d.cat}）</div>
+        <div class="cond-box">
+          <div><span style="color:#999">年式条件：</span>${d.year}±1年</div>
+          <div><span style="color:#999">走行条件：</span>${d.km?(Math.max(0,d.km/10000-1).toFixed(0)+'〜'+(d.km/10000+1).toFixed(0)+'万km'):'—'}</div>
+          <div><span style="color:#999">色条件：</span>${isPopularColor?'【人気色】白・パール・黒のみ':'【非人気色】全カラー'}</div>
+          <div><span style="color:#999">駆動条件：</span>${d.fwd==='〇'?'4WDのみ':'2WDのみ'}</div>
+          <div><span style="color:#999">修復歴：</span>修復歴なしのみ</div>
+        </div>
+        <div class="info-box">
+          ${d.year} / ${km} / ${d.price?d.price+'万円':'—'} / ${d.color||'—'} / ${d.days}日在庫
+          ${soldData.length>0?` ｜ 過去売約${soldData.length}台 / 平均売価${avgSoldPrice.toFixed(0)}万円 / 平均回転${Math.round(avgSoldDays)}日`:''}
+        </div>
+        ${soldData.length>0?`
+        <div class="chart-grid">
+          <div class="chart-box">
+            <div class="chart-title">過去売約 価格帯分布（${soldData.length}台）</div>
+            ${priceBar}
+          </div>
+          <div class="chart-box">
+            <div class="chart-title">過去売約 走行距離分布</div>
+            ${kmBar}
+          </div>
+        </div>`:'<div style="font-size:11px;color:#999;margin-bottom:12px">※過去売約データなし</div>'}
+        <div class="result-hdr">AI診断結果</div>
+        <div style="font-size:12px;line-height:1.8;white-space:pre-wrap;color:#1a2332">${text}</div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:8px">
+        <button onclick="exportAiPdf('${encodeURIComponent(d.name)}','${d.year}','${km}','${d.price||'—'}万円')" style="background:#2979d4;color:#fff;border:none;padding:7px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500">📄 PDFで保存</button>
+      </div>`;
+
+    document.getElementById('ai-modal-body').innerHTML=reportHtml;
+
+  }catch(e){
+    document.getElementById('ai-modal-title').textContent='エラー';
+    document.getElementById('ai-modal-body').innerHTML=`
+      <div class="errbox"><b>エラー:</b> ${e.message}<br>
+      <span style="font-size:11px;margin-top:4px;display:block">APIキーを確認してください。</span></div>`;
+  }
+}
+
+
+// ═══ AI診断レポートPDF出力 ═══
+function exportAiPdf(nameEnc, year, km, price){
+  const name=decodeURIComponent(nameEnc);
+  const reportEl=document.getElementById('ai-report-content');
+  if(!reportEl){alert('レポートが見つかりません');return;}
+
+  const now=new Date();
+  const dateStr=now.toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'});
+
+  // ai-report-contentの中身を取得
+  const areaEl=reportEl.querySelector('[data-area]');
+  const areaText=areaEl?areaEl.textContent:'';
+
+  // 検索条件ボックス・グラフ・テキストをそのまま流用
+  const innerHtml=reportEl.innerHTML;
+
+  const printWin=window.open('','_blank','width=820,height=1000');
+  printWin.document.write(`<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>AI価格診断レポート - ${name}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Hiragino Sans','Meiryo',sans-serif;font-size:12px;color:#1a2332;background:#f5f5f5;padding:16px}
+  .wrap{background:#fff;max-width:720px;margin:0 auto;padding:24px 28px;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+  .hdr{border-bottom:2px solid #2979d4;padding-bottom:10px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:flex-start}
+  .hdr-title{font-size:18px;font-weight:700;color:#2979d4}
+  .hdr-sub{font-size:11px;color:#666;margin-top:3px}
+  .hdr-logo{font-size:10px;color:#999;text-align:right}
+  .area-box{background:#e8f0fb;border-radius:6px;padding:7px 12px;margin-bottom:8px;font-size:11px;color:#1d4ed8;font-weight:600}
+  .cond-box{background:#f7f9fc;border:1px solid #e0e8f0;border-radius:6px;padding:8px 12px;margin-bottom:8px;font-size:11px;color:#4a6070;display:grid;grid-template-columns:1fr 1fr;gap:4px}
+  .info-box{background:#f7f9fc;border-radius:6px;padding:7px 12px;margin-bottom:14px;font-size:11px;color:#4a6070;font-family:monospace}
+  .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+  .chart-box{border:1px solid #e0e0e0;border-radius:6px;padding:10px}
+  .chart-title{font-size:10px;font-weight:600;color:#555;margin-bottom:8px}
+  .bar-row{display:flex;align-items:center;gap:5px;margin-bottom:3px}
+  .bar-lbl{font-size:9px;color:#777;width:52px;text-align:right;flex-shrink:0}
+  .bar-track{flex:1;height:11px;background:#f0f0f0;border-radius:2px;overflow:hidden}
+  .bar-fill-p{height:100%;background:#f59e0b;border-radius:2px}
+  .bar-fill-k{height:100%;background:#0d9488;border-radius:2px}
+  .bar-num{font-size:9px;color:#777;width:20px;flex-shrink:0}
+  .bar-note{margin-top:5px;padding-top:5px;border-top:1px dashed #e0e0e0;font-size:10px}
+  .result-hdr{font-size:11px;font-weight:600;color:#555;margin-bottom:6px;border-left:3px solid #2979d4;padding-left:8px}
+  .result-badge{background:#fff8e1;border-left:3px solid #f59e0b;padding:6px 10px;margin-bottom:8px;border-radius:0 4px 4px 0;font-size:11px}
+  .result-text{font-size:11px;line-height:1.8;white-space:pre-wrap}
+  .footer{margin-top:18px;padding-top:8px;border-top:1px solid #e0e0e0;display:flex;justify-content:space-between;font-size:10px;color:#999}
+  @media print{
+    body{background:#fff;padding:0}
+    .wrap{box-shadow:none;max-width:100%;padding:16px}
+    button{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hdr">
+    <div>
+      <div class="hdr-title">AI価格診断レポート</div>
+      <div class="hdr-sub">作成日: ${dateStr}　　対象: ${name} ${year} / ${km} / ${price}</div>
+    </div>
+    <div class="hdr-logo">INDIO<br>inventory management</div>
+  </div>
+  ${innerHtml}
+  <div class="footer">
+    <span>INDIO inventory management - AI価格診断システム</span>
+    <span>${dateStr} 生成</span>
+  </div>
+</div>
+<script>
+  // ボタン非表示
+  document.querySelectorAll('button').forEach(b=>b.style.display='none');
+  window.onload=function(){setTimeout(function(){window.print();},500)};
+<\/script>
+
+<!-- 市場分析モーダル -->
+<div class="ov" id="ov-market" onclick="closeMarketModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:90;backdrop-filter:blur(3px)"></div>
+<div id="modal-market" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:20px;width:600px;max-height:85vh;overflow-y:auto;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,.15)">
+  <span onclick="closeMarketModal()" style="float:right;cursor:pointer;color:var(--text3);font-size:20px;line-height:1">×</span>
+  <h3 style="font-size:14px;font-weight:700;margin-bottom:14px">📊 エリア市場分析</h3>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+    <div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">車種</div>
+      <input type="text" id="marketCar" placeholder="例: N-BOX、ヴォクシー80系" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">エリア</div>
+      <select id="marketArea" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+        <option value="石川県・富山県">石川県・富山県</option>
+        <option value="北陸・甲信越">北陸・甲信越</option>
+        <option value="北陸・甲信越／東海">北陸・甲信越／東海</option>
+        <option value="北陸・甲信越／関東／東海">北陸・甲信越／関東／東海</option>
+        <option value="関東">関東</option>
+        <option value="東海">東海</option>
+        <option value="全国">全国</option>
+      </select>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+    <div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">年式（任意）</div>
+      <input type="text" id="marketYear" placeholder="例: R3〜R5" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">価格帯（任意）</div>
+      <input type="text" id="marketPrice" placeholder="例: 50〜100万" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">修復歴</div>
+      <select id="marketRepair" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+        <option value="修復歴なしのみ">修復歴なしのみ</option>
+        <option value="修復歴含む">修復歴含む</option>
+      </select>
+    </div>
+  </div>
+
+  <button onclick="runMarketAnalysis()" style="width:100%;background:#065f46;color:#fff;border:none;padding:9px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;font-family:var(--font);margin-bottom:12px">
+    🔍 分析開始
+  </button>
+
+  <div id="market-result"></div>
+</div>
+
+</body></html>`);
+  printWin.document.close();
+}
+
+
+// ═══ エリア市場分析 ═══
+function openMarketModal(){
+  const apiKey=localStorage.getItem('anthropic_api_key');
+  if(!apiKey){alert('APIキーが設定されていません。\n左メニューの「API設定」からキーを入力してください。');openApiModal();return;}
+  document.getElementById('modal-market').style.display='block';
+  document.getElementById('ov-market').style.display='block';
+}
+function closeMarketModal(){
+  document.getElementById('modal-market').style.display='none';
+  document.getElementById('ov-market').style.display='none';
+}
+
+async function runMarketAnalysis(){
+  const apiKey=localStorage.getItem('anthropic_api_key');
+  if(!apiKey){alert('APIキーが設定されていません');return;}
+
+  const car   = document.getElementById('marketCar').value.trim();
+  const area  = document.getElementById('marketArea').value;
+  const year  = document.getElementById('marketYear').value.trim();
+  const price = document.getElementById('marketPrice').value.trim();
+  const repair= document.getElementById('marketRepair').value;
+
+  if(!car){alert('車種を入力してください');return;}
+
+  const resultEl=document.getElementById('market-result');
+  resultEl.innerHTML=`<div style="display:flex;align-items:center;gap:10px;padding:16px;color:var(--text2)">
+    <div class="spin" style="display:block;width:20px;height:20px;border:2px solid var(--border2);border-top-color:#065f46;border-radius:50%;animation:spin .7s linear infinite"></div>
+    <span>カーセンサーで${car}（${area}）を調査中...</span>
+  </div>`;
+
+  const yearCond  = year  ? `・年式: ${year}` : '';
+  const priceCond = price ? `・価格帯: ${price}` : '';
+
+  const prompt=`あなたは中古車市場の専門アナリストです。
+カーセンサーやグーネット等のweb検索を使って以下の条件で市場分析を行ってください。
+
+【分析対象】
+- 車種: ${car}
+- エリア: ${area}
+- ${repair}${yearCond}${priceCond}
+
+【調査内容】
+1. 該当エリアの推定在庫台数（カーセンサー・グーネット等で検索して数える）
+2. 価格帯分布（どの価格帯に何台あるか）
+3. 年式分布（どの年式が多いか）
+4. 走行距離分布（走行距離帯別の台数）
+5. 色別分布（人気の色と台数）
+6. 平均価格・最安値・最高値
+7. 市場全体のコメント（供給過多・品薄・競合状況など）
+8. 仕入れ・販売戦略へのアドバイス
+
+必ず実際にweb検索を行い、具体的な数字を含めて回答してください。
+日本語で回答してください。`;
+
+  try{
+    const cleanKey=apiKey.trim();
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':cleanKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-haiku-4-5-20251001',
+        max_tokens:2000,
+        tools:[{type:'web_search_20250305',name:'web_search'}],
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+
+    if(!res.ok){const err=await res.json();throw new Error(err.error?.message||`HTTP ${res.status}`);}
+
+    const data=await res.json();
+    const text=data.content.filter(b=>b.type==='text').map(b=>b.text).join('\n');
+
+    const now=new Date();
+    const dateStr=now.toLocaleDateString('ja-JP',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+
+    resultEl.innerHTML=`
+      <div style="background:var(--gbg);border-radius:6px;padding:7px 12px;margin-bottom:8px;font-size:11px;color:var(--green);font-weight:600">
+        分析完了: ${car} / ${area}${yearCond}${priceCond} / ${repair}
+      </div>
+      <div style="font-size:12px;line-height:1.8;white-space:pre-wrap;color:var(--text);margin-bottom:12px">${text}</div>
+      <div style="display:flex;gap:8px">
+        <button onclick="exportMarketPdf('${encodeURIComponent(car)}','${encodeURIComponent(area)}')" style="background:#065f46;color:#fff;border:none;padding:7px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500">📄 PDFで保存</button>
+      </div>
+      <div style="font-size:10px;color:var(--text3);margin-top:8px">分析日時: ${dateStr}</div>`;
+
+  }catch(e){
+    resultEl.innerHTML=`<div class="errbox"><b>エラー:</b> ${e.message}</div>`;
+  }
+}
+
+function exportMarketPdf(carEnc, areaEnc){
+  const car=decodeURIComponent(carEnc);
+  const area=decodeURIComponent(areaEnc);
+  const resultEl=document.getElementById('market-result');
+  if(!resultEl)return;
+
+  const now=new Date();
+  const dateStr=now.toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'});
+
+  const printWin=window.open('','_blank','width=820,height=1000');
+  printWin.document.write(`<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8">
+<title>市場分析レポート - ${car}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Hiragino Sans','Meiryo',sans-serif;font-size:12px;color:#1a2332;background:#f5f5f5;padding:16px}
+  .wrap{background:#fff;max-width:720px;margin:0 auto;padding:24px 28px;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+  .hdr{border-bottom:2px solid #065f46;padding-bottom:10px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:flex-start}
+  .hdr-title{font-size:18px;font-weight:700;color:#065f46}
+  .hdr-sub{font-size:11px;color:#666;margin-top:3px}
+  .hdr-logo{font-size:10px;color:#999;text-align:right}
+  .badge{background:#d1fae5;color:#065f46;border-radius:6px;padding:7px 12px;margin-bottom:12px;font-size:11px;font-weight:600}
+  .result{font-size:12px;line-height:1.8;white-space:pre-wrap}
+  .footer{margin-top:18px;padding-top:8px;border-top:1px solid #e0e0e0;display:flex;justify-content:space-between;font-size:10px;color:#999}
+  @media print{body{background:#fff;padding:0}.wrap{box-shadow:none}button{display:none}}
+</style></head><body>
+<div class="wrap">
+  <div class="hdr">
+    <div>
+      <div class="hdr-title">📊 エリア市場分析レポート</div>
+      <div class="hdr-sub">作成日: ${dateStr}　　対象: ${car} / ${area}</div>
+    </div>
+    <div class="hdr-logo">INDIO<br>inventory management</div>
+  </div>
+  <div class="badge">${resultEl.querySelector('[style*="gbg"], [style*="green"]')?.textContent||''}</div>
+  <div class="result">${resultEl.querySelector('[style*="pre-wrap"]')?.textContent||''}</div>
+  <div class="footer">
+    <span>INDIO inventory management - エリア市場分析システム</span>
+    <span>${dateStr} 生成</span>
+  </div>
+</div>
+<script>document.querySelectorAll('button').forEach(b=>b.style.display='none');window.onload=function(){setTimeout(function(){window.print();},500)}<\/script>
+</body></html>`);
+  printWin.document.close();
+}
+
+
+// ═══ 未掲載管理 PDF出力 ═══
+function exportUnlistedPdf(){
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'});
+  const timeStr = now.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+
+  // 各フェーズのデータ取得
+  const phases = [
+    {id:'phase-p1', title:'🚚 未入庫',   color:'#1d4ed8', bg:'#dbeafe'},
+    {id:'phase-p2', title:'✅ 掲載待ち', color:'#16a34a', bg:'#dcfce7'},
+    {id:'phase-p3', title:'🧹 未仕上',   color:'#d97706', bg:'#fef3c7'},
+    {id:'phase-p4', title:'🔧 BP入庫中', color:'#dc2626', bg:'#fee2e2'},
+    {id:'phase-p5', title:'🙅 BP待ち',   color:'#dc2626', bg:'#fee2e2'},
+    {id:'phase-p6', title:'📃 その他',   color:'#4a6070', bg:'#f0f4f8'},
+  ];
+
+  // 各フェーズのHTMLを生成
+  const phaseHtml = phases.map(p => {
+    const el = document.getElementById(p.id);
+    if(!el) return '';
+    if(!el.children.length) return `
+      <div style="margin-bottom:16px">
+        <div style="background:${p.bg};color:${p.color};padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;display:flex;justify-content:space-between">
+          <span>${p.title}</span><span>0台</span>
+        </div>
+        <div style="border:1px solid #e0e0e0;border-top:none;padding:8px 12px;font-size:11px;color:#999">該当車両なし</div>
+      </div>`;
+    const items = Array.from(el.children).map(item => {
+      const name = item.dataset.name || item.querySelector('.aname')?.textContent || '';
+      const det  = item.dataset.det  || item.querySelector('.adet')?.textContent  || '';
+      const pill = item.dataset.lbl  || item.querySelector('.pill')?.textContent  || '';
+      return `<tr>
+        <td style="padding:4px 8px;border-bottom:1px solid #eee;font-size:11px;font-weight:500">${name}</td>
+        <td style="padding:4px 8px;border-bottom:1px solid #eee;font-size:10px;color:#666">${det}</td>
+        <td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:center">
+          <span style="background:${p.bg};color:${p.color};padding:1px 8px;border-radius:10px;font-size:10px;font-weight:600">${pill}</span>
+        </td>
+      </tr>`;
+    }).join('');
+    return `
+      <div style="margin-bottom:16px">
+        <div style="background:${p.bg};color:${p.color};padding:6px 12px;border-radius:6px 6px 0 0;font-size:12px;font-weight:700;display:flex;justify-content:space-between">
+          <span>${p.title}</span>
+          <span>${el.children.length}台</span>
+        </div>
+        <table style="width:100%;border-collapse:collapse;border:1px solid #e0e0e0;border-top:none">
+          <thead>
+            <tr style="background:#f7f9fc">
+              <th style="padding:4px 8px;font-size:10px;color:#666;text-align:left;font-weight:600;border-bottom:1px solid #e0e0e0">車名 / 下4桁</th>
+              <th style="padding:4px 8px;font-size:10px;color:#666;text-align:left;font-weight:600;border-bottom:1px solid #e0e0e0">詳細</th>
+              <th style="padding:4px 8px;font-size:10px;color:#666;text-align:center;font-weight:600;border-bottom:1px solid #e0e0e0;width:80px">状況</th>
+            </tr>
+          </thead>
+          <tbody>${items}</tbody>
+        </table>
+      </div>`;
+  }).join('');
+
+  const total   = document.getElementById('u-total')?.textContent||'—';
+  const wait    = document.getElementById('u-wait')?.textContent||'—';
+  const sheet   = document.getElementById('u-sheet')?.textContent||'—';
+  const ready   = document.getElementById('u-ready')?.textContent||'—';
+  const other   = document.getElementById('u-other')?.textContent||'—';
+
+  const printWin = window.open('','_blank','width=820,height=1000');
+  printWin.document.write(`<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8">
+<title>未掲載管理レポート ${dateStr}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Hiragino Sans','Meiryo',sans-serif;font-size:12px;color:#1a2332;background:#f5f5f5;padding:16px}
+  .wrap{background:#fff;max-width:760px;margin:0 auto;padding:24px 28px;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+  .hdr{border-bottom:2px solid #2979d4;padding-bottom:10px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-start}
+  .kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px}
+  .kpi-box{background:#f7f9fc;border:1px solid #e0e8f0;border-radius:6px;padding:8px 10px;text-align:center}
+  .kpi-lbl{font-size:9px;color:#888;margin-bottom:3px}
+  .kpi-val{font-size:18px;font-weight:700;font-family:monospace}
+  .footer{margin-top:16px;padding-top:8px;border-top:1px solid #e0e0e0;display:flex;justify-content:space-between;font-size:10px;color:#999}
+  @media print{body{background:#fff;padding:0}.wrap{box-shadow:none;max-width:100%}button{display:none}}
+</style></head><body>
+<div class="wrap">
+  <div class="hdr">
+    <div>
+      <div style="font-size:18px;font-weight:700;color:#2979d4">未掲載車両管理レポート</div>
+      <div style="font-size:11px;color:#666;margin-top:3px">出力日時: ${dateStr} ${timeStr}</div>
+    </div>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi-box"><div class="kpi-lbl">未掲載 合計</div><div class="kpi-val" style="color:#dc2626">${total}</div><div style="font-size:9px;color:#888;margin-top:2px">台</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">入庫待ち</div><div class="kpi-val" style="color:#d97706">${wait}</div><div style="font-size:9px;color:#888;margin-top:2px">台</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">鈑金・仕上げ</div><div class="kpi-val" style="color:#dc2626">${sheet}</div><div style="font-size:9px;color:#888;margin-top:2px">台</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">掲載可能</div><div class="kpi-val" style="color:#16a34a">${ready}</div><div style="font-size:9px;color:#888;margin-top:2px">台</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">その他</div><div class="kpi-val" style="color:#4a6070">${other}</div><div style="font-size:9px;color:#888;margin-top:2px">台</div></div>
+  </div>
+  ${phaseHtml}
+  <div class="footer">
+    <span>未掲載車両管理レポート</span>
+    <span>${dateStr} ${timeStr} 生成</span>
+  </div>
+</div>
+<script>window.onload=function(){setTimeout(function(){window.print();},500)}<\/script>
+</body></html>`);
+  printWin.document.close();
+}
+
+loadAll();
+</script>
+
+<!-- API設定モーダル -->
+<div class="ov" id="ov-api" onclick="closeApiModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:90;backdrop-filter:blur(3px)"></div>
+<div id="modal-api" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:20px;width:380px;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,.15)">
+  <span onclick="closeApiModal()" style="float:right;cursor:pointer;color:var(--text3);font-size:20px;line-height:1">×</span>
+  <h3 style="font-size:14px;font-weight:700;margin-bottom:12px">⚙ AI価格診断 設定</h3>
+  <div style="font-size:11px;color:var(--text2);margin-bottom:8px">Anthropic APIキーを入力してください。<br>ブラウザに保存されます（外部送信なし）。</div>
+  <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-..." style="width:100%;padding:8px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--mono);background:var(--bg3);color:var(--text);margin-bottom:10px;box-sizing:border-box">
+  <div style="display:flex;gap:8px">
+    <button onclick="saveApiKey()" style="flex:1;background:var(--accent);color:#fff;border:none;padding:8px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500">保存</button>
+    <button onclick="clearApiKey()" style="background:var(--rbg);color:var(--red);border:1px solid var(--red);padding:8px 12px;border-radius:6px;cursor:pointer;font-size:12px">削除</button>
+  </div>
+  <div id="apiKeyStatus" style="font-size:11px;margin-top:8px;color:var(--green)"></div>
+</div>
+
+<!-- AI診断結果モーダル -->
+<div class="ov" id="ov-ai" onclick="closeAiModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:90;backdrop-filter:blur(3px)"></div>
+<div id="modal-ai" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:20px;width:560px;max-height:78vh;overflow-y:auto;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,.15)">
+  <span onclick="closeAiModal()" style="float:right;cursor:pointer;color:var(--text3);font-size:20px;line-height:1">×</span>
+  <h3 id="ai-modal-title" style="font-size:14px;font-weight:700;margin-bottom:12px">AI価格診断</h3>
+  <div id="ai-modal-body"></div>
+</div>
+
+
+<!-- 市場分析モーダル -->
+<div class="ov" id="ov-market" onclick="closeMarketModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:90;backdrop-filter:blur(3px)"></div>
+<div id="modal-market" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:20px;width:600px;max-height:85vh;overflow-y:auto;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,.15)">
+  <span onclick="closeMarketModal()" style="float:right;cursor:pointer;color:var(--text3);font-size:20px;line-height:1">×</span>
+  <h3 style="font-size:14px;font-weight:700;margin-bottom:14px">📊 エリア市場分析</h3>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+    <div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">車種</div>
+      <input type="text" id="marketCar" placeholder="例: N-BOX、ヴォクシー80系" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">エリア</div>
+      <select id="marketArea" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+        <option value="石川県・富山県">石川県・富山県</option>
+        <option value="北陸・甲信越">北陸・甲信越</option>
+        <option value="北陸・甲信越／東海">北陸・甲信越／東海</option>
+        <option value="北陸・甲信越／関東／東海">北陸・甲信越／関東／東海</option>
+        <option value="関東">関東</option>
+        <option value="東海">東海</option>
+        <option value="全国">全国</option>
+      </select>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+    <div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">年式（任意）</div>
+      <input type="text" id="marketYear" placeholder="例: R3〜R5" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">価格帯（任意）</div>
+      <input type="text" id="marketPrice" placeholder="例: 50〜100万" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">修復歴</div>
+      <select id="marketRepair" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+        <option value="修復歴なしのみ">修復歴なしのみ</option>
+        <option value="修復歴含む">修復歴含む</option>
+      </select>
+    </div>
+  </div>
+
+  <button onclick="runMarketAnalysis()" style="width:100%;background:#065f46;color:#fff;border:none;padding:9px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;font-family:var(--font);margin-bottom:12px">
+    🔍 分析開始
+  </button>
+
+  <div id="market-result"></div>
+</div>
+
+</body>
+</html>
