@@ -7,23 +7,27 @@
 <!-- ホーム画面アイコン（在庫HUB専用） -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="在庫HUB">
-<meta name="theme-color" content="#1e3a5f">
+<meta name="theme-color" content="#0559d2">
 <link rel="manifest" href="manifest-zaiko.webmanifest">
 <link rel="icon" href="zaiko-favicon-64.png" sizes="64x64" type="image/png">
 <link rel="apple-touch-icon" href="zaiko-apple-touch-icon.png">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#f0f4f8;--bg2:#ffffff;--bg3:#f7f9fc;--bg4:#e8eef5;
-  --border:#d8e2ec;--border2:#b8ccd8;
-  --text:#1a2332;--text2:#4a6070;--text3:#8a9aaa;
-  --accent:#2979d4;--accent-bg:#e8f0fb;
-  --green:#16a34a;--green-bg:#dcfce7;
-  --red:#dc2626;--red-bg:#fee2e2;
-  --amber:#d97706;--amber-bg:#fef3c7;
-  --teal:#0891b2;--teal-bg:#cffafe;
-  --purple:#7c3aed;--purple-bg:#ede9fe;
-  --font:'Noto Sans JP',sans-serif;--mono:'DM Mono',monospace;
+  --bg:#f9fafb;--bg2:#ffffff;--bg3:#fbfcfd;--bg4:#f2f4f5;
+  --border:#e3e5e6;--border2:#d7dbdf;
+  --text:#040a11;--text2:#4d5660;--text3:#8b939c;
+  --accent:#0559d2;--accent-bg:#eaf1fd;
+  --green:#00af44;--green-bg:#e4f7ea;
+  --red:#d40924;--red-bg:#fdeaec;
+  --amber:#ff862e;--amber-bg:#fff2e8;
+  --teal:#0666ee;--teal-bg:#e9f0fe;
+  --purple:#955be3;--purple-bg:#f3ebfd;
+  --font:'Inter','Noto Sans JP',system-ui,-apple-system,sans-serif;--mono:'DM Mono',ui-monospace,monospace;
+  --side:236px;--r:12px;--rs:8px;
+  --sh:0 1px 3px rgba(0,0,0,.1),0 1px 2px -1px rgba(0,0,0,.1);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;min-height:100vh;}
@@ -130,29 +134,189 @@ tbody tr:hover td{background:var(--accent-bg)!important;}
 .dlbl{color:var(--text2);}
 .dwarn{color:var(--red);font-weight:600;}
 .errbox{background:var(--red-bg);border:1px solid #fca5a5;border-radius:8px;padding:14px;color:var(--red);margin:10px 0;}
+
+/* ═══ Symphony-style refresh ═══ */
+html{-webkit-text-size-adjust:100%;}
+body{font-family:var(--font);font-size:13px;letter-spacing:.01em;-webkit-font-smoothing:antialiased;}
+.ic{width:18px;height:18px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.ic-s{width:15px;height:15px;}
+
+/* --- sidebar --- */
+.side{position:fixed;top:0;left:0;bottom:0;width:var(--side);background:#fcfcfc;border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:80;transition:transform .25s ease;}
+.side-hd{height:56px;display:flex;align-items:center;gap:9px;padding:0 16px;flex-shrink:0;}
+.lg-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#0559d2,#0f8ae8);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;letter-spacing:.02em;flex-shrink:0;}
+.lg-txt{display:flex;flex-direction:column;line-height:1.15;overflow:hidden;}
+.lg-txt b{font-size:14px;font-weight:700;color:var(--text);letter-spacing:.01em;}
+.lg-txt span{font-size:9.5px;color:var(--text3);font-weight:500;letter-spacing:.04em;white-space:nowrap;}
+.side-nav{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:2px;}
+.side-ft{padding:12px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:2px;flex-shrink:0;}
+.nav-item{display:flex;align-items:center;gap:12px;width:100%;height:40px;padding:8px 12px;border:none;background:none;border-radius:8px;cursor:pointer;font-family:var(--font);font-size:13.5px;font-weight:500;color:var(--text2);text-align:left;transition:background .15s,color .15s;}
+.nav-item:hover{background:var(--bg4);color:var(--text);}
+.nav-item.active{background:rgba(5,89,210,.10);color:var(--accent);}
+.nav-item.active .ic{color:var(--accent);}
+.nav-badge{margin-left:auto;font-size:10px;font-weight:700;font-family:var(--mono);background:var(--red-bg);color:var(--red);border-radius:9px;padding:1px 7px;}
+.nav-item.active .nav-badge{background:#fff;}
+
+/* --- shell / topbar --- */
+.shell{margin-left:var(--side);min-height:100vh;display:flex;flex-direction:column;}
+.hdr{background:rgba(255,255,255,.72);backdrop-filter:saturate(180%) blur(10px);-webkit-backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--border);box-shadow:none;height:56px;padding:0 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:60;}
+.pg-title{font-size:16px;font-weight:700;color:var(--text);letter-spacing:.01em;line-height:1.2;margin:0;}
+.pg-sub{font-size:11.5px;color:var(--text3);font-weight:400;}
+.hdr-r{margin-left:auto;display:flex;align-items:center;gap:12px;}
+.upd{font-size:11px;color:var(--text3);font-family:var(--mono);white-space:nowrap;}
+.rbtn{background:var(--accent);border:none;color:#fff;padding:0 14px;height:34px;border-radius:8px;cursor:pointer;font-size:12.5px;font-family:var(--font);font-weight:500;display:inline-flex;align-items:center;gap:7px;box-shadow:var(--sh);transition:filter .15s;}
+.rbtn:hover{filter:brightness(1.08);opacity:1;}
+.rbtn.ghost{background:var(--bg2);color:var(--text2);border:1px solid var(--border);box-shadow:none;}
+.rbtn.ghost:hover{background:var(--bg4);color:var(--text);}
+.icon-btn{display:none;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);cursor:pointer;}
+.spin{border-color:rgba(255,255,255,.45);border-top-color:#fff;width:13px;height:13px;}
+
+.main{padding:20px 24px 32px;max-width:1800px;margin:0 auto;width:100%;}
+
+/* --- cards / sections --- */
+.summary{gap:12px;margin-bottom:16px;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:14px 16px;box-shadow:var(--sh);transition:box-shadow .18s,border-color .18s,transform .18s;}
+.card:hover{box-shadow:0 4px 14px rgba(5,89,210,.13);border-color:#c2d6f4;transform:translateY(-1px);}
+.card-lbl{font-size:11px;color:var(--text3);font-weight:500;letter-spacing:.02em;margin-bottom:6px;}
+.card-val{font-size:26px;color:var(--text);letter-spacing:-.01em;}
+.card-ul .card-val{color:var(--red);}
+.card-sub{font-size:10.5px;}
+.sec{background:var(--bg2);border:1px solid var(--border);border-radius:14px;margin-bottom:12px;box-shadow:var(--sh);}
+.sec-hdr{padding:13px 16px;background:transparent;border-bottom:1px solid var(--border);}
+.sec-title{font-size:13.5px;font-weight:700;color:var(--text);display:inline-flex;align-items:center;gap:8px;letter-spacing:.01em;}
+.sec-title .ic{color:var(--accent);}
+.sec-body{padding:12px 14px;}
+.kpi{border-radius:14px;padding:14px 16px;box-shadow:var(--sh);}
+.kpi-lbl{font-size:11px;color:var(--text3);}
+.kpi-val{font-size:23px;letter-spacing:-.01em;}
+.two-col,.three-col{gap:12px;}
+.four-col,.five-col{gap:12px;margin-bottom:12px;}
+
+/* --- controls --- */
+.sel{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:8px;font-size:12px;height:32px;transition:border-color .15s,box-shadow .15s;}
+.sel:hover{border-color:var(--border2);}
+.sel:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(5,89,210,.13);}
+.chklbl{font-size:12px;}
+.ctrls{gap:8px;}
+
+/* --- tables --- */
+.tbl-wrap{border-radius:10px;border:1px solid var(--border);}
+thead th{background:#f2f4f5;color:var(--text2);border-bottom:1px solid var(--border);border-right:1px solid var(--border);font-size:9.5px;}
+thead th:first-child{background:#eceff1;}
+tbody td{border-bottom:1px solid var(--border);border-right:1px solid var(--border);}
+tbody td:first-child{border-right:1px solid var(--border);font-size:11.5px;}
+tbody tr:hover td{background:#f4f8fe!important;}
+.cat-row td{background:#eaf1fd!important;color:var(--accent);border-bottom:1px solid var(--border)!important;}
+.n1{background:#e2ecfb;color:#0559d2;}
+.n2{background:#c3d9f7;color:#0447a8;}
+.n3{background:#5b9bf0;color:#fff;}
+.n4{background:#1c72e0;color:#fff;}
+.n5{background:#0447a8;color:#fff;}
+.nu{background:#fff2e8;color:#c2570f;}
+.cell{border-radius:6px;}
+
+/* --- pills / items --- */
+.pill{border-radius:999px;padding:3px 10px;font-size:11px;}
+.aitem{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:11px 14px;}
+.aitem:hover{border-color:#c2d6f4;background:#f7fafe;}
+.btrack{background:var(--bg4);border:1px solid var(--border);border-radius:6px;height:18px;}
+.bfill{border-radius:6px;}
+.mbar{border-radius:5px 5px 0 0;}
+.modal{border:1px solid var(--border);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.16);padding:22px;}
+.ov{background:rgba(4,10,17,.4);}
+.errbox{background:var(--red-bg);border:1px solid #f5bcc2;border-radius:12px;color:var(--red);}
+
+/* --- responsive --- */
+.side-scrim{display:none;position:fixed;inset:0;background:rgba(4,10,17,.35);z-index:70;}
+@media (max-width:1024px){
+  .side{transform:translateX(-100%);box-shadow:0 0 40px rgba(0,0,0,.18);}
+  body.side-open .side{transform:none;}
+  body.side-open .side-scrim{display:block;}
+  .shell{margin-left:0;}
+  .icon-btn{display:inline-flex;}
+  .main{padding:16px 14px 28px;}
+  .hdr{padding:0 14px;}
+  .summary{grid-template-columns:repeat(2,1fr);}
+  .four-col,.five-col,.three-col,.two-col{grid-template-columns:1fr 1fr;}
+  .pg-sub{display:none;}
+}
+@media (max-width:560px){
+  .summary,.four-col,.five-col,.three-col,.two-col{grid-template-columns:1fr;}
+  .upd{display:none;}
+}
+
 </style>
 </head>
 <body>
 
-<div class="hdr">
-  <div class="hdr-l">
-    <div class="logo">INDIO <span style="font-weight:400;color:var(--text2)">inventory management</span></div>
-    <div class="pages">
-      <button class="ptab active" onclick="showPage('stock')">在庫現状</button>
-      <button class="ptab" onclick="showPage('unlisted')">未掲載管理</button>
-      <button class="ptab" onclick="showPage('longstock')">長期在庫</button>
-      <button class="ptab" onclick="showPage('action')">在庫対策</button>
-      <button class="ptab" onclick="showPage('balance')">車種バランス</button>
-      <button class="ptab" onclick="showPage('sold')">売約分析</button>
-    </div>
-    <div class="upd" id="upd">—</div>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+<symbol id="i-stock" viewBox="0 0 24 24"><svg class="lucide lucide-layers" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z" /> <path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12" /> <path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17" /></symbol>
+<symbol id="i-unlisted" viewBox="0 0 24 24"><svg class="lucide lucide-clipboard-list" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <rect width="8" height="4" x="8" y="2" rx="1" ry="1" /> <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /> <path d="M12 11h4" /> <path d="M12 16h4" /> <path d="M8 11h.01" /> <path d="M8 16h.01" /></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><svg class="lucide lucide-clock" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="12" cy="12" r="10" /> <path d="M12 6v6l4 2" /></symbol>
+<symbol id="i-action" viewBox="0 0 24 24"><svg class="lucide lucide-target" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="12" cy="12" r="10" /> <circle cx="12" cy="12" r="6" /> <circle cx="12" cy="12" r="2" /></symbol>
+<symbol id="i-balance" viewBox="0 0 24 24"><svg class="lucide lucide-scale" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 3v18" /> <path d="m19 8 3 8a5 5 0 0 1-6 0zV7" /> <path d="M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1" /> <path d="m5 8 3 8a5 5 0 0 1-6 0zV7" /> <path d="M7 21h10" /></symbol>
+<symbol id="i-sold" viewBox="0 0 24 24"><svg class="lucide lucide-trending-up" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M16 7h6v6" /> <path d="m22 7-8.5 8.5-5-5L2 17" /></symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24"><svg class="lucide lucide-refresh-cw" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /> <path d="M21 3v5h-5" /> <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /> <path d="M8 16H3v5" /></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24"><svg class="lucide lucide-settings" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" /> <circle cx="12" cy="12" r="3" /></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><svg class="lucide lucide-chart-column" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M3 3v16a2 2 0 0 0 2 2h16" /> <path d="M18 17V9" /> <path d="M13 17V5" /> <path d="M8 17v-3" /></symbol>
+<symbol id="i-wallet" viewBox="0 0 24 24"><svg class="lucide lucide-wallet" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" /> <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" /></symbol>
+<symbol id="i-truck" viewBox="0 0 24 24"><svg class="lucide lucide-truck" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" /> <path d="M15 18H9" /> <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14" /> <circle cx="17" cy="18" r="2" /> <circle cx="7" cy="18" r="2" /></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><svg class="lucide lucide-circle-check" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="12" cy="12" r="10" /> <path d="m9 12 2 2 4-4" /></symbol>
+<symbol id="i-sparkles" viewBox="0 0 24 24"><svg class="lucide lucide-sparkles" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" /> <path d="M20 2v4" /> <path d="M22 4h-4" /> <circle cx="4" cy="20" r="2" /></symbol>
+<symbol id="i-wrench" viewBox="0 0 24 24"><svg class="lucide lucide-wrench" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z" /></symbol>
+<symbol id="i-slash" viewBox="0 0 24 24"><svg class="lucide lucide-circle-slash" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="12" cy="12" r="10" /> <line x1="9" x2="15" y1="15" y2="9" /></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><svg class="lucide lucide-file-text" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /> <path d="M14 2v5a1 1 0 0 0 1 1h5" /> <path d="M10 9H8" /> <path d="M16 13H8" /> <path d="M16 17H8" /></symbol>
+<symbol id="i-cart" viewBox="0 0 24 24"><svg class="lucide lucide-shopping-cart" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="8" cy="21" r="1" /> <circle cx="19" cy="21" r="1" /> <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" /></symbol>
+<symbol id="i-down" viewBox="0 0 24 24"><svg class="lucide lucide-trending-down" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M16 17h6v-6" /> <path d="m22 17-8.5-8.5-5 5L2 7" /></symbol>
+<symbol id="i-calendar" viewBox="0 0 24 24"><svg class="lucide lucide-calendar" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M8 2v3" /> <path d="M16 2v3" /> <rect x="3" y="3" width="18" height="18" rx="2" /> <path d="M3 9h18" /></symbol>
+<symbol id="i-trophy" viewBox="0 0 24 24"><svg class="lucide lucide-trophy" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M10 14.66V17a1 1 0 0 1-1 1 2 2 0 0 0-2 2v2" /> <path d="M14 14.66V17a1 1 0 0 0 1 1 2 2 0 0 1 2 2v2" /> <path d="M17.916 10H19.5A2.5 2.5 0 0 0 22 7.5V5a1 1 0 0 0-1-1h-3" /> <path d="M4 22h16" /> <path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z" /> <path d="M6.084 10H4.5A2.5 2.5 0 0 1 2 7.5V5a1 1 0 0 1 1-1h3" /></symbol>
+<symbol id="i-zap" viewBox="0 0 24 24"><svg class="lucide lucide-zap" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z" /></symbol>
+<symbol id="i-palette" viewBox="0 0 24 24"><svg class="lucide lucide-palette" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z" /> <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" /> <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" /> <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" /> <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" /></symbol>
+<symbol id="i-route" viewBox="0 0 24 24"><svg class="lucide lucide-route" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="6" cy="19" r="3" /> <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15" /> <circle cx="18" cy="5" r="3" /></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><svg class="lucide lucide-search" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m21 21-4.34-4.34" /> <circle cx="11" cy="11" r="8" /></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><svg class="lucide lucide-menu" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M4 5h16" /> <path d="M4 12h16" /> <path d="M4 19h16" /></symbol>
+<symbol id="i-line" viewBox="0 0 24 24"><svg class="lucide lucide-chart-line" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M3 3v16a2 2 0 0 0 2 2h16" /> <path d="m19 9-5 5-4-4-3 3" /></symbol>
+<symbol id="i-package" viewBox="0 0 24 24"><svg class="lucide lucide-package" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z" /> <path d="M12 22V12" /> <polyline points="3.29 7 12 12 20.71 7" /> <path d="m7.5 4.27 9 5.15" /></symbol>
+<symbol id="i-warn" viewBox="0 0 24 24"><svg class="lucide lucide-triangle-alert" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /> <path d="M12 9v4" /> <path d="M12 17h.01" /></symbol>
+<symbol id="i-cl" viewBox="0 0 24 24"><svg class="lucide lucide-chevron-left" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m15 18-6-6 6-6" /></symbol>
+<symbol id="i-pdf" viewBox="0 0 24 24"><svg class="lucide lucide-file-down" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /> <path d="M14 2v5a1 1 0 0 0 1 1h5" /> <path d="M12 18v-6" /> <path d="m9 15 3 3 3-3" /></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><svg class="lucide lucide-info" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="12" cy="12" r="10" /> <path d="M12 16v-4" /> <path d="M12 8h.01" /></symbol>
+</svg>
+
+<aside class="side" id="side">
+  <div class="side-hd">
+    <span class="lg-mark">IN</span>
+    <span class="lg-txt"><b>INDIO</b><span>INVENTORY MANAGEMENT</span></span>
   </div>
-  <button class="rbtn" onclick="openMarketModal()" style="margin-right:6px;background:#065f46">📊 市場分析</button>
-  <button class="rbtn" onclick="openApiModal()" style="margin-right:6px">⚙ API設定</button>
-  <button class="rbtn" onclick="loadAll()">
-    <div class="spin" id="spin"></div>
-    <span id="btntxt">🔄 更新</span>
-  </button>
+  <nav class="side-nav">
+    <button class="nav-item active" onclick="showPage('stock')"><svg class="ic" aria-hidden="true"><use href="#i-stock"></use></svg><span>在庫現状</span></button>
+    <button class="nav-item" onclick="showPage('unlisted')"><svg class="ic" aria-hidden="true"><use href="#i-unlisted"></use></svg><span>未掲載管理</span><span class="nav-badge" id="navUl" style="display:none"></span></button>
+    <button class="nav-item" onclick="showPage('longstock')"><svg class="ic" aria-hidden="true"><use href="#i-clock"></use></svg><span>長期在庫</span></button>
+    <button class="nav-item" onclick="showPage('action')"><svg class="ic" aria-hidden="true"><use href="#i-action"></use></svg><span>在庫対策</span></button>
+    <button class="nav-item" onclick="showPage('balance')"><svg class="ic" aria-hidden="true"><use href="#i-balance"></use></svg><span>車種バランス</span></button>
+    <button class="nav-item" onclick="showPage('sold')"><svg class="ic" aria-hidden="true"><use href="#i-sold"></use></svg><span>売約分析</span></button>
+  </nav>
+  <div class="side-ft">
+    <button class="nav-item" onclick="openMarketModal()"><svg class="ic" aria-hidden="true"><use href="#i-line"></use></svg><span>市場分析</span></button>
+    <button class="nav-item" onclick="openApiModal()"><svg class="ic" aria-hidden="true"><use href="#i-settings"></use></svg><span>API設定</span></button>
+  </div>
+</aside>
+<div class="side-scrim" onclick="toggleSide(false)"></div>
+
+<div class="shell">
+<div class="hdr">
+  <button class="icon-btn" onclick="toggleSide()" aria-label="メニュー"><svg class="ic" aria-hidden="true"><use href="#i-menu"></use></svg></button>
+  <div>
+    <div class="pg-title" id="pgTitle">在庫現状</div>
+    <div class="pg-sub" id="pgSub">車種 × 年式 / 走行 / 価格帯のマトリクス</div>
+  </div>
+  <div class="hdr-r">
+    <div class="upd" id="upd">—</div>
+    <button class="rbtn" onclick="loadAll()">
+      <div class="spin" id="spin"></div>
+      <svg class="ic ic-s" aria-hidden="true"><use href="#i-refresh"></use></svg><span id="btntxt">更新</span>
+    </button>
+  </div>
 </div>
 
 <div class="main">
@@ -185,7 +349,7 @@ tbody tr:hover td{background:var(--accent-bg)!important;}
 
   <div class="sec">
     <div class="sec-hdr">
-      <span class="sec-title">車種 × マトリックス</span>
+      <span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-package"></use></svg>車種 × マトリックス</span>
       <div class="ctrls">
         <select class="sel" id="catSel" onchange="renderMatrix()"><option value="">全カテゴリ</option><option>ミニバン</option><option>SUV</option><option>HVCP</option><option>軽</option></select>
         <select class="sel" id="matrixType" onchange="renderMatrix()">
@@ -212,7 +376,7 @@ tbody tr:hover td{background:var(--accent-bg)!important;}
   </div>
 
   <div class="sec">
-    <div class="sec-hdr"><span class="sec-title">💰 ジャンル別 想定利益 / 在庫原価累計</span></div>
+    <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-wallet"></use></svg>ジャンル別 想定利益 / 在庫原価累計</span></div>
     <div class="sec-body">
       <div class="four-col" id="profitCards"></div>
     </div>
@@ -233,31 +397,31 @@ tbody tr:hover td{background:var(--accent-bg)!important;}
   </div>
   <div class="two-col">
     <div class="sec">
-      <div class="sec-hdr"><span class="sec-title">🚚 未入庫</span><span class="pill pill-b" id="cnt-p1">—台</span></div>
+      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-truck"></use></svg>未入庫</span><span class="pill pill-b" id="cnt-p1">—台</span></div>
       <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p1" style="max-width:500px"></div></div>
     </div>
     <div class="sec">
-      <div class="sec-hdr"><span class="sec-title">✅ 掲載待ち</span><span class="pill pill-g" id="cnt-p2">—台</span></div>
+      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-check"></use></svg>掲載待ち</span><span class="pill pill-g" id="cnt-p2">—台</span></div>
       <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p2" style="max-width:500px"></div></div>
     </div>
   </div>
   <div class="two-col">
     <div class="sec">
-      <div class="sec-hdr"><span class="sec-title">🧹 未仕上</span><span class="pill pill-y" id="cnt-p3">—台</span></div>
+      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-sparkles"></use></svg>未仕上</span><span class="pill pill-y" id="cnt-p3">—台</span></div>
       <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p3" style="max-width:500px"></div></div>
     </div>
     <div class="sec">
-      <div class="sec-hdr"><span class="sec-title">🔧 BP入庫中</span><span class="pill pill-r" id="cnt-p4">—台</span></div>
+      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-wrench"></use></svg>BP入庫中</span><span class="pill pill-r" id="cnt-p4">—台</span></div>
       <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p4" style="max-width:500px"></div></div>
     </div>
   </div>
   <div class="two-col">
     <div class="sec">
-      <div class="sec-hdr"><span class="sec-title">🙅 BP待ち</span><span class="pill pill-r" id="cnt-p5">—台</span></div>
+      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-slash"></use></svg>BP待ち</span><span class="pill pill-r" id="cnt-p5">—台</span></div>
       <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p5" style="max-width:500px"></div></div>
     </div>
     <div class="sec">
-      <div class="sec-hdr"><span class="sec-title">📃 その他</span><span class="pill pill-b" id="cnt-p6">—台</span></div>
+      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-file"></use></svg>その他</span><span class="pill pill-b" id="cnt-p6">—台</span></div>
       <div class="sec-body" style="max-height:280px;overflow-y:auto;"><div class="cards-grid" id="phase-p6" style="max-width:500px"></div></div>
     </div>
   </div>
@@ -275,7 +439,7 @@ tbody tr:hover td{background:var(--accent-bg)!important;}
   <!-- マトリクス表 -->
   <div class="sec">
     <div class="sec-hdr">
-      <span class="sec-title">📊 在庫日数 マトリクス</span>
+      <span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-chart"></use></svg>在庫日数 マトリクス</span>
     </div>
     <div class="sec-body" style="display:flex;gap:12px;flex-wrap:wrap">
       <div style="flex:1;min-width:380px">
@@ -291,7 +455,7 @@ tbody tr:hover td{background:var(--accent-bg)!important;}
 
   <div class="sec">
     <div class="sec-hdr">
-      <span class="sec-title">🕐 長期在庫一覧 <span id="longCount" style="font-size:13px;color:var(--text2);font-weight:600;margin-left:8px"></span></span>
+      <span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-clock"></use></svg>長期在庫一覧 <span id="longCount" style="font-size:13px;color:var(--text2);font-weight:600;margin-left:8px"></span></span>
       <div class="ctrls">
         <select class="sel" id="longThresh" onchange="renderLong()">
           <option value="60">60日以上</option><option value="100" selected>100日以上</option>
@@ -318,15 +482,25 @@ tbody tr:hover td{background:var(--accent-bg)!important;}
   </div>
   <div class="two-col">
     <div class="sec">
-      <div class="sec-hdr"><span class="sec-title">🛒 仕入れ優先リスト</span><span style="font-size:10px;color:var(--text3)">不足台数 × 売約実績で自動計算</span></div>
+      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-cart"></use></svg>仕入れ優先リスト</span><span style="font-size:10px;color:var(--text3)">不足台数 × 売約実績で自動計算</span></div>
       <div class="sec-body" style="max-height:360px;overflow-y:auto;"><div class="cards-grid" id="buyListL"></div></div>
     </div>
     <div class="sec">
-      <div class="sec-hdr"><span class="sec-title">📉 過剰在庫 是正リスト</span><span style="font-size:10px;color:var(--text3)">価格見直し・販促推奨</span></div>
+      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-down"></use></svg>過剰在庫 是正リスト</span><span style="font-size:10px;color:var(--text3)">価格見直し・販促推奨</span></div>
       <div class="sec-body" style="max-height:360px;overflow-y:auto;"><div class="cards-grid" id="excessListL"></div></div>
     </div>
   </div>
-  
+  <div class="two-col">
+    <div class="sec">
+      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-clock"></use></svg>長期在庫 アクションリスト</span><span style="font-size:10px;color:var(--text3)">100日超・滞留日数が長い順（上位30）</span></div>
+      <div class="sec-body" style="max-height:360px;overflow-y:auto;"><div class="cards-grid" id="longActionL"></div></div>
+    </div>
+    <div class="sec">
+      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-check"></use></svg>掲載推奨リスト</span><span style="font-size:10px;color:var(--text3)">未掲載のうち今すぐ掲載できる車両</span></div>
+      <div class="sec-body" style="max-height:360px;overflow-y:auto;"><div class="cards-grid" id="readyListL"></div></div>
+    </div>
+  </div>
+
 </div>
 
 <!-- PAGE 5: 車種バランス -->
@@ -419,26 +593,27 @@ tbody tr:hover td{background:var(--accent-bg)!important;}
     <div class="kpi"><div class="kpi-lbl">直近12ヶ月</div><div class="kpi-val" id="kpi-recent" style="color:var(--accent)">—</div><div class="kpi-sub">台 売約</div></div>
   </div>
   <div class="sec" style="margin-bottom:10px;">
-    <div class="sec-hdr"><span class="sec-title">📅 月別売約台数（直近18ヶ月）</span></div>
+    <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-calendar"></use></svg>月別売約台数（直近18ヶ月）</span></div>
     <div class="sec-body"><div class="mbars" id="monthlyBars"></div></div>
   </div>
   <div class="two-col" style="margin-bottom:10px;">
     <div class="sec">
-      <div class="sec-hdr"><span class="sec-title">🏆 車種別 売約数ランキング（上位20）</span></div>
+      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-trophy"></use></svg>車種別 売約数ランキング（上位20）</span></div>
       <div class="sec-body"><div class="barchart" id="soldRank"></div></div>
     </div>
     <div class="sec">
-      <div class="sec-hdr"><span class="sec-title">⚡ 回転率ランキング（平均掲載日数が短い順）</span></div>
+      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-zap"></use></svg>回転率ランキング（平均掲載日数が短い順）</span></div>
       <div class="sec-body"><div class="barchart" id="rotationRank"></div></div>
     </div>
   </div>
   <div class="three-col">
-    <div class="sec"><div class="sec-hdr"><span class="sec-title">🎨 色別 売約数</span></div><div class="sec-body"><div class="barchart" id="soldColor"></div></div></div>
-    <div class="sec"><div class="sec-hdr"><span class="sec-title">📅 年式別 売約数</span></div><div class="sec-body"><div class="barchart" id="soldYear"></div></div></div>
-    <div class="sec"><div class="sec-hdr"><span class="sec-title">🛣 走行距離帯 売約数</span></div><div class="sec-body"><div class="barchart" id="soldKm"></div></div></div>
+    <div class="sec"><div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-palette"></use></svg>色別 売約数</span></div><div class="sec-body"><div class="barchart" id="soldColor"></div></div></div>
+    <div class="sec"><div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-calendar"></use></svg>年式別 売約数</span></div><div class="sec-body"><div class="barchart" id="soldYear"></div></div></div>
+    <div class="sec"><div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-route"></use></svg>走行距離帯 売約数</span></div><div class="sec-body"><div class="barchart" id="soldKm"></div></div></div>
   </div>
 </div>
 
+</div>
 </div>
 
 <div class="ov" id="ov" onclick="closeModal()"></div>
@@ -500,6 +675,7 @@ function updateSummary(){
     if(fwdEl)fwdEl.textContent='4WD: '+items.filter(d=>d.fwd==='〇').length;
   });
   document.getElementById('su').textContent=UNLISTED.length;
+  const nb=document.getElementById('navUl');if(nb){nb.textContent=UNLISTED.length;nb.style.display=UNLISTED.length?'':'none';}
   const byG={};UNLISTED.forEach(d=>{byG[d.cat]=(byG[d.cat]||0)+1;});
   document.getElementById('su2').textContent=Object.entries(byG).map(([k,v])=>`${k}:${v}`).join(' ');
 }
@@ -996,7 +1172,7 @@ async function loadAll(){
     document.getElementById('upd').textContent='更新: '+new Date().toLocaleString('ja-JP',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
   }catch(e){
     document.getElementById('MT').innerHTML=`<tr><td colspan="30"><div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:14px;color:#dc2626;margin:10px"><b>⚠ エラー: </b>${e.message}</div></td></tr>`;
-  }finally{btn.textContent='🔄 更新';sp.style.display='none';}
+  }finally{btn.textContent='更新';sp.style.display='none';}
 }
 
 // ─── 車種バランス（ツリーマップ）───
@@ -1292,11 +1468,28 @@ function balBarChart2(id,items){
   el.innerHTML=items.map(({l,v,color})=>`<div class="brow"><div class="blbl" title="${l}">${l}</div><div class="btrack"><div class="bfill" style="width:${Math.round(v/max*100)}%;background:${color||'#2979d4'}">${v}</div></div></div>`).join('');
 }
 
+const PAGE_META={
+  stock:['在庫現状','車種 × 年式 / 走行 / 価格帯のマトリクス'],
+  unlisted:['未掲載管理','未入庫・掲載待ち・仕上待ちのフェーズ別一覧'],
+  longstock:['長期在庫','在庫日数マトリクスと長期滞留車の一覧'],
+  action:['在庫対策','仕入れ優先リストと過剰在庫の是正リスト'],
+  balance:['車種バランス','適正台数に対する過不足の可視化'],
+  sold:['売約分析','売約実績の推移とランキング']
+};
+function toggleSide(force){
+  const open=(force===undefined)?!document.body.classList.contains('side-open'):force;
+  document.body.classList.toggle('side-open',open);
+}
 function showPage(n){
-  document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelector(`[onclick="showPage('${n}')"]`).classList.add('active');
+  const btn=document.querySelector(`.nav-item[onclick="showPage('${n}')"]`);
+  if(btn)btn.classList.add('active');
   document.getElementById(`page-${n}`).classList.add('active');
+  const m=PAGE_META[n];
+  if(m){document.getElementById('pgTitle').textContent=m[0];document.getElementById('pgSub').textContent=m[1];}
+  toggleSide(false);
+  window.scrollTo({top:0,behavior:'smooth'});
   if(n==='balance')renderBalance();
 }
 
@@ -1335,7 +1528,7 @@ function closeAiModal(){
 async function runAiDiagnosis(vehicleData){
   const apiKey=localStorage.getItem('anthropic_api_key');
   if(!apiKey){
-    alert('APIキーが設定されていません。\n右上の「⚙ API設定」からキーを入力してください。');
+    alert('APIキーが設定されていません。\n左メニューの「API設定」からキーを入力してください。');
     openApiModal();
     return;
   }
@@ -1653,7 +1846,7 @@ function exportAiPdf(nameEnc, year, km, price){
 // ═══ エリア市場分析 ═══
 function openMarketModal(){
   const apiKey=localStorage.getItem('anthropic_api_key');
-  if(!apiKey){alert('APIキーが設定されていません。\n右上の「⚙ API設定」からキーを入力してください。');openApiModal();return;}
+  if(!apiKey){alert('APIキーが設定されていません。\n左メニューの「API設定」からキーを入力してください。');openApiModal();return;}
   document.getElementById('modal-market').style.display='block';
   document.getElementById('ov-market').style.display='block';
 }
