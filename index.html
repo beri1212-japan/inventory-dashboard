@@ -26,20 +26,20 @@
   --teal:#0666ee;--teal-bg:#e9f0fe;
   --purple:#955be3;--purple-bg:#f3ebfd;
   --font:Inter,system-ui,sans-serif;--mono:'DM Mono',ui-monospace,monospace;
-  --side:236px;--r:12px;--rs:8px;
+  --side:250px;--r:12px;--rs:8px;
   --sh:0 1px 3px rgba(0,0,0,.1),0 1px 2px -1px rgba(0,0,0,.1);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;min-height:100vh;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14.9px;min-height:100vh;}
 .hdr{background:var(--bg2);border-bottom:1.5px solid var(--border);padding:0 14px;height:44px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 1px 4px rgba(0,0,0,.06);}
 .hdr-l{display:flex;align-items:center;gap:16px;}
-.logo{font-size:15px;font-weight:700;color:var(--accent);}
+.logo{font-size:17.2px;font-weight:700;color:var(--accent);}
 .pages{display:flex;gap:2px;background:var(--bg4);border-radius:7px;padding:3px;}
-.ptab{padding:5px 13px;border-radius:5px;cursor:pointer;font-size:12px;color:var(--text2);border:none;background:none;font-family:var(--font);transition:all .15s;white-space:nowrap;font-weight:500;}
+.ptab{padding:5px 13px;border-radius:5px;cursor:pointer;font-size:13.8px;color:var(--text2);border:none;background:none;font-family:var(--font);transition:all .15s;white-space:nowrap;font-weight:500;}
 .ptab.active{background:var(--bg2);color:var(--accent);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.1);}
 .ptab:hover:not(.active){background:rgba(255,255,255,.6);color:var(--text);}
-.upd{font-size:10px;color:var(--text3);font-family:var(--mono);}
-.rbtn{background:var(--accent);border:none;color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-family:var(--font);display:flex;align-items:center;gap:5px;font-weight:500;}
+.upd{font-size:11.5px;color:var(--text3);font-family:var(--mono);}
+.rbtn{background:var(--accent);border:none;color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12.6px;font-family:var(--font);display:flex;align-items:center;gap:5px;font-weight:500;}
 .rbtn:hover{opacity:.88;}
 .spin{display:none;width:12px;height:12px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
@@ -48,33 +48,33 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13
 .summary{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px;}
 .card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;cursor:pointer;transition:box-shadow .15s,border-color .15s;}
 .card:hover{box-shadow:0 2px 8px rgba(41,121,212,.15);border-color:var(--accent);}
-.card-lbl{font-size:10px;color:var(--text3);margin-bottom:4px;letter-spacing:.04em;font-weight:500;}
-.card-val{font-size:24px;font-weight:700;font-family:var(--mono);line-height:1;color:var(--accent);}
-.card-sub{font-size:10px;color:var(--text3);margin-top:4px;line-height:1.4;}
+.card-lbl{font-size:11.5px;color:var(--text3);margin-bottom:4px;letter-spacing:.04em;font-weight:500;}
+.card-val{font-size:27.6px;font-weight:700;font-family:var(--mono);line-height:1;color:var(--accent);}
+.card-sub{font-size:11.5px;color:var(--text3);margin-top:4px;line-height:1.4;}
 .card-ul .card-val{color:var(--red);}
 .sec{background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:7px;overflow:hidden;}
 .sec-hdr{padding:9px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;background:var(--bg3);}
-.sec-title{font-size:12px;font-weight:700;color:var(--text);}
+.sec-title{font-size:13.8px;font-weight:700;color:var(--text);}
 .sec-body{padding:7px 10px;}
 .ctrls{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
-.sel{background:var(--bg2);border:1px solid var(--border2);color:var(--text);padding:4px 8px;border-radius:5px;font-size:11px;font-family:var(--font);cursor:pointer;}
+.sel{background:var(--bg2);border:1px solid var(--border2);color:var(--text);padding:4px 8px;border-radius:5px;font-size:12.6px;font-family:var(--font);cursor:pointer;}
 .sel:focus{outline:none;border-color:var(--accent);}
-.chklbl{font-size:11px;color:var(--text2);display:flex;align-items:center;gap:4px;cursor:pointer;}
+.chklbl{font-size:12.6px;color:var(--text2);display:flex;align-items:center;gap:4px;cursor:pointer;}
 .chklbl input{accent-color:var(--accent);}
 .legend{display:flex;gap:10px;flex-wrap:wrap;}
-.leg{display:flex;align-items:center;gap:3px;font-size:10px;color:var(--text3);}
+.leg{display:flex;align-items:center;gap:3px;font-size:11.5px;color:var(--text3);}
 .ld{width:10px;height:10px;border-radius:2px;}
 .tbl-wrap{overflow:auto;max-height:calc(100vh - 320px);border-radius:6px;border:1px solid var(--border);max-width:800px;}
 table{border-collapse:collapse;white-space:nowrap;min-width:100%;}
-thead th{position:sticky;top:0;z-index:10;background:#e8eef5;font-size:9px;font-weight:600;padding:3px 1px;border-bottom:1.5px solid var(--border2);border-right:1px solid var(--border2);color:var(--text2);text-align:center;font-family:var(--mono);width:28px;min-width:28px;max-width:28px;}
+thead th{position:sticky;top:0;z-index:10;background:#e8eef5;font-size:10.3px;font-weight:600;padding:3px 1px;border-bottom:1.5px solid var(--border2);border-right:1px solid var(--border2);color:var(--text2);text-align:center;font-family:var(--mono);width:28px;min-width:28px;max-width:28px;}
 thead th:first-child{position:sticky;left:0;z-index:20;text-align:left;min-width:110px;max-width:110px;width:110px;background:#dde5ef;}
 tbody td{padding:1px 1px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);text-align:center;vertical-align:middle;width:28px;min-width:28px;max-width:28px;}
-tbody td:first-child{position:sticky;left:0;background:var(--bg2);border-right:1.5px solid var(--border);z-index:5;text-align:left;padding:2px 6px;font-size:11px;font-weight:500;width:110px;min-width:110px;max-width:110px;}
+tbody td:first-child{position:sticky;left:0;background:var(--bg2);border-right:1.5px solid var(--border);z-index:5;text-align:left;padding:2px 6px;font-size:12.6px;font-weight:500;width:110px;min-width:110px;max-width:110px;}
 tbody tr:hover td{background:var(--accent-bg)!important;}
-.cat-row td{background:#dde8f5!important;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:.08em;padding:4px 10px;border-bottom:1.5px solid var(--border2)!important;}
-.cell{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;min-width:24px;padding:2px 4px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:700;font-family:var(--mono);line-height:1.2;transition:opacity .1s;}
+.cat-row td{background:#dde8f5!important;font-size:11.5px;font-weight:700;color:var(--accent);letter-spacing:.08em;padding:4px 10px;border-bottom:1.5px solid var(--border2)!important;}
+.cell{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;min-width:24px;padding:2px 4px;border-radius:4px;cursor:pointer;font-size:13.8px;font-weight:700;font-family:var(--mono);line-height:1.2;transition:opacity .1s;}
 .cell:hover{opacity:.75;}
-.cell .u{font-size:8px;font-weight:400;opacity:.8;}
+.cell .u{font-size:9.2px;font-weight:400;opacity:.8;}
 .n0{color:var(--text3);}
 .n1{background:#dbeafe;color:#1d4ed8;}
 .n2{background:#bfdbfe;color:#1d4ed8;}
@@ -82,18 +82,18 @@ tbody tr:hover td{background:var(--accent-bg)!important;}
 .n4{background:#2563eb;color:#fff;}
 .n5{background:#1d4ed8;color:#fff;}
 .nu{background:#fef3c7;color:#92400e;}
-.ab{display:inline-block;font-size:10px;padding:0 4px;border-radius:5px;margin-left:3px;font-family:var(--mono);font-weight:600;}
+.ab{display:inline-block;font-size:11.5px;padding:0 4px;border-radius:5px;margin-left:3px;font-family:var(--mono);font-weight:600;}
 .abr{background:var(--red-bg);color:var(--red);}
 .aby{background:var(--amber-bg);color:var(--amber);}
 .abg{background:var(--green-bg);color:var(--green);}
-.tcol{font-weight:700;font-family:var(--mono);font-size:11px;color:var(--accent);}
-.dcol{color:var(--text3);font-family:var(--mono);font-size:11px;}
+.tcol{font-weight:700;font-family:var(--mono);font-size:12.6px;color:var(--accent);}
+.dcol{color:var(--text3);font-family:var(--mono);font-size:12.6px;}
 .cards-grid{display:flex;flex-direction:column;gap:5px;}
 .aitem{display:flex;justify-content:space-between;align-items:center;background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:8px 12px;transition:border-color .15s;}
 .aitem:hover{border-color:var(--accent);background:var(--accent-bg);}
-.aname{font-size:12px;font-weight:600;color:var(--text);}
-.adet{font-size:10px;color:var(--text);margin-top:2px;font-family:var(--mono);}
-.pill{font-size:11px;font-weight:700;padding:2px 9px;border-radius:14px;font-family:var(--mono);white-space:nowrap;}
+.aname{font-size:13.8px;font-weight:600;color:var(--text);}
+.adet{font-size:11.5px;color:var(--text);margin-top:2px;font-family:var(--mono);}
+.pill{font-size:12.6px;font-weight:700;padding:2px 9px;border-radius:14px;font-family:var(--mono);white-space:nowrap;}
 .pill-r{background:var(--red-bg);color:var(--red);}
 .pill-y{background:var(--amber-bg);color:var(--amber);}
 .pill-g{background:var(--green-bg);color:var(--green);}
@@ -105,21 +105,21 @@ tbody tr:hover td{background:var(--accent-bg)!important;}
 .four-col{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;}
 .five-col{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px;}
 .kpi{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;}
-.kpi-lbl{font-size:10px;color:var(--text3);margin-bottom:4px;letter-spacing:.04em;font-weight:500;}
-.kpi-val{font-size:22px;font-weight:700;font-family:var(--mono);}
-.kpi-sub{font-size:10px;color:var(--text3);margin-top:3px;}
+.kpi-lbl{font-size:11.5px;color:var(--text3);margin-bottom:4px;letter-spacing:.04em;font-weight:500;}
+.kpi-val{font-size:25.3px;font-weight:700;font-family:var(--mono);}
+.kpi-sub{font-size:11.5px;color:var(--text3);margin-top:3px;}
 .barchart{display:flex;flex-direction:column;gap:4px;}
 .brow{display:flex;align-items:center;gap:6px;}
-.blbl{font-size:10px;color:var(--text2);width:110px;text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.blbl{font-size:11.5px;color:var(--text2);width:110px;text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .btrack{flex:1;height:16px;background:var(--bg4);border-radius:3px;overflow:hidden;border:1px solid var(--border);}
-.bfill{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:5px;font-size:9px;font-family:var(--mono);font-weight:600;color:#fff;min-width:20px;}
+.bfill{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:5px;font-size:10.3px;font-family:var(--mono);font-weight:600;color:#fff;min-width:20px;}
 .mbars{display:flex;align-items:flex-end;gap:3px;height:110px;}
 .mbar-wrap{display:flex;flex-direction:column;align-items:center;flex:1;gap:2px;}
 .mbar{width:100%;border-radius:3px 3px 0 0;min-height:2px;cursor:pointer;}
 .mbar:hover{opacity:.75;}
-.mbar-lbl{font-size:8px;color:var(--text3);font-family:var(--mono);}
-.mbar-val{font-size:8px;color:var(--text2);font-family:var(--mono);}
-.pri{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;margin-right:4px;}
+.mbar-lbl{font-size:9.2px;color:var(--text3);font-family:var(--mono);}
+.mbar-val{font-size:9.2px;color:var(--text2);font-family:var(--mono);}
+.pri{display:inline-flex;align-items:center;font-size:11.5px;font-weight:700;padding:1px 6px;border-radius:4px;margin-right:4px;}
 .pri-s{background:var(--red-bg);color:var(--red);}
 .pri-a{background:var(--amber-bg);color:var(--amber);}
 .pri-b{background:var(--accent-bg);color:var(--accent);}
@@ -127,9 +127,9 @@ tbody tr:hover td{background:var(--accent-bg)!important;}
 .score-fill{height:100%;border-radius:2px;}
 .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:90;backdrop-filter:blur(3px);}
 .modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:20px;min-width:340px;max-width:520px;max-height:75vh;overflow-y:auto;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,.15);}
-.modal h3{font-size:14px;font-weight:700;margin-bottom:12px;color:var(--text);}
-.modal-x{float:right;cursor:pointer;color:var(--text3);font-size:20px;line-height:1;}
-.drow{display:flex;justify-content:space-between;font-size:11px;padding:5px 0;border-bottom:1px solid var(--border);}
+.modal h3{font-size:16.1px;font-weight:700;margin-bottom:12px;color:var(--text);}
+.modal-x{float:right;cursor:pointer;color:var(--text3);font-size:23px;line-height:1;}
+.drow{display:flex;justify-content:space-between;font-size:12.6px;padding:5px 0;border-bottom:1px solid var(--border);}
 .drow:last-child{border:none;}
 .dlbl{color:var(--text2);}
 .dwarn{color:var(--red);font-weight:600;}
@@ -137,34 +137,35 @@ tbody tr:hover td{background:var(--accent-bg)!important;}
 
 /* ═══ Symphony-style refresh ═══ */
 html{-webkit-text-size-adjust:100%;}
-body{font-family:var(--font);font-size:13px;letter-spacing:.01em;-webkit-font-smoothing:antialiased;}
-.ic{width:18px;height:18px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
-.ic-s{width:15px;height:15px;}
+body{font-family:var(--font);font-size:14.9px;letter-spacing:.01em;-webkit-font-smoothing:antialiased;}
+.ic{width:19px;height:19px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.ic-s{width:16px;height:16px;}
 
 /* --- sidebar --- */
 .side{position:fixed;top:0;left:0;bottom:0;width:var(--side);background:#fcfcfc;border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:80;transition:transform .25s ease;}
-.side-hd{height:56px;display:flex;align-items:center;gap:9px;padding:0 16px;flex-shrink:0;}
-.lg-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#0559d2,#0f8ae8);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;letter-spacing:.02em;flex-shrink:0;}
+.side-hd{height:60px;display:flex;align-items:center;gap:9px;padding:0 16px;flex-shrink:0;}
+.lg-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#0559d2,#0f8ae8);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14.9px;letter-spacing:.02em;flex-shrink:0;}
 .lg-txt{display:flex;flex-direction:column;line-height:1.15;overflow:hidden;}
-.lg-txt b{font-size:14px;font-weight:700;color:var(--text);letter-spacing:.01em;}
-.lg-txt span{font-size:9.5px;color:var(--text3);font-weight:500;letter-spacing:.04em;white-space:nowrap;}
+.lg-txt b{font-size:16.1px;font-weight:700;color:var(--text);letter-spacing:.01em;}
+.lg-txt span{font-size:10.9px;color:var(--text3);font-weight:500;letter-spacing:.04em;white-space:nowrap;}
 .side-nav{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:2px;}
 .side-ft{padding:12px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:2px;flex-shrink:0;}
-.nav-item{display:flex;align-items:center;gap:12px;width:100%;height:40px;padding:8px 12px;border:none;background:none;border-radius:8px;cursor:pointer;font-family:var(--font);font-size:13.5px;font-weight:500;color:var(--text2);text-align:left;transition:background .15s,color .15s;}
+.nav-item{display:flex;align-items:center;gap:12px;width:100%;height:44px;padding:8px 12px;border:none;background:none;border-radius:8px;cursor:pointer;font-family:var(--font);font-size:15.5px;font-weight:500;color:var(--text2);text-align:left;transition:background .15s,color .15s;}
 .nav-item:hover{background:var(--bg4);color:var(--text);}
 .nav-item.active{background:rgba(5,89,210,.10);color:var(--accent);}
 .nav-item.active .ic{color:var(--accent);}
-.nav-badge{margin-left:auto;font-size:10px;font-weight:700;font-family:var(--mono);background:var(--red-bg);color:var(--red);border-radius:9px;padding:1px 7px;}
+.nav-badge{margin-left:auto;font-size:11.5px;font-weight:700;font-family:var(--mono);background:var(--red-bg);color:var(--red);border-radius:9px;padding:1px 7px;}
 .nav-item.active .nav-badge{background:#fff;}
 
 /* --- shell / topbar --- */
 .shell{margin-left:var(--side);min-height:100vh;display:flex;flex-direction:column;}
-.hdr{background:rgba(255,255,255,.72);backdrop-filter:saturate(180%) blur(10px);-webkit-backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--border);box-shadow:none;height:56px;padding:0 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:60;}
-.pg-title{font-size:16px;font-weight:700;color:var(--text);letter-spacing:.01em;line-height:1.2;margin:0;}
-.pg-sub{font-size:11.5px;color:var(--text3);font-weight:400;}
+/* ヘッダ */
+.hdr{background:rgba(255,255,255,.72);backdrop-filter:saturate(180%) blur(10px);-webkit-backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--border);box-shadow:none;height:60px;padding:0 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:60;}
+.pg-title{font-size:18.4px;font-weight:700;color:var(--text);letter-spacing:.01em;line-height:1.2;margin:0;}
+.pg-sub{font-size:13.2px;color:var(--text3);font-weight:400;}
 .hdr-r{margin-left:auto;display:flex;align-items:center;gap:12px;}
-.upd{font-size:11px;color:var(--text3);font-family:var(--mono);white-space:nowrap;}
-.rbtn{background:var(--accent);border:none;color:#fff;padding:0 14px;height:34px;border-radius:8px;cursor:pointer;font-size:12.5px;font-family:var(--font);font-weight:500;display:inline-flex;align-items:center;gap:7px;box-shadow:var(--sh);transition:filter .15s;}
+.upd{font-size:12.6px;color:var(--text3);font-family:var(--mono);white-space:nowrap;}
+.rbtn{background:var(--accent);border:none;color:#fff;padding:0 14px;height:34px;border-radius:8px;cursor:pointer;font-size:14.4px;font-family:var(--font);font-weight:500;display:inline-flex;align-items:center;gap:7px;box-shadow:var(--sh);transition:filter .15s;}
 .rbtn:hover{filter:brightness(1.08);opacity:1;}
 .rbtn.ghost{background:var(--bg2);color:var(--text2);border:1px solid var(--border);box-shadow:none;}
 .rbtn.ghost:hover{background:var(--bg4);color:var(--text);}
@@ -177,34 +178,34 @@ body{font-family:var(--font);font-size:13px;letter-spacing:.01em;-webkit-font-sm
 .summary{gap:12px;margin-bottom:16px;}
 .card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:14px 16px;box-shadow:var(--sh);transition:box-shadow .18s,border-color .18s,transform .18s;}
 .card:hover{box-shadow:0 4px 14px rgba(5,89,210,.13);border-color:#c2d6f4;transform:translateY(-1px);}
-.card-lbl{font-size:11px;color:var(--text3);font-weight:500;letter-spacing:.02em;margin-bottom:6px;}
-.card-val{font-size:26px;color:var(--text);letter-spacing:-.01em;}
+.card-lbl{font-size:12.6px;color:var(--text3);font-weight:500;letter-spacing:.02em;margin-bottom:6px;}
+.card-val{font-size:29.9px;color:var(--text);letter-spacing:-.01em;}
 .card-ul .card-val{color:var(--red);}
-.card-sub{font-size:10.5px;}
+.card-sub{font-size:12.1px;}
 .sec{background:var(--bg2);border:1px solid var(--border);border-radius:14px;margin-bottom:12px;box-shadow:var(--sh);}
 .sec-hdr{padding:13px 16px;background:transparent;border-bottom:1px solid var(--border);}
-.sec-title{font-size:13.5px;font-weight:700;color:var(--text);display:inline-flex;align-items:center;gap:8px;letter-spacing:.01em;}
+.sec-title{font-size:15.5px;font-weight:700;color:var(--text);display:inline-flex;align-items:center;gap:8px;letter-spacing:.01em;}
 .sec-title .ic{color:var(--accent);}
 .sec-body{padding:12px 14px;}
 .kpi{border-radius:14px;padding:14px 16px;box-shadow:var(--sh);}
-.kpi-lbl{font-size:11px;color:var(--text3);}
-.kpi-val{font-size:23px;letter-spacing:-.01em;}
+.kpi-lbl{font-size:12.6px;color:var(--text3);}
+.kpi-val{font-size:26.4px;letter-spacing:-.01em;}
 .two-col,.three-col{gap:12px;}
 .four-col,.five-col{gap:12px;margin-bottom:12px;}
 
 /* --- controls --- */
-.sel{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:8px;font-size:12px;height:32px;transition:border-color .15s,box-shadow .15s;}
+.sel{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:8px;font-size:13.8px;height:32px;transition:border-color .15s,box-shadow .15s;}
 .sel:hover{border-color:var(--border2);}
 .sel:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(5,89,210,.13);}
-.chklbl{font-size:12px;}
+.chklbl{font-size:13.8px;}
 .ctrls{gap:8px;}
 
 /* --- tables --- */
 .tbl-wrap{border-radius:10px;border:1px solid var(--border);}
-thead th{background:#f2f4f5;color:var(--text2);border-bottom:1px solid var(--border);border-right:1px solid var(--border);font-size:9.5px;}
+thead th{background:#f2f4f5;color:var(--text2);border-bottom:1px solid var(--border);border-right:1px solid var(--border);font-size:10.9px;}
 thead th:first-child{background:#eceff1;}
 tbody td{border-bottom:1px solid var(--border);border-right:1px solid var(--border);}
-tbody td:first-child{border-right:1px solid var(--border);font-size:11.5px;}
+tbody td:first-child{border-right:1px solid var(--border);font-size:13.2px;}
 tbody tr:hover td{background:#f4f8fe!important;}
 .cat-row td{background:#eaf1fd!important;color:var(--accent);border-bottom:1px solid var(--border)!important;}
 .n1{background:#e2ecfb;color:#0559d2;}
@@ -216,7 +217,7 @@ tbody tr:hover td{background:#f4f8fe!important;}
 .cell{border-radius:6px;}
 
 /* --- pills / items --- */
-.pill{border-radius:999px;padding:3px 10px;font-size:11px;}
+.pill{border-radius:999px;padding:3px 10px;font-size:12.6px;}
 .aitem{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:11px 14px;}
 .aitem:hover{border-color:#c2d6f4;background:#f7fafe;}
 .btrack{background:var(--bg4);border:1px solid var(--border);border-radius:6px;height:18px;}
@@ -224,14 +225,14 @@ tbody tr:hover td{background:#f4f8fe!important;}
 .mbars{display:flex;align-items:stretch;gap:6px;height:180px;}
 .mbar-wrap{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;flex:1;gap:3px;height:100%;}
 .mbar{width:100%;max-width:72px;min-height:4px;max-height:calc(100% - 32px);border-radius:6px 6px 0 0;}
-.mbar-lbl{font-size:10px;color:var(--text3);}
-.mbar-val{font-size:10.5px;font-weight:600;color:var(--text2);}
+.mbar-lbl{font-size:11.5px;color:var(--text3);}
+.mbar-val{font-size:12.1px;font-weight:600;color:var(--text2);}
 .modal{border:1px solid var(--border);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.16);padding:22px;}
 .ov{background:rgba(4,10,17,.4);}
 .errbox{background:var(--red-bg);border:1px solid #f5bcc2;border-radius:12px;color:var(--red);}
 
 /* --- 年式レンジ表示 --- */
-.yrlbl{font-size:9px;color:var(--text3);font-family:var(--mono);letter-spacing:-.02em;line-height:1.1;margin-top:1px;}
+.yrlbl{font-size:10.3px;color:var(--text3);font-family:var(--mono);letter-spacing:-.02em;line-height:1.1;margin-top:1px;}
 tbody td.oor{background:#eef0f2;}
 tbody tr:hover td.oor{background:#e7eaed!important;}
 .cell-gap{border:1px dashed #dde2e7;background:#fff;min-width:18px;min-height:14px;border-radius:4px;}
@@ -239,16 +240,16 @@ tbody tr:hover td.oor{background:#e7eaed!important;}
 /* --- 車種コンサル --- */
 .cs-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
 .ybar-row{display:grid;grid-template-columns:64px 1fr;align-items:center;gap:8px;padding:3px 0;}
-.ybar-lbl{font-size:11px;color:var(--text2);font-family:var(--mono);text-align:right;}
+.ybar-lbl{font-size:12.6px;color:var(--text2);font-family:var(--mono);text-align:right;}
 .ybar-pair{display:flex;flex-direction:column;gap:3px;}
-.ybar{height:13px;border-radius:4px;display:flex;align-items:center;padding-left:6px;font-size:9.5px;font-weight:600;color:#fff;font-family:var(--mono);min-width:2px;transition:width .2s;}
+.ybar{height:13px;border-radius:4px;display:flex;align-items:center;padding-left:6px;font-size:10.9px;font-weight:600;color:#fff;font-family:var(--mono);min-width:2px;transition:width .2s;}
 .ybar.empty{background:repeating-linear-gradient(45deg,#f2f4f5,#f2f4f5 4px,#e7eaed 4px,#e7eaed 8px);}
 .dg{display:flex;gap:11px;padding:12px 14px;border-bottom:1px solid var(--border);align-items:flex-start;}
 .dg:last-child{border-bottom:none;}
 .dg-ic{flex-shrink:0;width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;}
-.dg-t{font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px;}
-.dg-d{font-size:12px;color:var(--text2);line-height:1.6;}
-.dg-a{font-size:11.5px;font-weight:600;margin-top:5px;display:inline-flex;align-items:center;gap:5px;}
+.dg-t{font-size:14.9px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.dg-d{font-size:13.8px;color:var(--text2);line-height:1.6;}
+.dg-a{font-size:13.2px;font-weight:600;margin-top:5px;display:inline-flex;align-items:center;gap:5px;}
 @media (max-width:1024px){.cs-grid{grid-template-columns:1fr;}}
 
 /* --- 色の偏り --- */
@@ -258,45 +259,45 @@ tbody tr:hover td.oor{background:#e7eaed!important;}
 .crow:last-child{border-bottom:none;}
 .crow:hover{background:#f7fafe;}
 .cname{width:170px;flex-shrink:0;}
-.cname b{font-size:12.5px;font-weight:700;color:var(--text);display:block;}
-.cname span{font-size:10.5px;color:var(--text3);}
+.cname b{font-size:14.4px;font-weight:700;color:var(--text);display:block;}
+.cname span{font-size:12.1px;color:var(--text3);}
 .cbar{flex:1;min-width:120px;}
-.clegend{display:flex;flex-wrap:wrap;gap:8px;margin-top:5px;font-size:10px;color:var(--text2);}
+.clegend{display:flex;flex-wrap:wrap;gap:8px;margin-top:5px;font-size:11.5px;color:var(--text2);}
 .clegend i{display:inline-flex;align-items:center;font-style:normal;}
-.cadvice{width:210px;flex-shrink:0;font-size:11px;line-height:1.5;}
+.cadvice{width:210px;flex-shrink:0;font-size:12.6px;line-height:1.5;}
 .colrow{display:grid;grid-template-columns:88px 1fr;align-items:center;gap:8px;padding:3px 0;}
-.colrow .cl{font-size:11px;color:var(--text2);display:flex;align-items:center;justify-content:flex-end;}
+.colrow .cl{font-size:12.6px;color:var(--text2);display:flex;align-items:center;justify-content:flex-end;}
 @media (max-width:1024px){.crow{flex-wrap:wrap}.cname,.cadvice{width:100%}}
 
 /* --- 車種詳細モーダル --- */
-.modal.wide{max-width:1060px;width:94vw;max-height:88vh;padding:22px 24px;}
+.modal.wide{max-width:1140px;width:94vw;max-height:88vh;padding:22px 24px;}
 .mname{cursor:pointer;border-bottom:1px dotted #b6bec6;}
 .mname:hover{color:var(--accent);border-bottom-color:var(--accent);}
 .md-kpi{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:4px 0 16px;}
 .md-kpi>div{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:9px 11px;}
-.md-kpi span{display:block;font-size:10px;color:var(--text3);font-weight:500;margin-bottom:3px;}
-.md-kpi b{font-size:19px;font-weight:700;font-family:var(--mono);line-height:1;}
-.md-kpi em{font-size:10px;font-style:normal;font-weight:500;color:var(--text3);margin-left:2px;}
+.md-kpi span{display:block;font-size:11.5px;color:var(--text3);font-weight:500;margin-bottom:3px;}
+.md-kpi b{font-size:21.8px;font-weight:700;font-family:var(--mono);line-height:1;}
+.md-kpi em{font-size:11.5px;font-style:normal;font-weight:500;color:var(--text3);margin-left:2px;}
 .md-sec{border-top:1px solid var(--border);padding-top:14px;margin-top:14px;}
-.md-t{font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px;margin-bottom:10px;}
+.md-t{font-size:14.9px;font-weight:700;display:flex;align-items:center;gap:7px;margin-bottom:10px;}
 .md-t .ic{color:var(--accent);}
 .nar{display:flex;gap:10px;padding:9px 0;align-items:flex-start;}
 .nar-ic{flex-shrink:0;width:24px;height:24px;border-radius:7px;display:flex;align-items:center;justify-content:center;}
-.nar-h{font-size:13px;font-weight:700;margin-bottom:3px;}
-.nar-b{font-size:12px;color:var(--text2);line-height:1.75;}
+.nar-h{font-size:14.9px;font-weight:700;margin-bottom:3px;}
+.nar-b{font-size:13.8px;color:var(--text2);line-height:1.75;}
 .nar-b b{color:var(--text);font-weight:700;}
 .jg{margin-bottom:12px;}
-.jg-h{font-size:11.5px;font-weight:700;letter-spacing:.04em;margin-bottom:5px;}
+.jg-h{font-size:13.2px;font-weight:700;letter-spacing:.04em;margin-bottom:5px;}
 .jg ul{margin:0;padding-left:17px;}
-.jg li{font-size:12px;color:var(--text2);line-height:1.75;margin-bottom:4px;}
+.jg li{font-size:13.8px;color:var(--text2);line-height:1.75;margin-bottom:4px;}
 .jg li b{color:var(--text);}
-.lgrow{display:flex;flex-wrap:wrap;gap:11px;align-items:center;font-size:10.5px;color:var(--text2);margin-top:8px;}
+.lgrow{display:flex;flex-wrap:wrap;gap:11px;align-items:center;font-size:12.1px;color:var(--text2);margin-top:8px;}
 .lgrow i{display:inline-flex;align-items:center;gap:3px;font-style:normal;}
 table.dtl{width:100%;border-collapse:collapse;white-space:nowrap;min-width:0;}
-table.dtl thead th{position:static;background:var(--bg4);color:var(--text2);font-size:10px;font-weight:600;padding:7px 9px;text-align:left;border:none;border-bottom:1px solid var(--border);width:auto;min-width:0;max-width:none;font-family:var(--font);}
+table.dtl thead th{position:static;background:var(--bg4);color:var(--text2);font-size:11.5px;font-weight:600;padding:7px 9px;text-align:left;border:none;border-bottom:1px solid var(--border);width:auto;min-width:0;max-width:none;font-family:var(--font);}
 table.dtl thead th:first-child{position:static;background:var(--bg4);width:auto;min-width:0;max-width:none;}
-table.dtl tbody td{padding:7px 9px;border:none;border-bottom:1px solid var(--border);text-align:left;width:auto;min-width:0;max-width:none;font-size:12px;}
-table.dtl tbody td:first-child{position:static;background:transparent;width:auto;min-width:0;max-width:none;border-right:none;padding:7px 9px;font-size:12px;}
+table.dtl tbody td{padding:9px 10px;border:none;border-bottom:1px solid var(--border);text-align:left;width:auto;min-width:0;max-width:none;font-size:13.8px;}
+table.dtl tbody td:first-child{position:static;background:transparent;width:auto;min-width:0;max-width:none;border-right:none;padding:9px 10px;font-size:13.8px;}
 table.dtl tbody td.num{font-family:var(--mono);}
 table.dtl tbody tr:hover td{background:#f7fafe!important;}
 @media (max-width:1024px){.md-kpi{grid-template-columns:repeat(3,1fr);}.modal.wide{width:96vw;padding:16px;}}
@@ -304,31 +305,31 @@ table.dtl tbody tr:hover td{background:#f7fafe!important;}
 /* --- 価格変更 --- */
 .ov2{z-index:110;}
 .modal2{z-index:120;max-width:430px;}
-.minibtn{border:1px solid var(--border);background:var(--bg2);color:var(--accent);border-radius:7px;padding:4px 10px;font-size:11px;font-weight:600;font-family:var(--font);cursor:pointer;white-space:nowrap;}
+.minibtn{border:1px solid var(--border);background:var(--bg2);color:var(--accent);border-radius:7px;padding:4px 10px;font-size:12.6px;font-weight:600;font-family:var(--font);cursor:pointer;white-space:nowrap;}
 .minibtn:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
-.pchg{font-size:11px;font-family:var(--mono);color:var(--text2);cursor:help;border-bottom:1px dotted var(--border2);}
+.pchg{font-size:12.6px;font-family:var(--mono);color:var(--text2);cursor:help;border-bottom:1px dotted var(--border2);}
 .pchg b{color:var(--red);}
-.pc-cur{font-size:11.5px;color:var(--text2);margin-bottom:12px;}
+.pc-cur{font-size:13.2px;color:var(--text2);margin-bottom:12px;}
 .pc-cur b{font-family:var(--mono);color:var(--text);}
 .pc-hist{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:14px;}
-.pc-hl{font-size:10.5px;font-weight:700;color:var(--text3);margin-bottom:6px;letter-spacing:.03em;}
-.pc-hr{display:flex;gap:10px;align-items:baseline;font-size:11.5px;padding:2px 0;font-family:var(--mono);}
+.pc-hl{font-size:12.1px;font-weight:700;color:var(--text3);margin-bottom:6px;letter-spacing:.03em;}
+.pc-hr{display:flex;gap:10px;align-items:baseline;font-size:13.2px;padding:2px 0;font-family:var(--mono);}
 .pc-hr span{color:var(--text3);width:44px;flex-shrink:0;}
 .pc-hr b{flex:1;color:var(--text);font-weight:600;}
 .pc-hr em{font-style:normal;color:var(--red);font-weight:700;}
 .pc-hr.tot{border-top:1px solid var(--border);margin-top:5px;padding-top:6px;}
 .pc-row{display:flex;align-items:center;gap:10px;margin-bottom:11px;}
-.pc-row label{width:74px;flex-shrink:0;font-size:12px;color:var(--text2);font-weight:500;}
-.pc-row input{flex:1;border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:14px;font-family:var(--mono);color:var(--text);background:var(--bg2);}
+.pc-row label{width:74px;flex-shrink:0;font-size:13.8px;color:var(--text2);font-weight:500;}
+.pc-row input{flex:1;border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:16.1px;font-family:var(--mono);color:var(--text);background:var(--bg2);}
 .pc-row input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(5,89,210,.13);}
-.pc-now{font-size:17px;font-weight:700;font-family:var(--mono);}
-.pc-now em{font-size:11px;font-style:normal;color:var(--text3);margin-left:3px;font-weight:500;}
-.pc-diff{font-size:13px;font-weight:700;font-family:var(--mono);width:74px;text-align:right;}
+.pc-now{font-size:19.5px;font-weight:700;font-family:var(--mono);}
+.pc-now em{font-size:12.6px;font-style:normal;color:var(--text3);margin-left:3px;font-weight:500;}
+.pc-diff{font-size:14.9px;font-weight:700;font-family:var(--mono);width:74px;text-align:right;}
 .pc-diff.dn{color:var(--red);}.pc-diff.up{color:var(--green);}
 .pc-quick{display:flex;gap:6px;margin:-4px 0 13px 84px;}
-.pc-quick button{flex:1;border:1px solid var(--border);background:var(--bg2);border-radius:7px;padding:6px 0;font-size:11.5px;font-family:var(--mono);color:var(--text2);cursor:pointer;}
+.pc-quick button{flex:1;border:1px solid var(--border);background:var(--bg2);border-radius:7px;padding:6px 0;font-size:13.2px;font-family:var(--mono);color:var(--text2);cursor:pointer;}
 .pc-quick button:hover{border-color:var(--accent);color:var(--accent);background:#f4f8fe;}
-.pc-msg{font-size:11.5px;line-height:1.6;margin-bottom:10px;}
+.pc-msg{font-size:13.2px;line-height:1.6;margin-bottom:10px;}
 .pc-msg.ok{color:var(--green);background:var(--green-bg);border-radius:8px;padding:9px 11px;}
 .pc-msg.err{color:var(--red);background:var(--red-bg);border-radius:8px;padding:9px 11px;}
 .pc-btns{display:flex;gap:8px;justify-content:flex-end;}
@@ -336,18 +337,25 @@ table.dtl tbody tr:hover td{background:#f7fafe!important;}
 /* --- 在庫一覧 --- */
 .tblwrap2{overflow:auto;max-height:calc(100vh - 210px);border-radius:0 0 14px 14px;}
 table.lst{width:100%;border-collapse:collapse;white-space:nowrap;min-width:1180px;}
-table.lst thead th{position:sticky;top:0;z-index:10;background:var(--bg4);color:var(--text2);font-size:10px;font-weight:600;
-  padding:8px 7px;border:none;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;font-family:var(--font);
+table.lst thead th{position:sticky;top:0;z-index:10;background:var(--bg4);color:var(--text2);font-size:11.5px;font-weight:600;
+  padding:9px 8px;border:none;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;font-family:var(--font);
   width:auto;min-width:0;max-width:none;white-space:nowrap;}
 table.lst thead th:first-child{position:sticky;top:0;left:auto;background:var(--bg4);width:auto;min-width:0;max-width:none;}
 table.lst thead th:hover{color:var(--accent);}
-table.lst tbody td{padding:6px 7px;border:none;border-bottom:1px solid var(--border);font-size:11.5px;
+table.lst tbody td{padding:8px 8px;border:none;border-bottom:1px solid var(--border);font-size:13.2px;
   width:auto;min-width:0;max-width:none;text-align:left;overflow:hidden;text-overflow:ellipsis;}
-table.lst tbody td:first-child{position:static;background:transparent;width:auto;min-width:0;max-width:none;border-right:none;padding:6px 7px;font-size:11.5px;}
+table.lst tbody td:first-child{position:static;background:transparent;width:auto;min-width:0;max-width:none;border-right:none;padding:8px 8px;font-size:13.2px;}
 table.lst tbody td.num{font-family:var(--mono);}
 table.lst tbody tr:hover td{background:#f4f8fe!important;}
 table.lst tbody tr.ul td{background:#fffaf3;}
 table.lst tbody tr.ul:hover td{background:#fff4e6!important;}
+
+table.lst thead th:last-child,table.lst tbody td:last-child{position:sticky;right:0;z-index:9;background:var(--bg2);
+  box-shadow:-6px 0 8px -6px rgba(0,0,0,.10);text-align:center;}
+table.lst thead th:last-child{background:var(--bg4);z-index:11;}
+table.lst tbody tr:hover td:last-child{background:#f4f8fe;}
+table.lst tbody tr.ul td:last-child{background:#fffaf3;}
+.tblwrap2{overflow:auto;}
 
 /* --- responsive --- */
 .side-scrim{display:none;position:fixed;inset:0;background:rgba(4,10,17,.35);z-index:70;}
@@ -457,23 +465,23 @@ table.lst tbody tr.ul:hover td{background:#fff4e6!important;}
   <div class="summary">
     <div class="card" onclick="showCatModal('ミニバン')"><div class="card-lbl">ミニバン</div><div class="card-val" id="sm">—</div>
       <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap">
-        <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:#dbeafe;color:#1d4ed8" id="sm-hv">HV —</span>
-        <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:#d1fae5;color:#065f46" id="sm-fwd">4WD —</span>
+        <span style="font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:10px;background:#dbeafe;color:#1d4ed8" id="sm-hv">HV —</span>
+        <span style="font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:10px;background:#d1fae5;color:#065f46" id="sm-fwd">4WD —</span>
       </div></div>
     <div class="card" onclick="showCatModal('SUV')"><div class="card-lbl">SUV</div><div class="card-val" id="ss">—</div>
       <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap">
-        <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:#dbeafe;color:#1d4ed8" id="ss-hv">HV —</span>
-        <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:#d1fae5;color:#065f46" id="ss-fwd">4WD —</span>
+        <span style="font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:10px;background:#dbeafe;color:#1d4ed8" id="ss-hv">HV —</span>
+        <span style="font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:10px;background:#d1fae5;color:#065f46" id="ss-fwd">4WD —</span>
       </div></div>
     <div class="card" onclick="showCatModal('HVCP')"><div class="card-lbl">HVCP</div><div class="card-val" id="sh">—</div>
       <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap">
-        <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:#dbeafe;color:#1d4ed8" id="sh-hv">HV —</span>
-        <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:#d1fae5;color:#065f46" id="sh-fwd">4WD —</span>
+        <span style="font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:10px;background:#dbeafe;color:#1d4ed8" id="sh-hv">HV —</span>
+        <span style="font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:10px;background:#d1fae5;color:#065f46" id="sh-fwd">4WD —</span>
       </div></div>
     <div class="card" onclick="showCatModal('軽')"><div class="card-lbl">軽</div><div class="card-val" id="sk">—</div>
       <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap">
-        <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:#dbeafe;color:#1d4ed8" id="sk-hv">HV —</span>
-        <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:#d1fae5;color:#065f46" id="sk-fwd">4WD —</span>
+        <span style="font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:10px;background:#dbeafe;color:#1d4ed8" id="sk-hv">HV —</span>
+        <span style="font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:10px;background:#d1fae5;color:#065f46" id="sk-fwd">4WD —</span>
       </div></div>
     <div class="card card-ul" onclick="showPage('unlisted')"><div class="card-lbl">未掲載</div><div class="card-val" id="su">—</div><div class="card-sub" id="su2">クリックで詳細</div></div>
   </div>
@@ -532,10 +540,10 @@ table.lst tbody tr.ul:hover td{background:#fff4e6!important;}
           <option value="new">30日以内</option></select>
         <select class="sel" id="lsSrc" onchange="renderList()"><option value="">仕入先：すべて</option></select>
         <label class="chklbl"><input type="checkbox" id="lsUl" onchange="renderList()"> 未掲載も含む</label>
-        <input type="text" id="lsQ" class="sel" style="min-width:180px" placeholder="車名・グレード・SID・下4桁で検索" oninput="renderList()">
+        <input type="text" id="lsQ" class="sel" style="min-width:180px" placeholder="車名・グレードで検索" oninput="renderList()">
       </div>
-      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-        <span id="lsCount" style="font-size:11.5px;color:var(--text3)"></span>
+      <div style="margin-left:auto;display:flex;gap:10px;align-items:center;flex-shrink:0">
+        <span id="lsCount" style="font-size:13.2px;color:var(--text3)"></span>
         <button class="rbtn ghost" onclick="exportListPdf()"><svg class="ic ic-s"><use href="#i-pdf"></use></svg>PDF出力</button>
       </div>
     </div>
@@ -553,7 +561,7 @@ table.lst tbody tr.ul:hover td{background:#fff4e6!important;}
     <div class="kpi"><div class="kpi-lbl">掲載可能</div><div class="kpi-val" id="u-ready" style="color:var(--green)">—</div><div class="kpi-sub">台（今すぐ掲載可）</div></div>
     <div class="kpi"><div class="kpi-lbl">その他</div><div class="kpi-val" id="u-other" style="color:var(--text2)">—</div><div class="kpi-sub">台</div></div>
     </div>
-    <button onclick="exportUnlistedPdf()" style="background:#2979d4;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500;white-space:nowrap;flex-shrink:0;height:fit-content;margin-top:4px">📄 PDF出力</button>
+    <button onclick="exportUnlistedPdf()" style="background:#2979d4;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13.8px;font-weight:500;white-space:nowrap;flex-shrink:0;height:fit-content;margin-top:4px">📄 PDF出力</button>
   </div>
   <div class="two-col">
     <div class="sec">
@@ -603,11 +611,11 @@ table.lst tbody tr.ul:hover td{background:#fff4e6!important;}
     </div>
     <div class="sec-body" style="display:flex;gap:12px;flex-wrap:wrap">
       <div style="flex:1;min-width:380px">
-        <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px">ジャンル × 日数</div>
+        <div style="font-size:13.8px;font-weight:700;color:var(--text2);margin-bottom:6px">ジャンル × 日数</div>
         <div id="mtxGenre" style="overflow-x:auto"></div>
       </div>
       <div style="flex:1;min-width:380px">
-        <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px">原価帯 × 日数</div>
+        <div style="font-size:13.8px;font-weight:700;color:var(--text2);margin-bottom:6px">原価帯 × 日数</div>
         <div id="mtxCost" style="overflow-x:auto"></div>
       </div>
     </div>
@@ -615,7 +623,7 @@ table.lst tbody tr.ul:hover td{background:#fff4e6!important;}
 
   <div class="sec">
     <div class="sec-hdr">
-      <span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-clock"></use></svg>長期在庫一覧 <span id="longCount" style="font-size:13px;color:var(--text2);font-weight:600;margin-left:8px"></span></span>
+      <span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-clock"></use></svg>長期在庫一覧 <span id="longCount" style="font-size:14.9px;color:var(--text2);font-weight:600;margin-left:8px"></span></span>
       <div class="ctrls">
         <select class="sel" id="longThresh" onchange="renderLong()">
           <option value="60">60日以上</option><option value="100" selected>100日以上</option>
@@ -642,28 +650,28 @@ table.lst tbody tr.ul:hover td{background:#fff4e6!important;}
   </div>
   <div class="two-col">
     <div class="sec">
-      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-cart"></use></svg>仕入れ優先リスト</span><span style="font-size:10px;color:var(--text3)">不足台数 × 売約実績で自動計算</span></div>
+      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-cart"></use></svg>仕入れ優先リスト</span><span style="font-size:11.5px;color:var(--text3)">不足台数 × 売約実績で自動計算</span></div>
       <div class="sec-body" style="max-height:360px;overflow-y:auto;"><div class="cards-grid" id="buyListL"></div></div>
     </div>
     <div class="sec">
-      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-down"></use></svg>過剰在庫 是正リスト</span><span style="font-size:10px;color:var(--text3)">価格見直し・販促推奨</span></div>
+      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-down"></use></svg>過剰在庫 是正リスト</span><span style="font-size:11.5px;color:var(--text3)">価格見直し・販促推奨</span></div>
       <div class="sec-body" style="max-height:360px;overflow-y:auto;"><div class="cards-grid" id="excessListL"></div></div>
     </div>
   </div>
   <div class="sec">
     <div class="sec-hdr">
       <span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-palette"></use></svg>色の偏りアラート</span>
-      <span style="font-size:10px;color:var(--text3)">在庫3台以上で1色に偏っている / 売れている色が欠けている車種</span>
+      <span style="font-size:11.5px;color:var(--text3)">在庫3台以上で1色に偏っている / 売れている色が欠けている車種</span>
     </div>
     <div class="sec-body" style="max-height:420px;overflow-y:auto"><div id="colorAlert"></div></div>
   </div>
   <div class="two-col">
     <div class="sec">
-      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-clock"></use></svg>長期在庫 アクションリスト</span><span style="font-size:10px;color:var(--text3)">100日超・滞留日数が長い順（上位30）</span></div>
+      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-clock"></use></svg>長期在庫 アクションリスト</span><span style="font-size:11.5px;color:var(--text3)">100日超・滞留日数が長い順（上位30）</span></div>
       <div class="sec-body" style="max-height:360px;overflow-y:auto;"><div class="cards-grid" id="longActionL"></div></div>
     </div>
     <div class="sec">
-      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-check"></use></svg>掲載推奨リスト</span><span style="font-size:10px;color:var(--text3)">未掲載のうち今すぐ掲載できる車両</span></div>
+      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-check"></use></svg>掲載推奨リスト</span><span style="font-size:11.5px;color:var(--text3)">未掲載のうち今すぐ掲載できる車両</span></div>
       <div class="sec-body" style="max-height:360px;overflow-y:auto;"><div class="cards-grid" id="readyListL"></div></div>
     </div>
   </div>
@@ -674,13 +682,13 @@ table.lst tbody tr.ul:hover td{background:#fff4e6!important;}
 <div class="page" id="page-balance">
   <!-- ツールバー -->
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-    <button id="bv-diff" onclick="setBalView('diff')" style="padding:5px 12px;border-radius:6px;font-size:11px;cursor:pointer;border:1px solid var(--border);background:#1e3a5f;color:#fff">過不足</button>
-    <button id="bv-days" onclick="setBalView('days')" style="padding:5px 12px;border-radius:6px;font-size:11px;cursor:pointer;border:1px solid var(--border);background:var(--bg2);color:var(--text3)">在庫日数</button>
-    <button id="bv-profit" onclick="setBalView('profit')" style="padding:5px 12px;border-radius:6px;font-size:11px;cursor:pointer;border:1px solid var(--border);background:var(--bg2);color:var(--text3)">想定利益</button>
+    <button id="bv-diff" onclick="setBalView('diff')" style="padding:5px 12px;border-radius:6px;font-size:12.6px;cursor:pointer;border:1px solid var(--border);background:#1e3a5f;color:#fff">過不足</button>
+    <button id="bv-days" onclick="setBalView('days')" style="padding:5px 12px;border-radius:6px;font-size:12.6px;cursor:pointer;border:1px solid var(--border);background:var(--bg2);color:var(--text3)">在庫日数</button>
+    <button id="bv-profit" onclick="setBalView('profit')" style="padding:5px 12px;border-radius:6px;font-size:12.6px;cursor:pointer;border:1px solid var(--border);background:var(--bg2);color:var(--text3)">想定利益</button>
     <div style="display:flex;align-items:center;gap:4px;margin-left:auto">
-      <span style="font-size:10px;color:var(--text3)" id="balLgMin">過剰</span>
+      <span style="font-size:11.5px;color:var(--text3)" id="balLgMin">過剰</span>
       <div id="balLgCells" style="display:flex;gap:2px"></div>
-      <span style="font-size:10px;color:var(--text3)" id="balLgMax">不足</span>
+      <span style="font-size:11.5px;color:var(--text3)" id="balLgMax">不足</span>
     </div>
   </div>
 
@@ -690,19 +698,19 @@ table.lst tbody tr.ul:hover td{background:#fff4e6!important;}
   <!-- サマリー -->
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
     <div style="background:#fee2e2;border-radius:8px;padding:10px;text-align:center">
-      <div style="font-size:10px;color:#991b1b;font-weight:700;margin-bottom:4px">過剰</div>
-      <div style="font-size:22px;font-weight:700;color:#dc2626" id="balSurplusVal">—</div>
-      <div style="font-size:10px;color:#dc2626;margin-top:3px" id="balSurplusNames"></div>
+      <div style="font-size:11.5px;color:#991b1b;font-weight:700;margin-bottom:4px">過剰</div>
+      <div style="font-size:25.3px;font-weight:700;color:#dc2626" id="balSurplusVal">—</div>
+      <div style="font-size:11.5px;color:#dc2626;margin-top:3px" id="balSurplusNames"></div>
     </div>
     <div style="background:#dcfce7;border-radius:8px;padding:10px;text-align:center">
-      <div style="font-size:10px;color:#166534;font-weight:700;margin-bottom:4px">適正</div>
-      <div style="font-size:22px;font-weight:700;color:#16a34a" id="balNormalVal">—</div>
-      <div style="font-size:10px;color:#16a34a;margin-top:3px" id="balNormalNames"></div>
+      <div style="font-size:11.5px;color:#166534;font-weight:700;margin-bottom:4px">適正</div>
+      <div style="font-size:25.3px;font-weight:700;color:#16a34a" id="balNormalVal">—</div>
+      <div style="font-size:11.5px;color:#16a34a;margin-top:3px" id="balNormalNames"></div>
     </div>
     <div style="background:#fef3c7;border-radius:8px;padding:10px;text-align:center">
-      <div style="font-size:10px;color:#92400e;font-weight:700;margin-bottom:4px">不足</div>
-      <div style="font-size:22px;font-weight:700;color:#d97706" id="balShortageVal">—</div>
-      <div style="font-size:10px;color:#d97706;margin-top:3px" id="balShortageNames"></div>
+      <div style="font-size:11.5px;color:#92400e;font-weight:700;margin-bottom:4px">不足</div>
+      <div style="font-size:25.3px;font-weight:700;color:#d97706" id="balShortageVal">—</div>
+      <div style="font-size:11.5px;color:#d97706;margin-top:3px" id="balShortageNames"></div>
     </div>
   </div>
 
@@ -710,37 +718,37 @@ table.lst tbody tr.ul:hover td{background:#fff4e6!important;}
   <div id="balanceDetail" style="display:none">
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <div style="font-size:13px;font-weight:700;color:var(--text)" id="balDetailTitle">詳細分析</div>
-        <button onclick="document.getElementById('balanceDetail').style.display='none'" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px">×</button>
+        <div style="font-size:14.9px;font-weight:700;color:var(--text)" id="balDetailTitle">詳細分析</div>
+        <button onclick="document.getElementById('balanceDetail').style.display='none'" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18.4px">×</button>
       </div>
       <div id="balKpiRow" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:14px"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
         <div style="background:var(--bg);border-radius:8px;padding:10px">
-          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">年式分布</div>
+          <div style="font-size:12.6px;font-weight:700;color:var(--text3);margin-bottom:6px">年式分布</div>
           <div id="balYearChart"></div>
         </div>
         <div style="background:var(--bg);border-radius:8px;padding:10px">
-          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">価格帯分布</div>
+          <div style="font-size:12.6px;font-weight:700;color:var(--text3);margin-bottom:6px">価格帯分布</div>
           <div id="balPriceChart"></div>
         </div>
         <div style="background:var(--bg);border-radius:8px;padding:10px">
-          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">走行距離分布</div>
+          <div style="font-size:12.6px;font-weight:700;color:var(--text3);margin-bottom:6px">走行距離分布</div>
           <div id="balKmChart"></div>
         </div>
         <div style="background:var(--bg);border-radius:8px;padding:10px">
-          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">色分布</div>
+          <div style="font-size:12.6px;font-weight:700;color:var(--text3);margin-bottom:6px">色分布</div>
           <div id="balColorChart"></div>
         </div>
       </div>
       <div style="background:var(--bg);border-radius:8px;padding:10px;margin-bottom:10px">
-        <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">在庫日数分布</div>
+        <div style="font-size:12.6px;font-weight:700;color:var(--text3);margin-bottom:6px">在庫日数分布</div>
         <div id="balDaysChart"></div>
       </div>
       <div style="background:var(--bg);border-radius:8px;padding:10px">
-        <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px" id="balCompareTitle">在庫 vs 売約 年式比較</div>
+        <div style="font-size:12.6px;font-weight:700;color:var(--text3);margin-bottom:6px" id="balCompareTitle">在庫 vs 売約 年式比較</div>
         <div style="display:flex;gap:8px;margin-bottom:6px">
-          <span style="font-size:10px;display:flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:2px;background:#2979d4;display:inline-block"></span>在庫</span>
-          <span style="font-size:10px;display:flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:2px;background:#16a34a;display:inline-block"></span>売約</span>
+          <span style="font-size:11.5px;display:flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:2px;background:#2979d4;display:inline-block"></span>在庫</span>
+          <span style="font-size:11.5px;display:flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:2px;background:#16a34a;display:inline-block"></span>売約</span>
         </div>
         <div id="balCompareChart"></div>
       </div>
@@ -748,7 +756,7 @@ table.lst tbody tr.ul:hover td{background:#fff4e6!important;}
   </div>
 
   <!-- ツールチップ -->
-  <div id="balTip" style="position:fixed;background:#1a2332;color:#fff;font-size:11px;padding:8px 12px;border-radius:8px;pointer-events:none;display:none;z-index:100;line-height:1.7;box-shadow:0 2px 8px rgba(0,0,0,.3)"></div>
+  <div id="balTip" style="position:fixed;background:#1a2332;color:#fff;font-size:12.6px;padding:8px 12px;border-radius:8px;pointer-events:none;display:none;z-index:100;line-height:1.7;box-shadow:0 2px 8px rgba(0,0,0,.3)"></div>
 </div>
 
 <!-- PAGE 6: 売約分析 -->
@@ -907,11 +915,11 @@ function showCatModal(cat){
   document.getElementById('modal-title').textContent=`${cat}（${items.length}台）`;
   document.getElementById('modal-body').innerHTML=`
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
-      <div style="background:var(--bg3);border-radius:6px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--text3)">在庫台数</div><div style="font-size:20px;font-weight:700;color:var(--accent);font-family:var(--mono)">${items.length}</div></div>
-      <div style="background:var(--bg3);border-radius:6px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--text3)">原価累計</div><div style="font-size:16px;font-weight:700;color:var(--red);font-family:var(--mono)">${tCost.toFixed(0)}万円</div></div>
-      <div style="background:var(--bg3);border-radius:6px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--text3)">想定利益計</div><div style="font-size:16px;font-weight:700;color:var(--green);font-family:var(--mono)">${tProfit.toFixed(1)}万円</div></div>
+      <div style="background:var(--bg3);border-radius:6px;padding:8px;text-align:center"><div style="font-size:11.5px;color:var(--text3)">在庫台数</div><div style="font-size:23px;font-weight:700;color:var(--accent);font-family:var(--mono)">${items.length}</div></div>
+      <div style="background:var(--bg3);border-radius:6px;padding:8px;text-align:center"><div style="font-size:11.5px;color:var(--text3)">原価累計</div><div style="font-size:18.4px;font-weight:700;color:var(--red);font-family:var(--mono)">${tCost.toFixed(0)}万円</div></div>
+      <div style="background:var(--bg3);border-radius:6px;padding:8px;text-align:center"><div style="font-size:11.5px;color:var(--text3)">想定利益計</div><div style="font-size:18.4px;font-weight:700;color:var(--green);font-family:var(--mono)">${tProfit.toFixed(1)}万円</div></div>
     </div>
-    <div style="font-size:11px;color:var(--text2);margin-bottom:8px">平均在庫日数: ${Math.round(avgD)}日 / 長期在庫(100日超): ${lCnt}台</div>
+    <div style="font-size:12.6px;color:var(--text2);margin-bottom:8px">平均在庫日数: ${Math.round(avgD)}日 / 長期在庫(100日超): ${lCnt}台</div>
     <div style="max-height:320px;overflow-y:auto">${rows}</div>`;
   document.getElementById('modal').style.display='block';document.getElementById('ov').style.display='block';
 }
@@ -1067,9 +1075,9 @@ function renderMatrix(){
     ${keys.map(k=>`<th${type==='color'?' style="min-width:40px;max-width:40px;width:40px"':''}>${type==='color'?colorChip(k,9)+'<br>':''}${k}</th>`).join('')}
   </tr></thead><tbody>
   <tr style="background:#fff;font-weight:700;border-bottom:2px solid var(--border2)">
-    <td style="position:sticky;left:0;background:#f7f9fc;font-size:10px;font-weight:700;padding:3px 8px;color:var(--accent);border-right:1.5px solid var(--border)">縦計</td>
+    <td style="position:sticky;left:0;background:#f7f9fc;font-size:11.5px;font-weight:700;padding:3px 8px;color:var(--accent);border-right:1.5px solid var(--border)">縦計</td>
     <td></td><td></td><td></td>
-    ${keys.map(k=>`<td style="text-align:center;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent);border:1px solid var(--border)">${colTotals[k]||''}</td>`).join('')}
+    ${keys.map(k=>`<td style="text-align:center;font-family:var(--mono);font-size:12.6px;font-weight:700;color:var(--accent);border:1px solid var(--border)">${colTotals[k]||''}</td>`).join('')}
   </tr>`;
 
   cats.forEach(cat=>{
@@ -1091,7 +1099,7 @@ function renderMatrix(){
       if(diff!=null){
         const cls=diff<=-3?'abr':diff<0?'aby':diff>=3?'abg':'';
         const sign=diff>0?'+':'';
-        diffBadge=cls?`<span class="ab ${cls}">${sign}${diff}</span>`:`<span style="font-family:var(--mono);font-size:11px">${sign}${diff}</span>`;
+        diffBadge=cls?`<span class="ab ${cls}">${sign}${diff}</span>`:`<span style="font-family:var(--mono);font-size:12.6px">${sign}${diff}</span>`;
       }
       const rng=(useRange&&type==='year')?yearRange(name):null;
       const rlbl=rng?yearRangeLabel(name):'';
@@ -1154,11 +1162,11 @@ function renderProfitCards(){
     const tC=items.filter(d=>d.cost!=null).reduce((a,b)=>a+b.cost,0);
     const cnt=items.length;
     return `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 14px">
-      <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">${cat}（${cnt}台）</div>
+      <div style="font-size:12.6px;font-weight:700;color:var(--text2);margin-bottom:8px">${cat}（${cnt}台）</div>
       <div style="display:flex;flex-direction:column;gap:6px">
-        <div style="display:flex;justify-content:space-between"><span style="font-size:10px;color:var(--text3)">在庫原価累計</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--red)">${tC.toFixed(0)}万円</span></div>
-        <div style="display:flex;justify-content:space-between"><span style="font-size:10px;color:var(--text3)">想定利益累計</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">${tP.toFixed(1)}万円</span></div>
-        <div style="display:flex;justify-content:space-between"><span style="font-size:10px;color:var(--text3)">台あたり利益</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--amber)">${cnt>0?(tP/cnt).toFixed(1):'—'}万円</span></div>
+        <div style="display:flex;justify-content:space-between"><span style="font-size:11.5px;color:var(--text3)">在庫原価累計</span><span style="font-family:var(--mono);font-size:14.9px;font-weight:700;color:var(--red)">${tC.toFixed(0)}万円</span></div>
+        <div style="display:flex;justify-content:space-between"><span style="font-size:11.5px;color:var(--text3)">想定利益累計</span><span style="font-family:var(--mono);font-size:14.9px;font-weight:700;color:var(--green)">${tP.toFixed(1)}万円</span></div>
+        <div style="display:flex;justify-content:space-between"><span style="font-size:11.5px;color:var(--text3)">台あたり利益</span><span style="font-family:var(--mono);font-size:14.9px;font-weight:700;color:var(--amber)">${cnt>0?(tP/cnt).toFixed(1):'—'}万円</span></div>
       </div>
     </div>`;
   }).join('');
@@ -1171,7 +1179,7 @@ function renderUnlisted(){
     const km=d.km?(d.km/10000).toFixed(1)+'万km':'—';
     const nameText=`${d.name}${lower4str}`;
     const detText=`${d.cat} / ${d.year} / ${km} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'}`;
-    return `<div class="aitem" style="padding:6px 12px;max-width:500px" data-name="${nameText.replace(/"/g,'&quot;')}" data-det="${detText.replace(/"/g,'&quot;')}" data-lbl="${lbl}"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex:1"><span class="aname" style="font-size:12px;font-weight:500">${nameText}</span><span class="adet" style="font-size:10px;color:var(--text2);font-family:var(--mono)">${detText}</span></div><span class="pill ${pill}" style="flex-shrink:0;margin-left:8px">${lbl}</span></div>`;
+    return `<div class="aitem" style="padding:6px 12px;max-width:500px" data-name="${nameText.replace(/"/g,'&quot;')}" data-det="${detText.replace(/"/g,'&quot;')}" data-lbl="${lbl}"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex:1"><span class="aname" style="font-size:13.8px;font-weight:500">${nameText}</span><span class="adet" style="font-size:11.5px;color:var(--text2);font-family:var(--mono)">${detText}</span></div><span class="pill ${pill}" style="flex-shrink:0;margin-left:8px">${lbl}</span></div>`;
   };
 
   const p1=UNLISTED.filter(d=>d.status==='未入庫');
@@ -1221,7 +1229,7 @@ function renderLongMatrix() {
 
   // ジャンル×日数
   const buildMatrix = (rows, getCount, totalLbl) => {
-    const cellStyle = 'padding:6px 10px;text-align:center;border:1px solid var(--border);font-size:12px;font-family:var(--mono)';
+    const cellStyle = 'padding:6px 10px;text-align:center;border:1px solid var(--border);font-size:13.8px;font-family:var(--mono)';
     const headerStyle = cellStyle + ';background:var(--bg2);font-weight:700;color:var(--text2);font-family:inherit';
     const labelStyle = cellStyle + ';background:var(--bg2);font-weight:700;color:var(--text);text-align:left;font-family:inherit';
     const totalStyle = cellStyle + ';background:#fef3c7;font-weight:700';
@@ -1294,7 +1302,7 @@ function renderLong(){
     const cls=d.days>=300?'pill-r':d.days>=150?'pill-y':d.days>=100?'pill-p':'pill-b';
     const msg=d.days>=300?'早急値下げ推奨':d.days>=150?'価格見直し推奨':d.days>=100?'要注意':'様子見';
     const vd=encodeURIComponent(JSON.stringify({name:d.name,cat:d.cat,year:d.year,km:d.km,price:d.price,color:d.color,days:d.days,hv:d.hv,fwd:d.fwd}));
-    return `<div class="aitem" style="gap:8px;max-width:70%;margin:0 0 6px 0;align-items:center"><div style="flex:1"><div class="aname" style="font-size:14px;font-weight:700">${d.name} <span style="font-size:12px;color:var(--text2);font-weight:400">${d.cat} / ${d.year} / ${km} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'} → ${msg}</span></div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span class="pill ${cls}">${d.days}日</span><button onclick='runAiDiagnosis("${vd}")' style="background:var(--accent);color:#fff;border:none;padding:3px 9px;border-radius:5px;cursor:pointer;font-size:10px;white-space:nowrap">AI診断</button></div></div>`;
+    return `<div class="aitem" style="gap:8px;max-width:70%;margin:0 0 6px 0;align-items:center"><div style="flex:1"><div class="aname" style="font-size:16.1px;font-weight:700">${d.name} <span style="font-size:13.8px;color:var(--text2);font-weight:400">${d.cat} / ${d.year} / ${km} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'} → ${msg}</span></div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span class="pill ${cls}">${d.days}日</span><button onclick='runAiDiagnosis("${vd}")' style="background:var(--accent);color:#fff;border:none;padding:3px 9px;border-radius:5px;cursor:pointer;font-size:11.5px;white-space:nowrap">AI診断</button></div></div>`;
   }).join('');
 }
 
@@ -1626,7 +1634,7 @@ function renderList(){
   box.innerHTML=`<table class="lst"><thead><tr>${th}<th style="width:52px"></th></tr></thead><tbody>${body}</tbody></table>`;
   const cost=rows.reduce((a,b)=>a+(b.cost||0),0), prof=rows.reduce((a,b)=>a+(b.profit||0),0);
   document.getElementById('lsCount').innerHTML=
-    `<b style="color:var(--text);font-size:13px">${rows.length}</b>台 ・ 原価計 ${Math.round(cost).toLocaleString()}万 ・ 想定利益 ${Math.round(prof).toLocaleString()}万`;
+    `<b style="color:var(--text);font-size:14.9px">${rows.length}</b>台 ・ 原価計 ${Math.round(cost).toLocaleString()}万 ・ 想定利益 ${Math.round(prof).toLocaleString()}万`;
 }
 function lsSort(k){
   if(_lsSort.k===k)_lsSort.asc=!_lsSort.asc;
@@ -1730,7 +1738,7 @@ function openPriceChange(lower4,name,cur,cat){
   const hist=sum?`<div class="pc-hist"><div class="pc-hl">これまでの値下げ</div>${sum.log.map(x=>
       `<div class="pc-hr"><span>${x.date.replace(/^\d{4}-/,'')}</span><b>${x.before} → ${x.after}</b><em>${x.diff}万</em></div>`).join('')}
      <div class="pc-hr tot"><span>累計</span><b>${sum.first} → ${sum.now}</b><em>${sum.total}万</em></div></div>`
-    :'<div class="pc-hist"><div class="pc-hl">これまでの値下げ</div><div style="font-size:11.5px;color:var(--text3)">まだ記録がありません</div></div>';
+    :'<div class="pc-hist"><div class="pc-hl">これまでの値下げ</div><div style="font-size:13.2px;color:var(--text3)">まだ記録がありません</div></div>';
 
   document.getElementById('modal2-title').textContent=`価格変更 — ${name}`;
   document.getElementById('modal2-body').innerHTML=`
@@ -1944,7 +1952,7 @@ function scatterSvg(c){
   const used=[...new Set([...c.st,...c.sd].map(d=>d.year))];
   years=years.filter(y=>true);
   if(!years.length)years=YEAR_ORDER.filter(y=>used.includes(y));
-  if(!years.length)return '<div style="font-size:12px;color:var(--text3)">データがありません</div>';
+  if(!years.length)return '<div style="font-size:13.8px;color:var(--text3)">データがありません</div>';
 
   const W=980,H=300,L=54,R=16,T=16,B=34;
   const pw=W-L-R, ph=H-T-B;
@@ -1958,9 +1966,9 @@ function scatterSvg(c){
   for(let k=0;k<=mxKm;k+=20000){
     const y=py(k);
     g+=`<line x1="${L}" y1="${y}" x2="${W-R}" y2="${y}" stroke="#eceef0"/>`
-     + `<text x="${L-8}" y="${y+3.5}" font-size="9.5" fill="#8b939c" text-anchor="end" font-family="DM Mono">${k/10000}万</text>`;
+     + `<text x="${L-8}" y="${y+3.5}" font-size="10.9" fill="#8b939c" text-anchor="end" font-family="DM Mono">${k/10000}万</text>`;
   }
-  years.forEach((v,i)=>{ g+=`<text x="${L+(i+0.5)*(pw/years.length)}" y="${H-11}" font-size="10" fill="#4d5660" text-anchor="middle" font-weight="600">${v}</text>`; });
+  years.forEach((v,i)=>{ g+=`<text x="${L+(i+0.5)*(pw/years.length)}" y="${H-11}" font-size="11.5" fill="#4d5660" text-anchor="middle" font-weight="600">${v}</text>`; });
 
   const light=x=>['パール','白','ベージュ','シルバー'].includes(x);
   let sold='',stock='';
@@ -2000,7 +2008,7 @@ function stockTable(c){
       <td class="num">${d.cost!=null?d.cost+'万円':'—'}</td>
       <td>${d.days!=null&&d.days<3000?`<span class="pill ${cls}">${d.days}日</span>`:'—'}</td>
       <td>${sm?`<span class="pchg" title="${sm.log.map(x=>x.date+' '+x.before+'→'+x.after).join(' / ')}">${sm.n}回 <b>${sm.total}万</b></span>`:'<span style="color:var(--text3)">—</span>'}</td>
-      <td style="color:var(--text3);font-size:11px">${act}</td>
+      <td style="color:var(--text3);font-size:12.6px">${act}</td>
       <td>${d.lower4?`<button class="minibtn" onclick="openPriceChange('${encodeURIComponent(d.lower4)}','${encodeURIComponent(d.name)}',${d.price!=null?d.price:0},'${encodeURIComponent(d.cat||'')}')">価格変更</button>`:''}</td></tr>`;}).join('');
   return `<table class="dtl"><thead><tr>${th('year','年式')}<th>色</th>${th('km','走行距離')}${th('price','価格')}${th('cost','原価')}${th('days','在庫日数')}<th>値下げ</th><th>対応</th><th></th></tr></thead><tbody>${body}</tbody></table>`;
 }
@@ -2035,13 +2043,13 @@ function openModelDetail(cat,name){
   const blk=(t,arr,col)=>arr.length?`<div class="jg"><div class="jg-h" style="color:${col}">${t}</div><ul>${arr.map(x=>`<li>${x}</li>`).join('')}</ul></div>`:'';
   const jgHtml=blk('今すぐ',jg.now,'var(--red)')+blk('仕入れ方針',jg.buy,'var(--accent)')+blk('やってはいけないこと',jg.avoid,'var(--text2)');
 
-  document.getElementById('modal-title').innerHTML=`${name} <span style="font-size:11px;color:var(--text3);font-weight:400">${cat}${yearRangeLabel(name)?' ・ '+yearRangeLabel(name):''}</span>`;
+  document.getElementById('modal-title').innerHTML=`${name} <span style="font-size:12.6px;color:var(--text3);font-weight:400">${cat}${yearRangeLabel(name)?' ・ '+yearRangeLabel(name):''}</span>`;
   document.getElementById('modal-body').innerHTML=
     kpi
     + `<div class="md-sec"><div class="md-t"><svg class="ic ic-s"><use href="#i-bulb"></use></svg>この車種から言えること</div>${narHtml||'<div class="nar-b">判定に必要なデータが足りません。</div>'}</div>`
     + (jgHtml?`<div class="md-sec">${jgHtml}</div>`:'')
     + `<div class="md-sec"><div class="md-t"><svg class="ic ic-s"><use href="#i-chart"></use></svg>年式 × 走行距離</div>${scatterSvg(c)}</div>`
-    + `<div class="md-sec"><div class="md-t"><svg class="ic ic-s"><use href="#i-checks"></use></svg>在庫一覧（${c.tot}台）<span style="font-weight:400;font-size:10.5px;color:var(--text3);margin-left:8px">見出しをクリックで並べ替え</span></div><div id="mdTable">${stockTable(c)}</div></div>`;
+    + `<div class="md-sec"><div class="md-t"><svg class="ic ic-s"><use href="#i-checks"></use></svg>在庫一覧（${c.tot}台）<span style="font-weight:400;font-size:12.1px;color:var(--text3);margin-left:8px">見出しをクリックで並べ替え</span></div><div id="mdTable">${stockTable(c)}</div></div>`;
   document.getElementById('modal').classList.add('wide');
   document.getElementById('ov').style.display='block';
   document.getElementById('modal').style.display='block';
@@ -2064,7 +2072,7 @@ function renderColorAlert(){
     if(cs.ratio>=0.6||cs.missing.length)rows.push({cat,name,cs});
   });
   rows.sort((a,b)=>b.cs.ratio-a.cs.ratio||b.cs.n-a.cs.n);
-  if(!rows.length){box.innerHTML='<div style="font-size:12px;color:var(--text3);padding:6px 2px">色が偏っている車種はありません。</div>';return;}
+  if(!rows.length){box.innerHTML='<div style="font-size:13.8px;color:var(--text3);padding:6px 2px">色が偏っている車種はありません。</div>';return;}
   box.innerHTML=rows.map(r=>{
     const cs=r.cs, pct=Math.round(cs.ratio*100);
     const sev=cs.ratio>=0.85?['pill-r','危険']:cs.ratio>=0.7?['pill-y','注意']:['pill-b','監視'];
@@ -2215,7 +2223,7 @@ function colorBalanceHtml(c){
   c.st.forEach(d=>{if(d.color)im[d.color]=(im[d.color]||0)+1;});
   c.sd.forEach(d=>{if(d.color)sm[d.color]=(sm[d.color]||0)+1;});
   const keys=[...new Set([...Object.keys(im),...Object.keys(sm)])].sort((a,b)=>(im[b]||0)-(im[a]||0)||(sm[b]||0)-(sm[a]||0));
-  if(!keys.length)return'<div style="font-size:12px;color:var(--text3)">色データがありません</div>';
+  if(!keys.length)return'<div style="font-size:13.8px;color:var(--text3)">色データがありません</div>';
   const stTot=c.st.filter(d=>d.color).length;
   const dist=Object.entries(im).sort((a,b)=>b[1]-a[1]);
   const mx=Math.max(1,...keys.map(k=>Math.max(im[k]||0,sm[k]||0)));
@@ -2224,7 +2232,7 @@ function colorBalanceHtml(c){
     const top=dist[0], pct=Math.round(top[1]/stTot*100);
     const col=pct>=85?'var(--red)':pct>=70?'var(--amber)':'var(--text2)';
     h+=`<div style="margin-bottom:10px">${colorStack(dist,stTot)}
-      <div style="font-size:11px;margin-top:6px;color:var(--text2)">在庫${stTot}台 / ${dist.length}色 ・ 最多は<b style="color:${col}">${top[0]} ${top[1]}台（${pct}%）</b></div></div>`;
+      <div style="font-size:12.6px;margin-top:6px;color:var(--text2)">在庫${stTot}台 / ${dist.length}色 ・ 最多は<b style="color:${col}">${top[0]} ${top[1]}台（${pct}%）</b></div></div>`;
   }
   h+=keys.map(k=>{
     const a=im[k]||0,b=sm[k]||0;
@@ -2237,7 +2245,7 @@ function colorBalanceHtml(c){
 function renderConsult(){
   const box=document.getElementById('consultBody');if(!box)return;
   const c=consultData();
-  if(!c||!c.name){box.innerHTML='<div class="sec"><div class="sec-body" style="color:var(--text3);font-size:12px">データ読込後に車種を選んでください。</div></div>';return;}
+  if(!c||!c.name){box.innerHTML='<div class="sec"><div class="sec-body" style="color:var(--text3);font-size:13.8px">データ読込後に車種を選んでください。</div></div>';return;}
   const f=(v,u='',d=0)=>v==null?'—':(d?v.toFixed(d):Math.round(v))+u;
 
   // KPI
@@ -2263,17 +2271,17 @@ function renderConsult(){
   h+=`<div class="cs-grid">
     <div class="sec"><div class="sec-hdr">
         <span class="sec-title">${'<svg class="ic ic-s"><use href="#i-gauge"></use></svg>'}年式バランス</span>
-        <span style="font-size:10.5px;color:var(--text3)">上段＝<b style="color:var(--accent)">在庫</b> / 下段＝<b style="color:#00af44">売約実績</b>${c.rng?` ・ レンジ ${yearRangeLabel(c.name)}（${c.rng.src}）`:''}</span>
-      </div><div class="sec-body">${rows||'<div style="font-size:12px;color:var(--text3)">データがありません</div>'}</div></div>
+        <span style="font-size:12.1px;color:var(--text3)">上段＝<b style="color:var(--accent)">在庫</b> / 下段＝<b style="color:#00af44">売約実績</b>${c.rng?` ・ レンジ ${yearRangeLabel(c.name)}（${c.rng.src}）`:''}</span>
+      </div><div class="sec-body">${rows||'<div style="font-size:13.8px;color:var(--text3)">データがありません</div>'}</div></div>
     <div class="sec"><div class="sec-hdr">
         <span class="sec-title">${'<svg class="ic ic-s"><use href="#i-palette"></use></svg>'}色バランス</span>
-        <span style="font-size:10.5px;color:var(--text3)">上段＝<b style="color:var(--accent)">在庫</b> / 下段＝<b style="color:#00af44">売約実績</b></span>
+        <span style="font-size:12.1px;color:var(--text3)">上段＝<b style="color:var(--accent)">在庫</b> / 下段＝<b style="color:#00af44">売約実績</b></span>
       </div><div class="sec-body">${colorBalanceHtml(c)}</div></div>
   </div>
   <div class="sec" style="margin-bottom:12px"><div class="sec-hdr"><span class="sec-title">${'<svg class="ic ic-s"><use href="#i-chart"></use></svg>'}価格帯・走行距離帯</span></div>
     <div class="sec-body cs-grid" style="margin-bottom:0">
-      <div><div style="font-size:10.5px;color:var(--text3);font-weight:600;margin-bottom:5px">価格帯（在庫）</div><div class="barchart" id="csPrice"></div></div>
-      <div><div style="font-size:10.5px;color:var(--text3);font-weight:600;margin-bottom:5px">走行距離帯（在庫）</div><div class="barchart" id="csKm"></div></div>
+      <div><div style="font-size:12.1px;color:var(--text3);font-weight:600;margin-bottom:5px">価格帯（在庫）</div><div class="barchart" id="csPrice"></div></div>
+      <div><div style="font-size:12.1px;color:var(--text3);font-weight:600;margin-bottom:5px">走行距離帯（在庫）</div><div class="barchart" id="csKm"></div></div>
     </div></div>`;
 
   // 診断
@@ -2281,7 +2289,7 @@ function renderConsult(){
   const style={S:['var(--red)','var(--red-bg)','i-alert','最優先'],A:['var(--amber)','var(--amber-bg)','i-alert','要対応'],B:['var(--accent)','var(--accent-bg)','i-checks','良好']};
   h+=`<div class="sec"><div class="sec-hdr">
       <span class="sec-title">${'<svg class="ic ic-s"><use href="#i-bulb"></use></svg>'}在庫責任者としての所見</span>
-      <span style="font-size:10.5px;color:var(--text3)">数値から自動診断（${dg.length}件）</span>
+      <span style="font-size:12.1px;color:var(--text3)">数値から自動診断（${dg.length}件）</span>
     </div><div>${dg.map(d=>{const st=style[d.p];
       return `<div class="dg"><div class="dg-ic" style="background:${st[1]};color:${st[0]}"><svg class="ic ic-s"><use href="#${st[2]}"></use></svg></div>
         <div style="flex:1"><div class="dg-t">${d.t}</div><div class="dg-d">${d.d}</div>
@@ -2304,7 +2312,7 @@ async function aiConsult(){
   if(!key){alert('APIキーが設定されていません。\n左メニューの「API設定」からキーを入力してください。');openApiModal();return;}
   const c=consultData();if(!c||!c.name){alert('車種を選んでください。');return;}
   const box=document.getElementById('csAi'),body=document.getElementById('csAiBody');
-  box.style.display='';body.innerHTML='<div style="font-size:12px;color:var(--text3)">分析中…（10〜20秒）</div>';
+  box.style.display='';body.innerHTML='<div style="font-size:13.8px;color:var(--text3)">分析中…（10〜20秒）</div>';
   box.scrollIntoView({behavior:'smooth',block:'start'});
   const stY={},sdY={};
   c.st.forEach(d=>stY[d.year]=(stY[d.year]||0)+1);
@@ -2337,7 +2345,7 @@ async function aiConsult(){
     if(!res.ok){const e=await res.json();throw new Error(e.error?.message||('HTTP '+res.status));}
     const data=await res.json();
     const txt=data.content.filter(b=>b.type==='text').map(b=>b.text).join('\n');
-    body.innerHTML=`<div style="font-size:12.5px;line-height:1.85;white-space:pre-wrap">${txt.replace(/[<>]/g,m=>m==='<'?'&lt;':'&gt;')}</div>`;
+    body.innerHTML=`<div style="font-size:14.4px;line-height:1.85;white-space:pre-wrap">${txt.replace(/[<>]/g,m=>m==='<'?'&lt;':'&gt;')}</div>`;
   }catch(e){
     body.innerHTML=`<div class="errbox" style="margin:0">分析に失敗しました: ${e.message}</div>`;
   }
@@ -2407,8 +2415,8 @@ function renderBalance(){
 
     html+=`<div style="border-radius:8px;overflow:hidden;flex:${Math.max(total,3)};min-width:120px;background:${catBg}18;border:1px solid ${catBg}44">`;
     html+=`<div style="padding:4px 8px;background:${catBg};display:flex;justify-content:space-between;align-items:center">
-      <span style="font-size:10px;font-weight:700;color:#fff">${cat}</span>
-      <span style="font-size:9px;color:rgba(255,255,255,.75)">${total}台 ${diffStr}</span>
+      <span style="font-size:11.5px;font-weight:700;color:#fff">${cat}</span>
+      <span style="font-size:10.3px;color:rgba(255,255,255,.75)">${total}台 ${diffStr}</span>
     </div>`;
     html+=`<div style="display:flex;flex-wrap:wrap;gap:2px;padding:3px">`;
 
@@ -2433,9 +2441,9 @@ function renderBalance(){
         onmouseover="this.style.filter='brightness(1.1)';showBalTip(event,'${name}',${stock},${target},${Math.round(avgDays)},${Math.round(avgProfit)})"
         onmouseout="this.style.filter='';hideBalTip()"
         onclick="selectBalVehicle('${name}')">
-        <div style="font-size:9px;font-weight:500;color:${tc};text-align:center;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">${name}</div>
+        <div style="font-size:10.3px;font-weight:500;color:${tc};text-align:center;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">${name}</div>
         <div style="font-size:${sz>70?14:11}px;font-weight:700;color:${tc};line-height:1;margin:2px 0">${valStr}</div>
-        <div style="font-size:8px;color:${tc};opacity:.8">${sub}</div>
+        <div style="font-size:9.2px;color:${tc};opacity:.8">${sub}</div>
       </div>`;
     });
     html+='</div></div>';
@@ -2535,44 +2543,44 @@ function renderBalanceDetail(nameArg){
   const fwdCnt=items.filter(d=>d.fwd==='〇').length;
   document.getElementById('balKpiRow').innerHTML=`
     <div style="background:var(--bg2);border-radius:7px;padding:8px;text-align:center">
-      <div style="font-size:10px;color:var(--text3)">在庫台数</div>
-      <div style="font-size:20px;font-weight:700;color:#2979d4">${items.length}</div>
-      <div style="font-size:10px;color:var(--text3)">台</div>
+      <div style="font-size:11.5px;color:var(--text3)">在庫台数</div>
+      <div style="font-size:23px;font-weight:700;color:#2979d4">${items.length}</div>
+      <div style="font-size:11.5px;color:var(--text3)">台</div>
     </div>
     <div style="background:var(--bg2);border-radius:7px;padding:8px;text-align:center">
-      <div style="font-size:10px;color:var(--text3)">平均価格</div>
-      <div style="font-size:20px;font-weight:700;color:#7c3aed">${avgP>0?avgP.toFixed(0):'—'}</div>
-      <div style="font-size:10px;color:var(--text3)">万円</div>
+      <div style="font-size:11.5px;color:var(--text3)">平均価格</div>
+      <div style="font-size:23px;font-weight:700;color:#7c3aed">${avgP>0?avgP.toFixed(0):'—'}</div>
+      <div style="font-size:11.5px;color:var(--text3)">万円</div>
     </div>
     <div style="background:var(--bg2);border-radius:7px;padding:8px;text-align:center">
-      <div style="font-size:10px;color:var(--text3)">平均走行</div>
-      <div style="font-size:20px;font-weight:700;color:#d97706">${avgKm>0?(avgKm/10000).toFixed(1):'—'}</div>
-      <div style="font-size:10px;color:var(--text3)">万km</div>
+      <div style="font-size:11.5px;color:var(--text3)">平均走行</div>
+      <div style="font-size:23px;font-weight:700;color:#d97706">${avgKm>0?(avgKm/10000).toFixed(1):'—'}</div>
+      <div style="font-size:11.5px;color:var(--text3)">万km</div>
     </div>
     <div style="background:var(--bg2);border-radius:7px;padding:8px;text-align:center">
-      <div style="font-size:10px;color:var(--text3)">平均在庫日数</div>
-      <div style="font-size:20px;font-weight:700;color:#dc2626">${avgDays>0?Math.round(avgDays):'—'}</div>
-      <div style="font-size:10px;color:var(--text3)">日</div>
+      <div style="font-size:11.5px;color:var(--text3)">平均在庫日数</div>
+      <div style="font-size:23px;font-weight:700;color:#dc2626">${avgDays>0?Math.round(avgDays):'—'}</div>
+      <div style="font-size:11.5px;color:var(--text3)">日</div>
     </div>
     <div style="background:var(--bg2);border-radius:7px;padding:8px;text-align:center">
-      <div style="font-size:10px;color:var(--text3)">HV台数</div>
-      <div style="font-size:20px;font-weight:700;color:#1d4ed8">${hvCnt}</div>
-      <div style="font-size:10px;color:var(--text3)">台</div>
+      <div style="font-size:11.5px;color:var(--text3)">HV台数</div>
+      <div style="font-size:23px;font-weight:700;color:#1d4ed8">${hvCnt}</div>
+      <div style="font-size:11.5px;color:var(--text3)">台</div>
     </div>
     <div style="background:var(--bg2);border-radius:7px;padding:8px;text-align:center">
-      <div style="font-size:10px;color:var(--text3)">4WD台数</div>
-      <div style="font-size:20px;font-weight:700;color:#065f46">${fwdCnt}</div>
-      <div style="font-size:10px;color:var(--text3)">台</div>
+      <div style="font-size:11.5px;color:var(--text3)">4WD台数</div>
+      <div style="font-size:23px;font-weight:700;color:#065f46">${fwdCnt}</div>
+      <div style="font-size:11.5px;color:var(--text3)">台</div>
     </div>
     <div style="background:var(--bg2);border-radius:7px;padding:8px;text-align:center">
-      <div style="font-size:10px;color:var(--text3)">売約実績</div>
-      <div style="font-size:20px;font-weight:700;color:#16a34a">${soldItems.length}</div>
-      <div style="font-size:10px;color:var(--text3)">台</div>
+      <div style="font-size:11.5px;color:var(--text3)">売約実績</div>
+      <div style="font-size:23px;font-weight:700;color:#16a34a">${soldItems.length}</div>
+      <div style="font-size:11.5px;color:var(--text3)">台</div>
     </div>
     <div style="background:var(--bg2);border-radius:7px;padding:8px;text-align:center">
-      <div style="font-size:10px;color:var(--text3)">回転率</div>
-      <div style="font-size:20px;font-weight:700;color:#0891b2">${items.length>0?(soldItems.length/items.length).toFixed(1):'—'}</div>
-      <div style="font-size:10px;color:var(--text3)">倍</div>
+      <div style="font-size:11.5px;color:var(--text3)">回転率</div>
+      <div style="font-size:23px;font-weight:700;color:#0891b2">${items.length>0?(soldItems.length/items.length).toFixed(1):'—'}</div>
+      <div style="font-size:11.5px;color:var(--text3)">倍</div>
     </div>`;
 
   // 年式分布
@@ -2621,7 +2629,7 @@ function renderBalanceDetail(nameArg){
 
 function balBarChart(id,items,color,useItemColor){
   const el=document.getElementById(id);if(!el)return;
-  if(!items.length){el.innerHTML='<div style="color:var(--text3);font-size:11px;padding:8px">データなし</div>';return;}
+  if(!items.length){el.innerHTML='<div style="color:var(--text3);font-size:12.6px;padding:8px">データなし</div>';return;}
   const max=Math.max(...items.map(i=>i.v),1);
   el.innerHTML=items.map(({l,v,color:ic})=>{
     const c=useItemColor&&ic?ic:color;
@@ -2631,7 +2639,7 @@ function balBarChart(id,items,color,useItemColor){
 
 function balBarChart2(id,items){
   const el=document.getElementById(id);if(!el)return;
-  if(!items.length){el.innerHTML='<div style="color:var(--text3);font-size:11px;padding:8px">データなし</div>';return;}
+  if(!items.length){el.innerHTML='<div style="color:var(--text3);font-size:12.6px;padding:8px">データなし</div>';return;}
   const max=Math.max(...items.map(i=>i.v),1);
   el.innerHTML=items.map(({l,v,color})=>`<div class="brow"><div class="blbl" title="${l}">${l}</div><div class="btrack"><div class="bfill" style="width:${Math.round(v/max*100)}%;background:${color||'#2979d4'}">${v}</div></div></div>`).join('');
 }
@@ -2866,12 +2874,12 @@ ${d.cat==='軽'?
             <div class="chart-title">過去売約 走行距離分布</div>
             ${kmBar}
           </div>
-        </div>`:'<div style="font-size:11px;color:#999;margin-bottom:12px">※過去売約データなし</div>'}
+        </div>`:'<div style="font-size:12.6px;color:#999;margin-bottom:12px">※過去売約データなし</div>'}
         <div class="result-hdr">AI診断結果</div>
-        <div style="font-size:12px;line-height:1.8;white-space:pre-wrap;color:#1a2332">${text}</div>
+        <div style="font-size:13.8px;line-height:1.8;white-space:pre-wrap;color:#1a2332">${text}</div>
       </div>
       <div style="margin-top:14px;display:flex;gap:8px">
-        <button onclick="exportAiPdf('${encodeURIComponent(d.name)}','${d.year}','${km}','${d.price||'—'}万円')" style="background:#2979d4;color:#fff;border:none;padding:7px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500">📄 PDFで保存</button>
+        <button onclick="exportAiPdf('${encodeURIComponent(d.name)}','${d.year}','${km}','${d.price||'—'}万円')" style="background:#2979d4;color:#fff;border:none;padding:7px 16px;border-radius:6px;cursor:pointer;font-size:13.8px;font-weight:500">📄 PDFで保存</button>
       </div>`;
 
     document.getElementById('ai-modal-body').innerHTML=reportHtml;
@@ -2880,7 +2888,7 @@ ${d.cat==='軽'?
     document.getElementById('ai-modal-title').textContent='エラー';
     document.getElementById('ai-modal-body').innerHTML=`
       <div class="errbox"><b>エラー:</b> ${e.message}<br>
-      <span style="font-size:11px;margin-top:4px;display:block">APIキーを確認してください。</span></div>`;
+      <span style="font-size:12.6px;margin-top:4px;display:block">APIキーを確認してください。</span></div>`;
   }
 }
 
@@ -2909,29 +2917,29 @@ function exportAiPdf(nameEnc, year, km, price){
 <title>AI価格診断レポート - ${name}</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Hiragino Sans','Meiryo',sans-serif;font-size:12px;color:#1a2332;background:#f5f5f5;padding:16px}
+  body{font-family:'Hiragino Sans','Meiryo',sans-serif;font-size:13.8px;color:#1a2332;background:#f5f5f5;padding:16px}
   .wrap{background:#fff;max-width:720px;margin:0 auto;padding:24px 28px;box-shadow:0 1px 4px rgba(0,0,0,.1)}
   .hdr{border-bottom:2px solid #2979d4;padding-bottom:10px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:flex-start}
-  .hdr-title{font-size:18px;font-weight:700;color:#2979d4}
-  .hdr-sub{font-size:11px;color:#666;margin-top:3px}
-  .hdr-logo{font-size:10px;color:#999;text-align:right}
-  .area-box{background:#e8f0fb;border-radius:6px;padding:7px 12px;margin-bottom:8px;font-size:11px;color:#1d4ed8;font-weight:600}
-  .cond-box{background:#f7f9fc;border:1px solid #e0e8f0;border-radius:6px;padding:8px 12px;margin-bottom:8px;font-size:11px;color:#4a6070;display:grid;grid-template-columns:1fr 1fr;gap:4px}
-  .info-box{background:#f7f9fc;border-radius:6px;padding:7px 12px;margin-bottom:14px;font-size:11px;color:#4a6070;font-family:monospace}
+  .hdr-title{font-size:20.7px;font-weight:700;color:#2979d4}
+  .hdr-sub{font-size:12.6px;color:#666;margin-top:3px}
+  .hdr-logo{font-size:11.5px;color:#999;text-align:right}
+  .area-box{background:#e8f0fb;border-radius:6px;padding:7px 12px;margin-bottom:8px;font-size:12.6px;color:#1d4ed8;font-weight:600}
+  .cond-box{background:#f7f9fc;border:1px solid #e0e8f0;border-radius:6px;padding:8px 12px;margin-bottom:8px;font-size:12.6px;color:#4a6070;display:grid;grid-template-columns:1fr 1fr;gap:4px}
+  .info-box{background:#f7f9fc;border-radius:6px;padding:7px 12px;margin-bottom:14px;font-size:12.6px;color:#4a6070;font-family:monospace}
   .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
   .chart-box{border:1px solid #e0e0e0;border-radius:6px;padding:10px}
-  .chart-title{font-size:10px;font-weight:600;color:#555;margin-bottom:8px}
+  .chart-title{font-size:11.5px;font-weight:600;color:#555;margin-bottom:8px}
   .bar-row{display:flex;align-items:center;gap:5px;margin-bottom:3px}
-  .bar-lbl{font-size:9px;color:#777;width:52px;text-align:right;flex-shrink:0}
+  .bar-lbl{font-size:10.3px;color:#777;width:52px;text-align:right;flex-shrink:0}
   .bar-track{flex:1;height:11px;background:#f0f0f0;border-radius:2px;overflow:hidden}
   .bar-fill-p{height:100%;background:#f59e0b;border-radius:2px}
   .bar-fill-k{height:100%;background:#0d9488;border-radius:2px}
-  .bar-num{font-size:9px;color:#777;width:20px;flex-shrink:0}
-  .bar-note{margin-top:5px;padding-top:5px;border-top:1px dashed #e0e0e0;font-size:10px}
-  .result-hdr{font-size:11px;font-weight:600;color:#555;margin-bottom:6px;border-left:3px solid #2979d4;padding-left:8px}
-  .result-badge{background:#fff8e1;border-left:3px solid #f59e0b;padding:6px 10px;margin-bottom:8px;border-radius:0 4px 4px 0;font-size:11px}
-  .result-text{font-size:11px;line-height:1.8;white-space:pre-wrap}
-  .footer{margin-top:18px;padding-top:8px;border-top:1px solid #e0e0e0;display:flex;justify-content:space-between;font-size:10px;color:#999}
+  .bar-num{font-size:10.3px;color:#777;width:20px;flex-shrink:0}
+  .bar-note{margin-top:5px;padding-top:5px;border-top:1px dashed #e0e0e0;font-size:11.5px}
+  .result-hdr{font-size:12.6px;font-weight:600;color:#555;margin-bottom:6px;border-left:3px solid #2979d4;padding-left:8px}
+  .result-badge{background:#fff8e1;border-left:3px solid #f59e0b;padding:6px 10px;margin-bottom:8px;border-radius:0 4px 4px 0;font-size:12.6px}
+  .result-text{font-size:12.6px;line-height:1.8;white-space:pre-wrap}
+  .footer{margin-top:18px;padding-top:8px;border-top:1px solid #e0e0e0;display:flex;justify-content:space-between;font-size:11.5px;color:#999}
   @media print{
     body{background:#fff;padding:0}
     .wrap{box-shadow:none;max-width:100%;padding:16px}
@@ -2963,17 +2971,17 @@ function exportAiPdf(nameEnc, year, km, price){
 <!-- 市場分析モーダル -->
 <div class="ov" id="ov-market" onclick="closeMarketModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:90;backdrop-filter:blur(3px)"></div>
 <div id="modal-market" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:20px;width:600px;max-height:85vh;overflow-y:auto;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,.15)">
-  <span onclick="closeMarketModal()" style="float:right;cursor:pointer;color:var(--text3);font-size:20px;line-height:1">×</span>
-  <h3 style="font-size:14px;font-weight:700;margin-bottom:14px">📊 エリア市場分析</h3>
+  <span onclick="closeMarketModal()" style="float:right;cursor:pointer;color:var(--text3);font-size:23px;line-height:1">×</span>
+  <h3 style="font-size:16.1px;font-weight:700;margin-bottom:14px">📊 エリア市場分析</h3>
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
     <div>
-      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">車種</div>
-      <input type="text" id="marketCar" placeholder="例: N-BOX、ヴォクシー80系" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+      <div style="font-size:12.6px;color:var(--text2);margin-bottom:4px;font-weight:500">車種</div>
+      <input type="text" id="marketCar" placeholder="例: N-BOX、ヴォクシー80系" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--font);background:var(--bg3);color:var(--text)">
     </div>
     <div>
-      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">エリア</div>
-      <select id="marketArea" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+      <div style="font-size:12.6px;color:var(--text2);margin-bottom:4px;font-weight:500">エリア</div>
+      <select id="marketArea" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--font);background:var(--bg3);color:var(--text)">
         <option value="石川県・富山県">石川県・富山県</option>
         <option value="北陸・甲信越">北陸・甲信越</option>
         <option value="北陸・甲信越／東海">北陸・甲信越／東海</option>
@@ -2987,23 +2995,23 @@ function exportAiPdf(nameEnc, year, km, price){
 
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
     <div>
-      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">年式（任意）</div>
-      <input type="text" id="marketYear" placeholder="例: R3〜R5" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+      <div style="font-size:12.6px;color:var(--text2);margin-bottom:4px;font-weight:500">年式（任意）</div>
+      <input type="text" id="marketYear" placeholder="例: R3〜R5" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--font);background:var(--bg3);color:var(--text)">
     </div>
     <div>
-      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">価格帯（任意）</div>
-      <input type="text" id="marketPrice" placeholder="例: 50〜100万" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+      <div style="font-size:12.6px;color:var(--text2);margin-bottom:4px;font-weight:500">価格帯（任意）</div>
+      <input type="text" id="marketPrice" placeholder="例: 50〜100万" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--font);background:var(--bg3);color:var(--text)">
     </div>
     <div>
-      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">修復歴</div>
-      <select id="marketRepair" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+      <div style="font-size:12.6px;color:var(--text2);margin-bottom:4px;font-weight:500">修復歴</div>
+      <select id="marketRepair" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--font);background:var(--bg3);color:var(--text)">
         <option value="修復歴なしのみ">修復歴なしのみ</option>
         <option value="修復歴含む">修復歴含む</option>
       </select>
     </div>
   </div>
 
-  <button onclick="runMarketAnalysis()" style="width:100%;background:#065f46;color:#fff;border:none;padding:9px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;font-family:var(--font);margin-bottom:12px">
+  <button onclick="runMarketAnalysis()" style="width:100%;background:#065f46;color:#fff;border:none;padding:9px;border-radius:6px;cursor:pointer;font-size:14.9px;font-weight:500;font-family:var(--font);margin-bottom:12px">
     🔍 分析開始
   </button>
 
@@ -3096,14 +3104,14 @@ async function runMarketAnalysis(){
     const dateStr=now.toLocaleDateString('ja-JP',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
 
     resultEl.innerHTML=`
-      <div style="background:var(--gbg);border-radius:6px;padding:7px 12px;margin-bottom:8px;font-size:11px;color:var(--green);font-weight:600">
+      <div style="background:var(--gbg);border-radius:6px;padding:7px 12px;margin-bottom:8px;font-size:12.6px;color:var(--green);font-weight:600">
         分析完了: ${car} / ${area}${yearCond}${priceCond} / ${repair}
       </div>
-      <div style="font-size:12px;line-height:1.8;white-space:pre-wrap;color:var(--text);margin-bottom:12px">${text}</div>
+      <div style="font-size:13.8px;line-height:1.8;white-space:pre-wrap;color:var(--text);margin-bottom:12px">${text}</div>
       <div style="display:flex;gap:8px">
-        <button onclick="exportMarketPdf('${encodeURIComponent(car)}','${encodeURIComponent(area)}')" style="background:#065f46;color:#fff;border:none;padding:7px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500">📄 PDFで保存</button>
+        <button onclick="exportMarketPdf('${encodeURIComponent(car)}','${encodeURIComponent(area)}')" style="background:#065f46;color:#fff;border:none;padding:7px 16px;border-radius:6px;cursor:pointer;font-size:13.8px;font-weight:500">📄 PDFで保存</button>
       </div>
-      <div style="font-size:10px;color:var(--text3);margin-top:8px">分析日時: ${dateStr}</div>`;
+      <div style="font-size:11.5px;color:var(--text3);margin-top:8px">分析日時: ${dateStr}</div>`;
 
   }catch(e){
     resultEl.innerHTML=`<div class="errbox"><b>エラー:</b> ${e.message}</div>`;
@@ -3125,15 +3133,15 @@ function exportMarketPdf(carEnc, areaEnc){
 <title>市場分析レポート - ${car}</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Hiragino Sans','Meiryo',sans-serif;font-size:12px;color:#1a2332;background:#f5f5f5;padding:16px}
+  body{font-family:'Hiragino Sans','Meiryo',sans-serif;font-size:13.8px;color:#1a2332;background:#f5f5f5;padding:16px}
   .wrap{background:#fff;max-width:720px;margin:0 auto;padding:24px 28px;box-shadow:0 1px 4px rgba(0,0,0,.1)}
   .hdr{border-bottom:2px solid #065f46;padding-bottom:10px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:flex-start}
-  .hdr-title{font-size:18px;font-weight:700;color:#065f46}
-  .hdr-sub{font-size:11px;color:#666;margin-top:3px}
-  .hdr-logo{font-size:10px;color:#999;text-align:right}
-  .badge{background:#d1fae5;color:#065f46;border-radius:6px;padding:7px 12px;margin-bottom:12px;font-size:11px;font-weight:600}
-  .result{font-size:12px;line-height:1.8;white-space:pre-wrap}
-  .footer{margin-top:18px;padding-top:8px;border-top:1px solid #e0e0e0;display:flex;justify-content:space-between;font-size:10px;color:#999}
+  .hdr-title{font-size:20.7px;font-weight:700;color:#065f46}
+  .hdr-sub{font-size:12.6px;color:#666;margin-top:3px}
+  .hdr-logo{font-size:11.5px;color:#999;text-align:right}
+  .badge{background:#d1fae5;color:#065f46;border-radius:6px;padding:7px 12px;margin-bottom:12px;font-size:12.6px;font-weight:600}
+  .result{font-size:13.8px;line-height:1.8;white-space:pre-wrap}
+  .footer{margin-top:18px;padding-top:8px;border-top:1px solid #e0e0e0;display:flex;justify-content:space-between;font-size:11.5px;color:#999}
   @media print{body{background:#fff;padding:0}.wrap{box-shadow:none}button{display:none}}
 </style></head><body>
 <div class="wrap">
@@ -3179,35 +3187,35 @@ function exportUnlistedPdf(){
     if(!el) return '';
     if(!el.children.length) return `
       <div style="margin-bottom:16px">
-        <div style="background:${p.bg};color:${p.color};padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;display:flex;justify-content:space-between">
+        <div style="background:${p.bg};color:${p.color};padding:6px 12px;border-radius:6px;font-size:13.8px;font-weight:700;display:flex;justify-content:space-between">
           <span>${p.title}</span><span>0台</span>
         </div>
-        <div style="border:1px solid #e0e0e0;border-top:none;padding:8px 12px;font-size:11px;color:#999">該当車両なし</div>
+        <div style="border:1px solid #e0e0e0;border-top:none;padding:8px 12px;font-size:12.6px;color:#999">該当車両なし</div>
       </div>`;
     const items = Array.from(el.children).map(item => {
       const name = item.dataset.name || item.querySelector('.aname')?.textContent || '';
       const det  = item.dataset.det  || item.querySelector('.adet')?.textContent  || '';
       const pill = item.dataset.lbl  || item.querySelector('.pill')?.textContent  || '';
       return `<tr>
-        <td style="padding:4px 8px;border-bottom:1px solid #eee;font-size:11px;font-weight:500">${name}</td>
-        <td style="padding:4px 8px;border-bottom:1px solid #eee;font-size:10px;color:#666">${det}</td>
+        <td style="padding:4px 8px;border-bottom:1px solid #eee;font-size:12.6px;font-weight:500">${name}</td>
+        <td style="padding:4px 8px;border-bottom:1px solid #eee;font-size:11.5px;color:#666">${det}</td>
         <td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:center">
-          <span style="background:${p.bg};color:${p.color};padding:1px 8px;border-radius:10px;font-size:10px;font-weight:600">${pill}</span>
+          <span style="background:${p.bg};color:${p.color};padding:1px 8px;border-radius:10px;font-size:11.5px;font-weight:600">${pill}</span>
         </td>
       </tr>`;
     }).join('');
     return `
       <div style="margin-bottom:16px">
-        <div style="background:${p.bg};color:${p.color};padding:6px 12px;border-radius:6px 6px 0 0;font-size:12px;font-weight:700;display:flex;justify-content:space-between">
+        <div style="background:${p.bg};color:${p.color};padding:6px 12px;border-radius:6px 6px 0 0;font-size:13.8px;font-weight:700;display:flex;justify-content:space-between">
           <span>${p.title}</span>
           <span>${el.children.length}台</span>
         </div>
         <table style="width:100%;border-collapse:collapse;border:1px solid #e0e0e0;border-top:none">
           <thead>
             <tr style="background:#f7f9fc">
-              <th style="padding:4px 8px;font-size:10px;color:#666;text-align:left;font-weight:600;border-bottom:1px solid #e0e0e0">車名 / 下4桁</th>
-              <th style="padding:4px 8px;font-size:10px;color:#666;text-align:left;font-weight:600;border-bottom:1px solid #e0e0e0">詳細</th>
-              <th style="padding:4px 8px;font-size:10px;color:#666;text-align:center;font-weight:600;border-bottom:1px solid #e0e0e0;width:80px">状況</th>
+              <th style="padding:4px 8px;font-size:11.5px;color:#666;text-align:left;font-weight:600;border-bottom:1px solid #e0e0e0">車名 / 下4桁</th>
+              <th style="padding:4px 8px;font-size:11.5px;color:#666;text-align:left;font-weight:600;border-bottom:1px solid #e0e0e0">詳細</th>
+              <th style="padding:4px 8px;font-size:11.5px;color:#666;text-align:center;font-weight:600;border-bottom:1px solid #e0e0e0;width:80px">状況</th>
             </tr>
           </thead>
           <tbody>${items}</tbody>
@@ -3227,29 +3235,29 @@ function exportUnlistedPdf(){
 <title>未掲載管理レポート ${dateStr}</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Hiragino Sans','Meiryo',sans-serif;font-size:12px;color:#1a2332;background:#f5f5f5;padding:16px}
+  body{font-family:'Hiragino Sans','Meiryo',sans-serif;font-size:13.8px;color:#1a2332;background:#f5f5f5;padding:16px}
   .wrap{background:#fff;max-width:760px;margin:0 auto;padding:24px 28px;box-shadow:0 1px 4px rgba(0,0,0,.1)}
   .hdr{border-bottom:2px solid #2979d4;padding-bottom:10px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-start}
   .kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px}
   .kpi-box{background:#f7f9fc;border:1px solid #e0e8f0;border-radius:6px;padding:8px 10px;text-align:center}
-  .kpi-lbl{font-size:9px;color:#888;margin-bottom:3px}
-  .kpi-val{font-size:18px;font-weight:700;font-family:monospace}
-  .footer{margin-top:16px;padding-top:8px;border-top:1px solid #e0e0e0;display:flex;justify-content:space-between;font-size:10px;color:#999}
+  .kpi-lbl{font-size:10.3px;color:#888;margin-bottom:3px}
+  .kpi-val{font-size:20.7px;font-weight:700;font-family:monospace}
+  .footer{margin-top:16px;padding-top:8px;border-top:1px solid #e0e0e0;display:flex;justify-content:space-between;font-size:11.5px;color:#999}
   @media print{body{background:#fff;padding:0}.wrap{box-shadow:none;max-width:100%}button{display:none}}
 </style></head><body>
 <div class="wrap">
   <div class="hdr">
     <div>
-      <div style="font-size:18px;font-weight:700;color:#2979d4">未掲載車両管理レポート</div>
-      <div style="font-size:11px;color:#666;margin-top:3px">出力日時: ${dateStr} ${timeStr}</div>
+      <div style="font-size:20.7px;font-weight:700;color:#2979d4">未掲載車両管理レポート</div>
+      <div style="font-size:12.6px;color:#666;margin-top:3px">出力日時: ${dateStr} ${timeStr}</div>
     </div>
   </div>
   <div class="kpi-row">
-    <div class="kpi-box"><div class="kpi-lbl">未掲載 合計</div><div class="kpi-val" style="color:#dc2626">${total}</div><div style="font-size:9px;color:#888;margin-top:2px">台</div></div>
-    <div class="kpi-box"><div class="kpi-lbl">入庫待ち</div><div class="kpi-val" style="color:#d97706">${wait}</div><div style="font-size:9px;color:#888;margin-top:2px">台</div></div>
-    <div class="kpi-box"><div class="kpi-lbl">鈑金・仕上げ</div><div class="kpi-val" style="color:#dc2626">${sheet}</div><div style="font-size:9px;color:#888;margin-top:2px">台</div></div>
-    <div class="kpi-box"><div class="kpi-lbl">掲載可能</div><div class="kpi-val" style="color:#16a34a">${ready}</div><div style="font-size:9px;color:#888;margin-top:2px">台</div></div>
-    <div class="kpi-box"><div class="kpi-lbl">その他</div><div class="kpi-val" style="color:#4a6070">${other}</div><div style="font-size:9px;color:#888;margin-top:2px">台</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">未掲載 合計</div><div class="kpi-val" style="color:#dc2626">${total}</div><div style="font-size:10.3px;color:#888;margin-top:2px">台</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">入庫待ち</div><div class="kpi-val" style="color:#d97706">${wait}</div><div style="font-size:10.3px;color:#888;margin-top:2px">台</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">鈑金・仕上げ</div><div class="kpi-val" style="color:#dc2626">${sheet}</div><div style="font-size:10.3px;color:#888;margin-top:2px">台</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">掲載可能</div><div class="kpi-val" style="color:#16a34a">${ready}</div><div style="font-size:10.3px;color:#888;margin-top:2px">台</div></div>
+    <div class="kpi-box"><div class="kpi-lbl">その他</div><div class="kpi-val" style="color:#4a6070">${other}</div><div style="font-size:10.3px;color:#888;margin-top:2px">台</div></div>
   </div>
   ${phaseHtml}
   <div class="footer">
@@ -3268,22 +3276,22 @@ loadAll();
 <!-- API設定モーダル -->
 <div class="ov" id="ov-api" onclick="closeApiModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:90;backdrop-filter:blur(3px)"></div>
 <div id="modal-api" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:20px;width:380px;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,.15)">
-  <span onclick="closeApiModal()" style="float:right;cursor:pointer;color:var(--text3);font-size:20px;line-height:1">×</span>
-  <h3 style="font-size:14px;font-weight:700;margin-bottom:12px">⚙ AI価格診断 設定</h3>
-  <div style="font-size:11px;color:var(--text2);margin-bottom:8px">Anthropic APIキーを入力してください。<br>ブラウザに保存されます（外部送信なし）。</div>
-  <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-..." style="width:100%;padding:8px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--mono);background:var(--bg3);color:var(--text);margin-bottom:10px;box-sizing:border-box">
+  <span onclick="closeApiModal()" style="float:right;cursor:pointer;color:var(--text3);font-size:23px;line-height:1">×</span>
+  <h3 style="font-size:16.1px;font-weight:700;margin-bottom:12px">⚙ AI価格診断 設定</h3>
+  <div style="font-size:12.6px;color:var(--text2);margin-bottom:8px">Anthropic APIキーを入力してください。<br>ブラウザに保存されます（外部送信なし）。</div>
+  <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-..." style="width:100%;padding:8px 10px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--mono);background:var(--bg3);color:var(--text);margin-bottom:10px;box-sizing:border-box">
   <div style="display:flex;gap:8px">
-    <button onclick="saveApiKey()" style="flex:1;background:var(--accent);color:#fff;border:none;padding:8px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500">保存</button>
-    <button onclick="clearApiKey()" style="background:var(--rbg);color:var(--red);border:1px solid var(--red);padding:8px 12px;border-radius:6px;cursor:pointer;font-size:12px">削除</button>
+    <button onclick="saveApiKey()" style="flex:1;background:var(--accent);color:#fff;border:none;padding:8px;border-radius:6px;cursor:pointer;font-size:13.8px;font-weight:500">保存</button>
+    <button onclick="clearApiKey()" style="background:var(--rbg);color:var(--red);border:1px solid var(--red);padding:8px 12px;border-radius:6px;cursor:pointer;font-size:13.8px">削除</button>
   </div>
-  <div id="apiKeyStatus" style="font-size:11px;margin-top:8px;color:var(--green)"></div>
+  <div id="apiKeyStatus" style="font-size:12.6px;margin-top:8px;color:var(--green)"></div>
 </div>
 
 <!-- AI診断結果モーダル -->
 <div class="ov" id="ov-ai" onclick="closeAiModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:90;backdrop-filter:blur(3px)"></div>
 <div id="modal-ai" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:20px;width:560px;max-height:78vh;overflow-y:auto;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,.15)">
-  <span onclick="closeAiModal()" style="float:right;cursor:pointer;color:var(--text3);font-size:20px;line-height:1">×</span>
-  <h3 id="ai-modal-title" style="font-size:14px;font-weight:700;margin-bottom:12px">AI価格診断</h3>
+  <span onclick="closeAiModal()" style="float:right;cursor:pointer;color:var(--text3);font-size:23px;line-height:1">×</span>
+  <h3 id="ai-modal-title" style="font-size:16.1px;font-weight:700;margin-bottom:12px">AI価格診断</h3>
   <div id="ai-modal-body"></div>
 </div>
 
@@ -3291,17 +3299,17 @@ loadAll();
 <!-- 市場分析モーダル -->
 <div class="ov" id="ov-market" onclick="closeMarketModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:90;backdrop-filter:blur(3px)"></div>
 <div id="modal-market" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:20px;width:600px;max-height:85vh;overflow-y:auto;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,.15)">
-  <span onclick="closeMarketModal()" style="float:right;cursor:pointer;color:var(--text3);font-size:20px;line-height:1">×</span>
-  <h3 style="font-size:14px;font-weight:700;margin-bottom:14px">📊 エリア市場分析</h3>
+  <span onclick="closeMarketModal()" style="float:right;cursor:pointer;color:var(--text3);font-size:23px;line-height:1">×</span>
+  <h3 style="font-size:16.1px;font-weight:700;margin-bottom:14px">📊 エリア市場分析</h3>
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
     <div>
-      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">車種</div>
-      <input type="text" id="marketCar" placeholder="例: N-BOX、ヴォクシー80系" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+      <div style="font-size:12.6px;color:var(--text2);margin-bottom:4px;font-weight:500">車種</div>
+      <input type="text" id="marketCar" placeholder="例: N-BOX、ヴォクシー80系" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--font);background:var(--bg3);color:var(--text)">
     </div>
     <div>
-      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">エリア</div>
-      <select id="marketArea" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+      <div style="font-size:12.6px;color:var(--text2);margin-bottom:4px;font-weight:500">エリア</div>
+      <select id="marketArea" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--font);background:var(--bg3);color:var(--text)">
         <option value="石川県・富山県">石川県・富山県</option>
         <option value="北陸・甲信越">北陸・甲信越</option>
         <option value="北陸・甲信越／東海">北陸・甲信越／東海</option>
@@ -3315,23 +3323,23 @@ loadAll();
 
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
     <div>
-      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">年式（任意）</div>
-      <input type="text" id="marketYear" placeholder="例: R3〜R5" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+      <div style="font-size:12.6px;color:var(--text2);margin-bottom:4px;font-weight:500">年式（任意）</div>
+      <input type="text" id="marketYear" placeholder="例: R3〜R5" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--font);background:var(--bg3);color:var(--text)">
     </div>
     <div>
-      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">価格帯（任意）</div>
-      <input type="text" id="marketPrice" placeholder="例: 50〜100万" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+      <div style="font-size:12.6px;color:var(--text2);margin-bottom:4px;font-weight:500">価格帯（任意）</div>
+      <input type="text" id="marketPrice" placeholder="例: 50〜100万" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--font);background:var(--bg3);color:var(--text)">
     </div>
     <div>
-      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">修復歴</div>
-      <select id="marketRepair" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg3);color:var(--text)">
+      <div style="font-size:12.6px;color:var(--text2);margin-bottom:4px;font-weight:500">修復歴</div>
+      <select id="marketRepair" style="width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--font);background:var(--bg3);color:var(--text)">
         <option value="修復歴なしのみ">修復歴なしのみ</option>
         <option value="修復歴含む">修復歴含む</option>
       </select>
     </div>
   </div>
 
-  <button onclick="runMarketAnalysis()" style="width:100%;background:#065f46;color:#fff;border:none;padding:9px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;font-family:var(--font);margin-bottom:12px">
+  <button onclick="runMarketAnalysis()" style="width:100%;background:#065f46;color:#fff;border:none;padding:9px;border-radius:6px;cursor:pointer;font-size:14.9px;font-weight:500;font-family:var(--font);margin-bottom:12px">
     🔍 分析開始
   </button>
 
