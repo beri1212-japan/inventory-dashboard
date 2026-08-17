@@ -2195,7 +2195,7 @@ const CM_KEY_OLD='cmatch_v1';
 /* CM = { months:{ '2026年08月':{ym,exported,rows[],savedAt}, ... }, cur:'2026年08月' }
    月別に貯めていくので、月を切り替えて見たり前月と比べたりできる。 */
 let CM=null;
-const CM_FULL_MONTHS=3;   // 日別データまで保持する月数。それ以前は月合計だけにして容量を抑える
+const CM_FULL_MONTHS=24;  // 日別データまで保持する月数。入りきらなければ保存時に自動で減らす
 const CM_VIEW={period:'cur'};   // cur | 3 | 6 | 12 | all
 function cmMonths(){return CM?Object.keys(CM.months).sort():[];}          // 古い順
 /* 対象期間に含まれる月（古い順）
@@ -2383,7 +2383,16 @@ function cmPack(o,fullMonths){
                   totalDays:r.totalDays,activeDays:r.activeDays,m:r.m};
         }
         const c=Object.assign({},r);delete c._hit;
-        c.d=Object.fromEntries(Object.entries(r.d||{}).map(([mk,a])=>[mk,a.map(v=>v==null?'':v).join(',')]));
+        // 画面表示は在庫表側の値を使うので、C-match側の重複情報は保存しない
+        delete c.maker;delete c.priceDisp;delete c.kmDisp;delete c.shaken;delete c.grade;delete c.color;
+        // 日別は文字列に畳む。月合計が0の指標（問合せ・お気に入りなど大半はゼロ）は
+        // 日別を丸ごと捨てる。これで容量が数分の一になり、日別を長く持てる。
+        const dd={};
+        Object.entries(r.d||{}).forEach(([mk,a])=>{
+          if(!(r.m&&r.m[mk]>0))return;
+          dd[mk]=a.map(v=>v==null?'':v).join(',');
+        });
+        c.d=dd;
         return c;
       })}];
   })), cur:o.cur};
@@ -2400,11 +2409,12 @@ function cmUnpack(o){
 /* 保存。入りきらないときは ①日別を残す月数を減らす ②それでもダメなら古い月を捨てる */
 function cmSave(){
   const dropped=[];
-  for(let full=CM_FULL_MONTHS;full>=0;full--){
+  for(const full of [CM_FULL_MONTHS,18,12,9,6,4,3,2,1,0]){
+    if(full>CM_FULL_MONTHS)continue;
     try{ localStorage.setItem(CM_KEY,JSON.stringify(cmPack(CM,full)));
          if(dropped.length)alert('保存容量の上限のため、古い月を削除しました：'+dropped.join(' / '));
          return true; }
-    catch(e){/* 次のループでさらに削る */}
+    catch(e){/* 日別を残す月数を減らして再挑戦 */}
   }
   for(let i=0;i<40;i++){
     const a=cmMonths();
@@ -2753,6 +2763,64 @@ function cmCarAdvice(d){
   }
   return out;
 }
+/* 在庫期間ぶんの日別を1本につなげる。日別が残っている月だけを時系列で連結する */
+function cmCarSeries(key){
+  const out=[];
+  cmMonths().forEach(ym=>{
+    const mo=CM.months[ym];if(!mo||mo.slim)return;
+    const r=mo.rows.find(x=>x.k===key);
+    if(!r||!r.d||!r.d.view)return;
+    const y=+ym.slice(0,4), m=+ym.replace(/^\d{4}年/,'').replace('月','');
+    const dv=r.d.view, di=r.d.inq||[];
+    let last=0;for(let i=0;i<dv.length;i++)if(dv[i]!=null)last=i+1;
+    while(last>1&&dv[last-1]===0&&(!di[last-1]))last--;
+    for(let i=0;i<last;i++){
+      if(dv[i]==null)continue;
+      out.push({ymd:`${y}-${('0'+m).slice(-2)}-${('0'+(i+1)).slice(-2)}`,ym,day:i+1,v:dv[i],inq:di[i]||0});
+    }
+  });
+  return out;
+}
+/* 連続タイムライン（在庫期間ぶん）。値下げ・問合せを重ねる */
+function cmCarTimelineSvg(series,pchg){
+  if(series.length<2)return '';
+  const W=900,H=200,L=44,R=14,T=20,B=32;
+  const n=series.length;
+  const max=Math.max(...series.map(s=>s.v),1);
+  const px=i=>L+(n>1?i/(n-1):0)*(W-L-R);
+  const py=v=>T+(1-v/max)*(H-T-B);
+  let grid='';
+  [0,.5,1].forEach(f=>{const y=T+(1-f)*(H-T-B);
+    grid+=`<line x1="${L}" y1="${y}" x2="${W-R}" y2="${y}" stroke="#eef0f2"/>`
+        +`<text x="${L-6}" y="${y+4}" text-anchor="end" font-size="10" fill="#8b95a1" font-family="var(--mono)">${Math.round(max*f)}</text>`;});
+  // 月の境目に薄い区切りとラベル
+  let months='';
+  let prev=null;
+  series.forEach((s,i)=>{
+    if(s.ym===prev)return;prev=s.ym;
+    const x=px(i);
+    if(i>0)months+=`<line x1="${x.toFixed(1)}" y1="${T}" x2="${x.toFixed(1)}" y2="${H-B}" stroke="#e3e5e6"/>`;
+    months+=`<text x="${(x+4).toFixed(1)}" y="${H-10}" font-size="10" fill="#8b95a1">${s.ym.replace('年','/').replace('月','')}</text>`;
+  });
+  const line=series.map((s,i)=>(i?'L':'M')+px(i).toFixed(1)+' '+py(s.v).toFixed(1)).join(' ');
+  const area=`M${px(0)} ${py(0)} `+series.map((s,i)=>'L'+px(i).toFixed(1)+' '+py(s.v).toFixed(1)).join(' ')+` L${px(n-1)} ${py(0)} Z`;
+  let dots='';
+  series.forEach((s,i)=>{if(s.inq)dots+=`<circle cx="${px(i).toFixed(1)}" cy="${py(s.v).toFixed(1)}" r="4" fill="#047857"><title>${s.ymd} 問合せ${s.inq}件</title></circle>`;});
+  let cuts='';
+  (pchg||[]).forEach(c=>{
+    const i=series.findIndex(s=>s.ymd===c.date);
+    if(i<0)return;
+    const x=px(i);
+    cuts+=`<line x1="${x.toFixed(1)}" y1="${T}" x2="${x.toFixed(1)}" y2="${H-B}" stroke="#d97706" stroke-width="1.5" stroke-dasharray="4 3"/>`
+        +`<text x="${x.toFixed(1)}" y="${T-6}" text-anchor="middle" font-size="10" fill="#b45309" font-weight="700">▼${Math.abs(c.diff)}万</text>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:200px;display:block">
+    <defs><linearGradient id="cmtl" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="var(--accent)" stop-opacity=".18"/><stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>
+    ${grid}${months}<path d="${area}" fill="url(#cmtl)"/>
+    <path d="${line}" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+    ${cuts}${dots}</svg>`;
+}
 /* 個車の日別グラフ（値下げの位置を縦線で重ねる） */
 function cmCarDailySvg(rec,ym,pchg){
   const arr=(rec.d&&rec.d.view)||[];
@@ -2826,6 +2894,12 @@ function openCmDetail(l4,nm,cat){
     <div style="font-size:22px;font-weight:700;font-family:var(--mono);line-height:1.15;color:${c||'var(--text)'}">${v}</div>
     <div style="font-size:11.5px;color:var(--text3)">${s||''}</div></div>`;
   const vpd=r&&r.activeDays?(r.m.view/r.activeDays):0;
+  // 保存されている全月を合算＝在庫期間ぶんの通算
+  const tot=mrows.reduce((s,x)=>({view:s.view+x.view,inq:s.inq+x.inq,fav:s.fav+x.fav,pw:s.pw+x.pw,act:s.act+x.act}),
+                         {view:0,inq:0,fav:0,pw:0,act:0});
+  const totVpd=tot.act?tot.view/tot.act:0;
+  const totLabel=mrows.length?(mrows.length===1?mrows[0].ym:`${mrows[0].ym}〜${mrows[mrows.length-1].ym}（${mrows.length}か月）`):'';
+  const series=r?cmCarSeries(r.k):[];
   document.getElementById('modal2-title').textContent=`反響 ─ ${d.name}　車体${d.lower4}`;
   document.getElementById('modal2-body').innerHTML=`
     <div style="font-size:13.2px;color:var(--text2);margin-bottom:10px">
@@ -2838,11 +2912,11 @@ function openCmDetail(l4,nm,cat){
     </div>
 
     ${r?`<div class="cmstats" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px">
-      ${stat('閲覧数',r.m.view||0,cmScopeLabel(),'#0559d2')}
-      ${stat('1日あたり',vpd.toFixed(1),`全在庫の中央値 ${a.medAll.toFixed(1)}`,vpd>=a.medAll?'#047857':'#d97706')}
-      ${stat('問合せ',cmNum(r.m.inq),'件',cmNum(r.m.inq)?'#047857':'var(--text3)')}
-      ${stat('お気に入り',cmNum(r.m.fav),'件','#b45309')}
-      ${stat('値下げ待ち',cmNum(r.m.pw),'件',cmNum(r.m.pw)?'#b91c1c':'var(--text3)')}
+      ${stat('閲覧数（通算）',tot.view.toLocaleString(),totLabel+`　当月 ${r.m.view||0}`,'#0559d2')}
+      ${stat('1日あたり',totVpd.toFixed(1),`全在庫の中央値 ${a.medAll.toFixed(1)}`,totVpd>=a.medAll?'#047857':'#d97706')}
+      ${stat('問合せ（通算）',tot.inq,`件　当月 ${cmNum(r.m.inq)}`,tot.inq?'#047857':'var(--text3)')}
+      ${stat('お気に入り（通算）',tot.fav,`件　当月 ${cmNum(r.m.fav)}`,'#b45309')}
+      ${stat('値下げ待ち（通算）',tot.pw,`件　当月 ${cmNum(r.m.pw)}`,tot.pw?'#b91c1c':'var(--text3)')}
     </div>`:''}
 
     <div style="border-left:4px solid ${col};background:${bg};border-radius:8px;padding:12px 14px;margin-bottom:12px">
@@ -2861,10 +2935,17 @@ function openCmDetail(l4,nm,cat){
       <div style="font-size:12.6px;font-weight:700;margin-bottom:4px">月ごとの閲覧数<span style="font-weight:400;color:var(--text3)">（緑＝その月に問合せあり）</span></div>
       ${cmCarMonthlySvg(mrows)}</div>`:''}
 
-    ${dm?`<div style="margin-bottom:12px">
+    ${series.length>1?`<div style="margin-bottom:12px">
+      <div style="font-size:12.6px;font-weight:700;margin-bottom:4px">日別の閲覧数（${series[0].ymd.slice(5).replace('-','/')} 〜 ${series[series.length-1].ymd.slice(5).replace('-','/')}・${series.length}日分）
+        <span style="font-weight:400;color:var(--text3)">（オレンジの点線＝値下げした日、緑の点＝問合せが入った日）</span></div>
+      ${cmCarTimelineSvg(series,d.pchg)}</div>`
+      :(dm?`<div style="margin-bottom:12px">
       <div style="font-size:12.6px;font-weight:700;margin-bottom:4px">${dm.ym} の日別閲覧数
         <span style="font-weight:400;color:var(--text3)">（オレンジの点線＝値下げした日、緑の点＝問合せが入った日）</span></div>
-      ${cmCarDailySvg(dm.rec,dm.ym,d.pchg)}</div>`:''}
+      ${cmCarDailySvg(dm.rec,dm.ym,d.pchg)}</div>`:'')}
+    ${d.days!=null&&mrows.length?`<div style="font-size:12.6px;color:var(--text3);margin-bottom:12px">
+      在庫 ${d.days}日に対し、反響データは ${mrows.length}か月分（${totLabel}）を保存しています。
+      ${d.days>mrows.length*31?'これより前の期間はC-matchのCSVを追加で読み込むと表示されます。':''}</div>`:''}
 
     ${ps?`<div style="margin-bottom:12px">
       <div style="font-size:12.6px;font-weight:700;margin-bottom:4px">値下げ履歴</div>
@@ -3272,8 +3353,9 @@ function priceSummary(d){
 let _pcTarget=null;
 function openPriceChange(lower4,name,cur,cat){
   lower4=decodeURIComponent(lower4); name=decodeURIComponent(name); cat=cat?decodeURIComponent(cat):'';
-  _pcTarget={lower4,name,cur:Number(cur),cat};
   const d=(STOCK.find(x=>x.lower4===lower4&&x.name===name&&(!cat||x.cat===cat)))||{};
+  // 下4桁はジャンルをまたいで重複することがあるので、年式・走行距離も一緒に渡して確実に1台に絞る
+  _pcTarget={lower4,name,cur:Number(cur),cat,year:d.year||'',km:d.km!=null?d.km:null};
   const sum=priceSummary(d);
   const hist=sum?`<div class="pc-hist"><div class="pc-hl">これまでの値下げ</div>${sum.log.map(x=>
       `<div class="pc-hr"><span>${x.date.replace(/^\d{4}-/,'')}</span><b>${x.before} → ${x.after}</b><em>${x.diff}万</em></div>`).join('')}
@@ -3324,7 +3406,8 @@ async function submitPriceChange(){
   btn.disabled=true;btn.textContent='送信中…';msg.className='pc-msg';msg.textContent='';
   try{
     const res=await fetch(PRICE_GAS,{method:'POST',body:JSON.stringify({
-      action:'setPrice',lower4:_pcTarget.lower4,name:_pcTarget.name,cat:_pcTarget.cat,newPrice:v,
+      action:'setPrice',lower4:_pcTarget.lower4,name:_pcTarget.name,cat:_pcTarget.cat,
+      year:_pcTarget.year,km:_pcTarget.km,newPrice:v,
       reason:document.getElementById('pcReason').value,staff})});
     const j=await res.json();
     if(!j.ok){
