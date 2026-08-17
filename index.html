@@ -45,7 +45,24 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 @keyframes spin{to{transform:rotate(360deg);}}
 .main{padding:8px 12px;max-width:1800px;margin:0 auto;}
 .page{display:none;}.page.active{display:block;}
-.summary{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px;}
+/* カテゴリ4枚は従来幅の7割。余った分は未掲載＋在庫合計カードが受け持つ */
+.summary{display:grid;grid-template-columns:repeat(4,minmax(0,.7fr)) minmax(0,1.1fr) minmax(0,1.1fr);gap:8px;margin-bottom:12px;}
+.card-teisu{font-size:11.5px;margin-top:4px;color:var(--text3);white-space:nowrap;}
+.card-teisu b{font-weight:700;font-family:var(--mono);}
+.mtag{font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:10px;white-space:nowrap;}
+.mtag-hv{background:#dbeafe;color:#1d4ed8;}
+.mtag-fwd{background:#d1fae5;color:#065f46;}
+/* 在庫日数ガジェット */
+.dgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.dtile{border:1px solid var(--border);border-radius:8px;padding:9px 12px;cursor:pointer;background:var(--bg2);transition:box-shadow .15s,border-color .15s;}
+.dtile:hover{box-shadow:0 2px 8px rgba(41,121,212,.15);border-color:var(--accent);}
+.dtile-lbl{font-size:12.6px;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:6px;}
+.dtile-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.dtile-val{font-size:27.6px;font-weight:700;font-family:var(--mono);line-height:1.05;margin-top:3px;}
+.dtile-sub{font-size:11.5px;color:var(--text3);margin-top:2px;}
+.dbar{display:flex;height:9px;border-radius:5px;overflow:hidden;background:var(--bg4);}
+.dbar i{display:block;height:100%;}
+.dlegend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--text3);margin-top:6px;}
 .card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;cursor:pointer;transition:box-shadow .15s,border-color .15s;}
 .card:hover{box-shadow:0 2px 8px rgba(41,121,212,.15);border-color:var(--accent);}
 .card-lbl{font-size:11.5px;color:var(--text3);margin-bottom:4px;letter-spacing:.04em;font-weight:500;}
@@ -434,6 +451,7 @@ table.lst tbody tr.ul td:last-child{background:#fffaf3;}
     <button class="nav-item" onclick="showPage('balance')"><svg class="ic" aria-hidden="true"><use href="#i-balance"></use></svg><span>車種バランス</span></button>
     <button class="nav-item" onclick="showPage('sold')"><svg class="ic" aria-hidden="true"><use href="#i-sold"></use></svg><span>売約分析</span></button>
     <button class="nav-item" onclick="showPage('consult')"><svg class="ic" aria-hidden="true"><use href="#i-bulb"></use></svg><span>車種コンサル</span></button>
+    <button class="nav-item" onclick="showPage('pricealert')"><svg class="ic" aria-hidden="true"><use href="#i-alert"></use></svg><span>価格アラート</span><span class="nav-badge" id="navPa" style="display:none"></span></button>
   </nav>
   <div class="side-ft">
     <button class="nav-item" onclick="openMarketModal()"><svg class="ic" aria-hidden="true"><use href="#i-line"></use></svg><span>市場分析</span></button>
@@ -464,26 +482,48 @@ table.lst tbody tr.ul td:last-child{background:#fffaf3;}
 <div class="page active" id="page-stock">
   <div class="summary">
     <div class="card" onclick="showCatModal('ミニバン')"><div class="card-lbl">ミニバン</div><div class="card-val" id="sm">—</div>
+      <div class="card-teisu" id="sm-t">規定 — / 差 —</div>
       <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap">
-        <span style="font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:10px;background:#dbeafe;color:#1d4ed8" id="sm-hv">HV —</span>
-        <span style="font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:10px;background:#d1fae5;color:#065f46" id="sm-fwd">4WD —</span>
+        <span class="mtag mtag-hv" id="sm-hv">HV —</span>
+        <span class="mtag mtag-fwd" id="sm-fwd">4WD —</span>
       </div></div>
     <div class="card" onclick="showCatModal('SUV')"><div class="card-lbl">SUV</div><div class="card-val" id="ss">—</div>
+      <div class="card-teisu" id="ss-t">規定 — / 差 —</div>
       <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap">
-        <span style="font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:10px;background:#dbeafe;color:#1d4ed8" id="ss-hv">HV —</span>
-        <span style="font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:10px;background:#d1fae5;color:#065f46" id="ss-fwd">4WD —</span>
+        <span class="mtag mtag-hv" id="ss-hv">HV —</span>
+        <span class="mtag mtag-fwd" id="ss-fwd">4WD —</span>
       </div></div>
     <div class="card" onclick="showCatModal('HVCP')"><div class="card-lbl">HVCP</div><div class="card-val" id="sh">—</div>
+      <div class="card-teisu" id="sh-t">規定 — / 差 —</div>
       <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap">
-        <span style="font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:10px;background:#dbeafe;color:#1d4ed8" id="sh-hv">HV —</span>
-        <span style="font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:10px;background:#d1fae5;color:#065f46" id="sh-fwd">4WD —</span>
+        <span class="mtag mtag-hv" id="sh-hv">HV —</span>
+        <span class="mtag mtag-fwd" id="sh-fwd">4WD —</span>
       </div></div>
     <div class="card" onclick="showCatModal('軽')"><div class="card-lbl">軽</div><div class="card-val" id="sk">—</div>
+      <div class="card-teisu" id="sk-t">規定 — / 差 —</div>
       <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap">
-        <span style="font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:10px;background:#dbeafe;color:#1d4ed8" id="sk-hv">HV —</span>
-        <span style="font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:10px;background:#d1fae5;color:#065f46" id="sk-fwd">4WD —</span>
+        <span class="mtag mtag-hv" id="sk-hv">HV —</span>
+        <span class="mtag mtag-fwd" id="sk-fwd">4WD —</span>
       </div></div>
     <div class="card card-ul" onclick="showPage('unlisted')"><div class="card-lbl">未掲載</div><div class="card-val" id="su">—</div><div class="card-sub" id="su2">クリックで詳細</div></div>
+    <div class="card" onclick="showPage('balance')"><div class="card-lbl">在庫合計</div><div class="card-val" id="sa">—</div>
+      <div class="card-teisu" id="sa-t">規定 — / 差 —</div>
+      <div class="card-sub" id="sa2">クリックで車種バランスへ</div></div>
+  </div>
+
+  <!-- ② 在庫日数ガジェット -->
+  <div class="sec">
+    <div class="sec-hdr">
+      <span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-clock"></use></svg>在庫日数の分布</span>
+      <span style="font-size:12.6px;color:var(--text3)" id="dayNote">掲載中の在庫のみ。タイルをクリックすると在庫一覧に絞り込んで表示します</span>
+    </div>
+    <div class="sec-body">
+      <div class="dgrid" id="dayTiles"></div>
+      <div style="margin-top:12px">
+        <div style="font-size:12.6px;font-weight:600;color:var(--text2);margin-bottom:6px">カテゴリ別の構成</div>
+        <div id="dayByCat"></div>
+      </div>
+    </div>
   </div>
 
   <div class="sec">
@@ -535,7 +575,10 @@ table.lst tbody tr.ul td:last-child{background:#fffaf3;}
       <div class="ctrls">
         <select class="sel" id="lsCat" onchange="renderList()"><option value="">全カテゴリ</option><option>ミニバン</option><option>SUV</option><option>HVCP</option><option>軽</option></select>
         <select class="sel" id="lsDays" onchange="renderList()">
-          <option value="">在庫日数：すべて</option><option value="100">100日超のみ</option>
+          <option value="">在庫日数：すべて</option>
+          <option value="band:d60">〜60日</option><option value="band:d120">61〜120日</option>
+          <option value="band:d180">121〜180日</option><option value="band:d181">181日以上</option>
+          <option value="100">100日超のみ</option>
           <option value="200">200日超のみ</option><option value="300">300日超のみ</option>
           <option value="new">30日以内</option></select>
         <select class="sel" id="lsSrc" onchange="renderList()"><option value="">仕入先：すべて</option></select>
@@ -803,6 +846,33 @@ table.lst tbody tr.ul td:last-child{background:#fffaf3;}
   <div id="consultBody"></div>
 </div>
 
+<!-- PAGE: 価格アラート -->
+<div class="page" id="page-pricealert">
+  <div class="five-col" style="margin-bottom:12px">
+    <div class="kpi"><div class="kpi-lbl">相場調査済み</div><div class="kpi-val" id="pa-k1">—</div><div class="kpi-sub">台</div></div>
+    <div class="kpi"><div class="kpi-lbl">要値下げ</div><div class="kpi-val" id="pa-k2" style="color:var(--red)">—</div><div class="kpi-sub">相場より高い</div></div>
+    <div class="kpi"><div class="kpi-lbl">価格以外に原因</div><div class="kpi-val" id="pa-k3" style="color:var(--amber)">—</div><div class="kpi-sub">相場内なのに長期</div></div>
+    <div class="kpi"><div class="kpi-lbl">値上げ余地</div><div class="kpi-val" id="pa-k4" style="color:#059669">—</div><div class="kpi-sub">相場より安い</div></div>
+    <div class="kpi"><div class="kpi-lbl">未調査</div><div class="kpi-val" id="pa-k5" style="color:var(--text3)">—</div><div class="kpi-sub">121日超の在庫</div></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-hdr">
+      <span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-alert"></use></svg>価格アラート</span>
+      <span style="font-size:12.6px;color:var(--text3)" id="pa-note"></span>
+    </div>
+    <div class="sec-body" id="paBody"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-hdr">
+      <span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-search"></use></svg>次に調べるべき在庫</span>
+      <span style="font-size:12.6px;color:var(--text3)">滞留が長く金額の大きい順。「調査依頼をコピー」でAIに投げる文面を作ります</span>
+    </div>
+    <div class="sec-body" id="paTodo"></div>
+  </div>
+</div>
+
 
 </div>
 </div>
@@ -888,20 +958,104 @@ async function loadSold(){
 }
 
 
+// カテゴリの規定台数合計（車種マスタの既定数を積み上げる）
+function catTeisu(cat){
+  let s=0,found=false;
+  Object.keys(TEISU).forEach(k=>{
+    const i=k.indexOf('_');if(i<0)return;
+    if(k.slice(0,i)!==cat)return;
+    s+=Number(TEISU[k])||0;found=true;
+  });
+  return found?s:null;
+}
+function diffHtml(diff){
+  if(diff==null)return '<b style="color:var(--text3)">—</b>';
+  const col=diff<=-3?'var(--red)':diff<0?'var(--amber)':diff>=3?'var(--amber)':'var(--green,#059669)';
+  return `<b style="color:${col}">${diff>0?'+':''}${diff}</b>`;
+}
 function updateSummary(){
   const ids={'ミニバン':'sm','SUV':'ss','HVCP':'sh','軽':'sk'};
+  let totT=0,totTok=false;
   CAT_ORDER.forEach(c=>{
     const items=STOCK.filter(d=>d.cat===c);
-    document.getElementById(ids[c]).textContent=items.length;
+    const n=items.length;
+    document.getElementById(ids[c]).textContent=n;
+    const t=catTeisu(c);
+    if(t!=null){totT+=t;totTok=true;}
+    const tEl=document.getElementById(ids[c]+'-t');
+    if(tEl)tEl.innerHTML=`規定 <b>${t!=null?t:'—'}</b> / 差 ${diffHtml(t!=null?n-t:null)}`;
+    const pc=v=>n?Math.round(v/n*100):0;
+    const hv=items.filter(d=>d.hv==='〇').length;
+    const fw=items.filter(d=>d.fwd==='〇').length;
     const hvEl=document.getElementById(ids[c]+'-hv');
     const fwdEl=document.getElementById(ids[c]+'-fwd');
-    if(hvEl)hvEl.textContent='HV: '+items.filter(d=>d.hv==='〇').length;
-    if(fwdEl)fwdEl.textContent='4WD: '+items.filter(d=>d.fwd==='〇').length;
+    if(hvEl)hvEl.textContent=`HV ${hv} (${pc(hv)}%)`;
+    if(fwdEl)fwdEl.textContent=`4WD ${fw} (${pc(fw)}%)`;
   });
+  const aEl=document.getElementById('sa');
+  if(aEl){
+    aEl.textContent=STOCK.length;
+    const t=totTok?totT:null;
+    document.getElementById('sa-t').innerHTML=`規定 <b>${t!=null?t:'—'}</b> / 差 ${diffHtml(t!=null?STOCK.length-t:null)}`;
+    const hv=STOCK.filter(d=>d.hv==='〇').length, fw=STOCK.filter(d=>d.fwd==='〇').length;
+    const pc=v=>STOCK.length?Math.round(v/STOCK.length*100):0;
+    document.getElementById('sa2').textContent=`HV ${hv}台(${pc(hv)}%) ・ 4WD ${fw}台(${pc(fw)}%)`;
+  }
+  renderDayTiles();
   document.getElementById('su').textContent=UNLISTED.length;
   const nb=document.getElementById('navUl');if(nb){nb.textContent=UNLISTED.length;nb.style.display=UNLISTED.length?'':'none';}
   const byG={};UNLISTED.forEach(d=>{byG[d.cat]=(byG[d.cat]||0)+1;});
   document.getElementById('su2').textContent=Object.entries(byG).map(([k,v])=>`${k}:${v}`).join(' ');
+}
+
+/* ───────── ② 在庫日数ガジェット ───────── */
+const DAY_BANDS=[
+  {k:'d60',  l:'〜60日',    lo:0,   hi:60,   c:'#059669', bg:'#ecfdf5', note:'健全'},
+  {k:'d120', l:'61〜120日', lo:61,  hi:120,  c:'#0559d2', bg:'#eff6ff', note:'標準'},
+  {k:'d180', l:'121〜180日',lo:121, hi:180,  c:'#d97706', bg:'#fffbeb', note:'要注意'},
+  {k:'d181', l:'181日以上', lo:181, hi:99999,c:'#dc2626', bg:'#fef2f2', note:'滞留'}
+];
+function dayBandOf(v){
+  if(v==null||v>=3000)return null;
+  return DAY_BANDS.find(b=>v>=b.lo&&v<=b.hi)||null;
+}
+function renderDayTiles(){
+  const box=document.getElementById('dayTiles');if(!box)return;
+  const items=STOCK.filter(d=>d.days!=null&&d.days<3000);
+  const tot=items.length||1;
+  box.innerHTML=DAY_BANDS.map(b=>{
+    const a=items.filter(d=>dayBandOf(d.days)===b);
+    const cost=a.filter(d=>d.cost!=null).reduce((s,d)=>s+d.cost,0);
+    return `<div class="dtile" style="background:${b.bg}" onclick="jumpDayBand('${b.k}')">
+      <div class="dtile-lbl"><span class="dtile-dot" style="background:${b.c}"></span>${b.l}<span style="color:var(--text3);font-weight:500">/ ${b.note}</span></div>
+      <div class="dtile-val" style="color:${b.c}">${a.length}<span style="font-size:14px;font-weight:600;color:var(--text3)"> 台</span></div>
+      <div class="dtile-sub">構成比 ${Math.round(a.length/tot*100)}% ・ 在庫原価 ${cost>=10000?(cost/10000).toFixed(2)+'億':Math.round(cost)+'万'}</div>
+    </div>`;
+  }).join('');
+  const unk=STOCK.length-items.length;
+  const note=document.getElementById('dayNote');
+  if(note)note.textContent=`掲載中 ${items.length}台が対象${unk>0?`（日数不明 ${unk}台は除外）`:''}。タイルをクリックすると在庫一覧に絞り込んで表示します`;
+
+  const cbox=document.getElementById('dayByCat');if(!cbox)return;
+  cbox.innerHTML=CAT_ORDER.map(c=>{
+    const a=items.filter(d=>d.cat===c);const t=a.length||1;
+    const seg=DAY_BANDS.map(b=>{const n=a.filter(d=>dayBandOf(d.days)===b).length;return n?`<i style="width:${n/t*100}%;background:${b.c}" title="${c} ${b.l} ${n}台"></i>`:'';}).join('');
+    const nums=DAY_BANDS.map(b=>{const n=a.filter(d=>dayBandOf(d.days)===b).length;return `<span style="color:${b.c};font-weight:700;font-family:var(--mono)">${n}</span>`;}).join('<span style="color:var(--border)"> / </span>');
+    const lng=a.filter(d=>d.days>=121).length;
+    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <span style="width:64px;font-size:12.6px;font-weight:600;flex-shrink:0">${c}</span>
+      <span style="width:44px;font-size:12.6px;color:var(--text3);font-family:var(--mono);flex-shrink:0">${a.length}台</span>
+      <div class="dbar" style="flex:1">${seg}</div>
+      <span style="width:120px;font-size:12.6px;text-align:right;flex-shrink:0">${nums}</span>
+      <span style="width:96px;font-size:12.6px;text-align:right;flex-shrink:0;color:${lng/t>=.35?'var(--red)':'var(--text3)'}">121日超 ${Math.round(lng/t*100)}%</span>
+    </div>`;
+  }).join('')+`<div class="dlegend">${DAY_BANDS.map(b=>`<span><span class="dtile-dot" style="background:${b.c};display:inline-block;margin-right:4px"></span>${b.l}</span>`).join('')}</div>`;
+}
+function jumpDayBand(k){
+  showPage('list');
+  const sel=document.getElementById('lsDays');
+  if(sel){sel.value='band:'+k;}
+  renderList();
 }
 
 function showCatModal(cat){
@@ -1458,6 +1612,7 @@ async function loadStockV4(){
         grade:String(r[16]||'').trim(),      // Q列
         shaken:String(r[22]||'').trim(),     // W列
         rating:String(r[10]||'').trim(),     // K列 評価点
+        rent:normRent(r[12]),                // M列 レンタ・リース等の使用履歴
         source:String(r[8]||'').trim(),      // I列 仕入区分
         status:String(r[4]||'').trim(),      // E列
         gyohan:parseNumV4(r[33]),            // AH列 業販価格
@@ -1486,6 +1641,11 @@ async function loadUnlistedV4(){
       cost:(cost&&cost>0&&cost<2000)?cost:null,
       hv:r[14]?.trim()==='〇'?'〇':'',
       fwd:r[15]?.trim()==='〇'?'〇':'',
+      rent:normRent(r[12]),
+      grade:String(r[16]||'').trim(),
+      rating:String(r[10]||'').trim(),
+      source:String(r[8]||'').trim(),
+      shaken:String(r[22]||'').trim(),
       color:normColor(r[20]),
       status:r[4]?.trim()||'',
       lower4:lower4?String(Math.round(lower4)).padStart(4,'0'):'',
@@ -1545,7 +1705,7 @@ async function loadAll(){
     buildYrData();
     fillConsultCats();
     if(document.getElementById('page-list').classList.contains('active'))renderList();
-    updateSummary();renderMatrix();renderProfitCards();renderUnlisted();renderLong();renderAction();renderSold();
+    updateSummary();renderMatrix();renderProfitCards();renderUnlisted();renderLong();renderAction();renderSold();renderPriceAlert();
     if(document.getElementById('page-balance').classList.contains('active'))renderBalance();
     document.getElementById('upd').textContent='更新: '+new Date().toLocaleString('ja-JP',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
   }catch(e){
@@ -1561,13 +1721,38 @@ async function loadAll(){
 // ═══════════════════════════════════════════════
 //  在庫一覧（全台・絞り込み・並べ替え・PDF出力）
 // ═══════════════════════════════════════════════
+/* M列（レンタ）は自由入力で ﾚﾝﾀ / ﾘｰｽ / 喫煙 / ﾀﾊﾞｺ臭 などが入る。
+   既知のワードだけ色付きで拾い、それ以外は素の文字で出す（誤入力を握りつぶさない） */
+const RENT_STYLE={
+  'ﾚﾝﾀ':   {l:'レンタ', bg:'#fef3c7', c:'#92400e'},
+  'ﾘｰｽ':   {l:'リース', bg:'#dbeafe', c:'#1d4ed8'},
+  '喫煙':   {l:'喫煙',   bg:'#fee2e2', c:'#b91c1c'},
+  'ﾀﾊﾞｺ臭': {l:'ﾀﾊﾞｺ臭', bg:'#fee2e2', c:'#b91c1c'},
+  'ｴｺﾉﾘ':  {l:'ｴｺﾉﾘ',  bg:'#e0e7ff', c:'#4338ca'}
+};
+function normRent(v){
+  let t=String(v==null?'':v).trim();
+  if(!t)return '';
+  t=t.replace(/レンタ/g,'ﾚﾝﾀ').replace(/リース/g,'ﾘｰｽ').replace(/タバコ臭|ﾀﾊﾞｺ/g,'ﾀﾊﾞｺ臭');
+  if(t.length>6)return '';   // 車名などの明らかな誤入力は捨てる
+  return t;
+}
+function rentChip(v){
+  if(!v)return '';
+  const s=RENT_STYLE[v];
+  if(!s)return `<span class="mtag" style="background:var(--bg4);color:var(--text2)">${v}</span>`;
+  return `<span class="mtag" style="background:${s.bg};color:${s.c}">${s.l}</span>`;
+}
 const LS_COLS=[
   {k:'rating', l:'評価点',   w:46,  a:'c'},
+  {k:'rent',   l:'レンタ',   w:62,  a:'c'},
   {k:'source', l:'仕入先',   w:56,  a:'c'},
   {k:'sid',    l:'SID',      w:56,  a:'c', mono:1},
   {k:'lower4', l:'車体番号', w:62,  a:'c', mono:1},
   {k:'name',   l:'車名',     w:132},
   {k:'grade',  l:'グレード', w:150},
+  {k:'fwd',    l:'4WD',      w:44,  a:'c'},
+  {k:'hv',     l:'HV',       w:40,  a:'c'},
   {k:'year',   l:'年式',     w:56,  a:'c'},
   {k:'color',  l:'色',       w:74},
   {k:'km',     l:'距離',     w:76,  a:'r', mono:1},
@@ -1589,8 +1774,9 @@ function listRows(){
   let a=ul?[...STOCK,...UNLISTED]:[...STOCK];
   if(cat)a=a.filter(d=>d.cat===cat);
   if(src)a=a.filter(d=>(d.source||'')===src);
-  if(dv==='new')      a=a.filter(d=>d.days!=null&&d.days<=30);
-  else if(dv)         a=a.filter(d=>d.days!=null&&d.days<3000&&d.days>=+dv);
+  if(dv==='new')            a=a.filter(d=>d.days!=null&&d.days<=30);
+  else if(dv.startsWith('band:')){const b=DAY_BANDS.find(x=>x.k===dv.slice(5));if(b)a=a.filter(d=>dayBandOf(d.days)===b);}
+  else if(dv)               a=a.filter(d=>d.days!=null&&d.days<3000&&d.days>=+dv);
   if(q)a=a.filter(d=>[d.name,d.grade,d.sid,d.lower4,d.color].some(v=>String(v||'').toLowerCase().includes(q)));
   const K=_lsSort.k, A=_lsSort.asc;
   const val=d=>{
@@ -1613,6 +1799,9 @@ function lsFmt(d,c){
     case 'profit': return `<span style="color:${v<0?'var(--red)':v<10?'var(--amber)':'var(--text)'}">${v.toFixed(1)}</span>`;
     case 'days':   {const cl=v>=300?'pill-r':v>=100?'pill-y':'pill-g';return `<span class="pill ${cl}">${v}</span>`;}
     case 'color':  return colorChip(v,11)+v;
+    case 'rent':   return rentChip(v);
+    case 'fwd':    return '<span class="mtag mtag-fwd">4WD</span>';
+    case 'hv':     return '<span class="mtag mtag-hv">HV</span>';
     case 'name':   return `<span class="mname" onclick="openModelDetail('${encodeURIComponent(d.cat)}','${encodeURIComponent(d.name)}')">${v}</span>`;
     default:       return String(v);
   }
@@ -1687,6 +1876,187 @@ function exportListPdf(){
   </body></html>`);
   w.document.close();
   setTimeout(()=>{w.focus();w.print();},400);
+}
+
+/* ═══════════ ⑤ 価格アラート ═══════════
+   MARKET = 市場相場の調査結果。キーは車体番号の下4桁。
+   いまは手入力（AI調査の結果をここに追記していく）。将来はシート or GAS から読む。
+   ─ 各項目 ─
+     date   調査日
+     n      その条件で見つかった競合台数
+     area   検索エリア
+     cond   検索条件（あとで同じ条件で追試できるように残す）
+     low/med/high  競合の 最安 / 中央値 / 最高（万円・車両本体）
+     fair   同スペックの適正値（年式・走行で補正した値。ここが自社価格の判断基準）
+     url    その検索条件のカーセンサーURL（目視確認用）
+     note   所見
+     sample true = ダミー。実調査で置き換えること
+*/
+const MARKET={
+  '7317':{date:'2026/08/17',n:67,area:'北陸3県',cond:'年式2018〜2022 / 距離不問 / ガソリンHW',
+    low:143.5,med:197.6,high:265.0,fair:195.3,
+    url:'https://www.carsensor.net/usedcar/bNI/s012/index.html?YMIN=2018&YMAX=2022&AR=41*42*43',
+    note:'値付けは相場内。ただし同額帯にR3・4.6万kmが居り、順位で負けている。原価253.1万が相場適正195万を58万上回っており、価格政策では回収不能。',
+    sample:false},
+  '6322':{date:'2026/08/10',n:38,area:'北陸3県',cond:'年式H28〜H31 / 6〜8万km',
+    low:44.0,med:62.5,high:82.0,fair:61.0,
+    url:'https://www.carsensor.net/usedcar/bHO/s048/index.html?AR=41*42*43',
+    note:'【サンプル】相場中央より少し高い。原価64.1万に対し適正61万で、すでに原価割れ圏。',
+    sample:true},
+  '8449':{date:'2026/08/10',n:24,area:'北陸・東海',cond:'年式R3〜R5 / 2〜5万km / e-POWER',
+    low:118.0,med:139.0,high:168.0,fair:141.0,
+    url:'https://www.carsensor.net/usedcar/bNI/s060/index.html?AR=41*42*43',
+    note:'【サンプル】相場より安く出している。値上げ余地あり。',
+    sample:true},
+  '9153':{date:'2026/08/10',n:31,area:'北陸3県',cond:'年式R3〜R6 / 3〜6万km',
+    low:178.0,med:224.0,high:268.0,fair:226.0,
+    url:'https://www.carsensor.net/usedcar/bMA/s028/index.html?AR=41*42*43',
+    note:'【サンプル】相場よりかなり安い。値上げ、もしくは早期回転を狙える。',
+    sample:true}
+};
+function paLevel(price,fair){
+  if(price==null||!fair)return {lvl:-1,label:'価格未設定',c:'var(--text3)',bg:'var(--bg3)'};
+  const r=price/fair;
+  if(r>=1.10)return {lvl:3,label:'割高（大）',c:'#b91c1c',bg:'#fef2f2'};
+  if(r>=1.04)return {lvl:2,label:'割高',      c:'#d97706',bg:'#fffbeb'};
+  if(r<=0.90)return {lvl:1,label:'割安（大）',c:'#047857',bg:'#ecfdf5'};
+  if(r<=0.96)return {lvl:1,label:'割安',      c:'#047857',bg:'#ecfdf5'};
+  return {lvl:0,label:'相場内',c:'#0559d2',bg:'#eff6ff'};
+}
+function paRows(){
+  return Object.keys(MARKET).map(k=>{
+    const car=STOCK.find(d=>d.lower4===k);
+    if(!car)return null;
+    const m=MARKET[k];
+    const st=paLevel(car.price,m.fair);
+    const gap=car.price!=null?Math.round((car.price-m.fair)*10)/10:null;
+    // 相場内なのに121日超 → 価格ではなく中身（車検・写真・装備）が原因
+    const stuck=st.lvl===0&&car.days!=null&&car.days>=121;
+    return {k,m,car,st,gap,stuck};
+  }).filter(Boolean)
+    .sort((a,b)=>(b.st.lvl-a.st.lvl)||((b.car.days||0)-(a.car.days||0)));
+}
+function paMoney(v){return v==null?'—':v.toFixed(1);}
+function renderPriceAlert(){
+  const box=document.getElementById('paBody');if(!box)return;
+  const rows=paRows();
+  const todo=STOCK.filter(d=>d.days!=null&&d.days>=121&&d.days<3000&&!MARKET[d.lower4])
+                  .sort((a,b)=>(b.cost||0)-(a.cost||0));
+  document.getElementById('pa-k1').textContent=rows.length;
+  document.getElementById('pa-k2').textContent=rows.filter(r=>r.st.lvl>=2).length;
+  document.getElementById('pa-k3').textContent=rows.filter(r=>r.stuck).length;
+  document.getElementById('pa-k4').textContent=rows.filter(r=>r.st.lvl===1).length;
+  document.getElementById('pa-k5').textContent=todo.length;
+  const nb=document.getElementById('navPa');
+  const alerts=rows.filter(r=>r.st.lvl>=2||r.stuck).length;
+  if(nb){nb.textContent=alerts;nb.style.display=alerts?'':'none';}
+  const smp=rows.filter(r=>r.m.sample).length;
+  document.getElementById('pa-note').textContent=
+    `相場データ ${rows.length}件${smp?`（うち ${smp}件はサンプル）`:''}　※AI調査の結果をここに追記していきます`;
+
+  if(!rows.length){box.innerHTML='<div style="padding:20px;color:var(--text3);font-size:13.2px">相場データがまだありません。</div>';}
+  else box.innerHTML=rows.map(r=>{
+    const c=r.car,m=r.m,st=r.st;
+    // 相場のどこに自社価格が居るかを帯で示す
+    const span=Math.max(m.high-m.low,1);
+    const pos=v=>Math.max(0,Math.min(100,(v-m.low)/span*100));
+    const rec = st.lvl>=2 ? `${(Math.round(m.fair*10)/10).toFixed(1)}万まで下げる`
+              : st.lvl===1? `${(Math.round(m.fair*10)/10).toFixed(1)}万まで戻せる`
+              : r.stuck   ? '価格は据え置き。車検・写真・装備表記を先に直す'
+              : '現状維持';
+    const lossFair=c.cost!=null?Math.round((m.fair-c.cost)*10)/10:null;
+    return `<div style="border:1px solid var(--border);border-left:4px solid ${st.c};border-radius:8px;padding:12px 14px;margin-bottom:10px;background:${st.bg}">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+        <span class="mtag" style="background:${st.c};color:#fff">${st.label}</span>
+        ${r.stuck?'<span class="mtag" style="background:#fef3c7;color:#92400e">相場内なのに長期</span>':''}
+        ${m.sample?'<span class="mtag" style="background:var(--bg4);color:var(--text3)">サンプル</span>':''}
+        <b style="font-size:15.5px">${c.name}</b>
+        <span style="font-size:12.6px;color:var(--text2)">${c.grade||''}</span>
+        <span style="font-size:12.6px;color:var(--text3)">${c.year} / ${c.km!=null?(c.km/10000).toFixed(1)+'万km':'—'} / ${c.color||'—'} / 車体${r.k}</span>
+        ${c.fwd==='〇'?'<span class="mtag mtag-fwd">4WD</span>':''}${c.hv==='〇'?'<span class="mtag mtag-hv">HV</span>':''}
+        <span style="margin-left:auto;font-size:12.6px"><span class="pill ${c.days>=300?'pill-r':c.days>=121?'pill-y':'pill-g'}">${c.days!=null?c.days+'日':'—'}</span></span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:10px">
+        <div><div style="font-size:11.5px;color:var(--text3)">自社価格</div><div style="font-size:19px;font-weight:700;font-family:var(--mono)">${paMoney(c.price)}<span style="font-size:12px">万</span></div></div>
+        <div><div style="font-size:11.5px;color:var(--text3)">相場の適正値</div><div style="font-size:19px;font-weight:700;font-family:var(--mono);color:#0559d2">${paMoney(m.fair)}<span style="font-size:12px">万</span></div></div>
+        <div><div style="font-size:11.5px;color:var(--text3)">乖離</div><div style="font-size:19px;font-weight:700;font-family:var(--mono);color:${r.gap>0?'#b91c1c':r.gap<0?'#047857':'var(--text)'}">${r.gap==null?'—':(r.gap>0?'+':'')+r.gap.toFixed(1)}<span style="font-size:12px">万</span></div></div>
+        <div><div style="font-size:11.5px;color:var(--text3)">原価</div><div style="font-size:19px;font-weight:700;font-family:var(--mono)">${paMoney(c.cost)}<span style="font-size:12px">万</span></div></div>
+        <div><div style="font-size:11.5px;color:var(--text3)">相場で売った場合</div><div style="font-size:19px;font-weight:700;font-family:var(--mono);color:${lossFair!=null&&lossFair<0?'#b91c1c':'var(--text)'}">${lossFair==null?'—':(lossFair>0?'+':'')+lossFair.toFixed(1)}<span style="font-size:12px">万</span></div></div>
+      </div>
+
+      <div style="margin-bottom:8px">
+        <div style="position:relative;height:26px">
+          <div style="position:absolute;top:11px;left:0;right:0;height:5px;border-radius:3px;background:linear-gradient(90deg,#d1fae5,#dbeafe,#fee2e2)"></div>
+          <div style="position:absolute;top:6px;left:${pos(m.med)}%;width:2px;height:15px;background:#64748b" title="中央値 ${m.med}万"></div>
+          <div style="position:absolute;top:3px;left:${pos(m.fair)}%;width:2px;height:21px;background:#0559d2" title="適正 ${m.fair}万"></div>
+          ${c.price!=null?`<div style="position:absolute;top:1px;left:${pos(c.price)}%;transform:translateX(-50%);width:11px;height:11px;border-radius:50%;background:${st.c};border:2px solid #fff;box-shadow:0 0 0 1px ${st.c}" title="自社 ${c.price}万"></div>`:''}
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--text3)">
+          <span>最安 ${m.low}万</span><span>中央値 ${m.med}万 ／ 適正 ${m.fair}万</span><span>最高 ${m.high}万</span>
+        </div>
+      </div>
+
+      <div style="font-size:13.2px;line-height:1.7;color:var(--text);margin-bottom:8px">
+        <b style="color:${st.c}">推奨：${rec}</b><br>${m.note}
+      </div>
+
+      <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:11.5px;color:var(--text3)">
+        <span>調査日 ${m.date}</span><span>競合 ${m.n}台</span><span>${m.area}</span><span>${m.cond}</span>
+        <span style="margin-left:auto;display:flex;gap:6px">
+          <a class="minibtn" href="${m.url}" target="_blank" rel="noopener">カーセンサーで見る</a>
+          <button class="minibtn" onclick="openPriceChange('${encodeURIComponent(c.lower4)}','${encodeURIComponent(c.name)}',${c.price!=null?c.price:0},'${encodeURIComponent(c.cat||'')}')">価格を変更</button>
+        </span>
+      </div>
+    </div>`;
+  }).join('');
+
+  const tb=document.getElementById('paTodo');if(!tb)return;
+  if(!todo.length){tb.innerHTML='<div style="padding:16px;color:var(--text3);font-size:13.2px">121日超の未調査在庫はありません。</div>';return;}
+  tb.innerHTML=`<div style="overflow:auto;border:1px solid var(--border);border-radius:6px"><table class="lst" style="width:100%"><thead><tr>
+      <th>日数</th><th>ジャンル</th><th>車名</th><th>グレード</th><th>年式</th><th>距離</th><th>色</th><th>原価</th><th>本体</th><th>利益</th><th></th></tr></thead><tbody>`+
+    todo.slice(0,20).map(d=>`<tr>
+      <td style="text-align:right"><span class="pill ${d.days>=300?'pill-r':'pill-y'}">${d.days}</span></td>
+      <td>${d.cat}</td><td>${d.name}</td><td>${d.grade||'—'}</td><td style="text-align:center">${d.year}</td>
+      <td style="text-align:right" class="num">${d.km!=null?(d.km/10000).toFixed(1)+'万':'—'}</td>
+      <td>${colorChip(d.color,11)}${d.color||'—'}</td>
+      <td style="text-align:right" class="num">${paMoney(d.cost)}</td>
+      <td style="text-align:right" class="num">${paMoney(d.price)}</td>
+      <td style="text-align:right" class="num">${d.profit!=null?`<span style="color:${d.profit<0?'var(--red)':'var(--text)'}">${d.profit.toFixed(1)}</span>`:'—'}</td>
+      <td><button class="minibtn" onclick="paCopyPrompt('${encodeURIComponent(d.lower4)}')">調査依頼をコピー</button></td>
+    </tr>`).join('')+`</tbody></table></div>
+    ${todo.length>20?`<div style="padding:8px 12px;font-size:12.6px;color:var(--text3)">ほか ${todo.length-20}台</div>`:''}`;
+}
+/* 調査依頼の文面を作る。年式±2年・距離不問・北陸＝今回セレナで決めたルール */
+function paCopyPrompt(enc){
+  const l4=decodeURIComponent(enc);
+  const d=STOCK.find(x=>x.lower4===l4);if(!d)return;
+  const y=ySeireki(d.year);
+  const t=`以下の在庫について、カーセンサーの北陸3県（AR=41*42*43）の掲載状況を調べてください。
+
+【対象】${d.cat} / ${d.name} / ${d.grade||''} / ${d.year} / ${d.km!=null?(d.km/10000).toFixed(1)+'万km':'距離不明'} / ${d.color||''}${d.fwd==='〇'?' / 4WD':''}${d.hv==='〇'?' / HV':''}
+【自社価格】本体 ${d.price!=null?d.price+'万円':'未設定'}（原価 ${d.cost!=null?d.cost+'万円':'—'} / 掲載 ${d.days}日）
+
+【検索条件】
+- 年式：${y?`${y-2}年〜${y+2}年`:'±2年'}
+- 走行距離：制限なし
+- エリア：北陸3県（富山・石川・福井）
+- 駆動：${d.fwd==='〇'?'4WDのみ':'2WDのみ'}
+- パワートレイン：${d.hv==='〇'?'HV / e-POWERのみ':'ガソリンのみ'}（相場が別物になるため混ぜないこと）
+
+【出したいもの】
+1. 掲載台数
+2. その検索条件のURL（目視確認用）
+3. 競合の 最安 / 中央値 / 最高（車両本体価格）
+4. 年式・走行で補正した「同スペックの適正値」
+5. 自社価格との比較と、値下げ/据え置き/業販の判断`;
+  navigator.clipboard.writeText(t).then(
+    ()=>alert('調査依頼の文面をコピーしました。\nAIチャットに貼り付けてください。'),
+    ()=>{ // クリップボードが使えない環境用
+      const w=window.open('','_blank');
+      w.document.write('<pre style="white-space:pre-wrap;font-family:sans-serif;padding:16px">'+t.replace(/[<>&]/g,m=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[m]))+'</pre>');
+      w.document.close();
+    });
 }
 
 // ═══════════ 価格変更 ═══════════
@@ -2652,7 +3022,8 @@ const PAGE_META={
   action:['在庫対策','仕入れ優先リストと過剰在庫の是正リスト'],
   balance:['車種バランス','適正台数に対する過不足の可視化'],
   sold:['売約分析','売約実績の推移とランキング'],
-  consult:['車種コンサル','1車種を選んで年式バランスと在庫戦略を診断']
+  consult:['車種コンサル','1車種を選んで年式バランスと在庫戦略を診断'],
+  pricealert:['価格アラート','市場相場と自社価格の乖離を検知して値付けを是正']
 };
 function toggleSide(force){
   const open=(force===undefined)?!document.body.classList.contains('side-open'):force;
@@ -2671,6 +3042,7 @@ function showPage(n){
   if(n==='balance')renderBalance();
   if(n==='consult')renderConsult();
   if(n==='list')renderList();
+  if(n==='pricealert')renderPriceAlert();
 }
 
 
