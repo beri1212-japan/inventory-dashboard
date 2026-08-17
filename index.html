@@ -3404,11 +3404,16 @@ async function submitPriceChange(){
   const staff=document.getElementById('pcStaff').value.trim();
   if(staff)localStorage.setItem('price_staff',staff);
   btn.disabled=true;btn.textContent='送信中…';msg.className='pc-msg';msg.textContent='';
+  // 30秒たっても返らないときの案内（Googleの初回起動が重いと応答だけ遅れることがある）
+  const slow=setTimeout(()=>{msg.className='pc-msg';msg.textContent='応答に時間がかかっています。そのままお待ちください（二重に押さないでください）。';},8000);
+  const ac=new AbortController();
+  const hard=setTimeout(()=>ac.abort(),30000);
   try{
-    const res=await fetch(PRICE_GAS,{method:'POST',body:JSON.stringify({
+    const res=await fetch(PRICE_GAS,{method:'POST',signal:ac.signal,body:JSON.stringify({
       action:'setPrice',lower4:_pcTarget.lower4,name:_pcTarget.name,cat:_pcTarget.cat,
       year:_pcTarget.year,km:_pcTarget.km,newPrice:v,
       reason:document.getElementById('pcReason').value,staff})});
+    clearTimeout(slow);clearTimeout(hard);
     const j=await res.json();
     if(!j.ok){
       msg.className='pc-msg err';msg.textContent=j.error||'不明なエラー';
@@ -3425,9 +3430,14 @@ async function submitPriceChange(){
         const el=document.getElementById('mdTable'); if(el)el.innerHTML=stockTable(c);}
       renderMatrix();},1400);
   }catch(e){
+    clearTimeout(slow);clearTimeout(hard);
     msg.className='pc-msg err';
-    msg.textContent='通信に失敗しました: '+e.message;
-    btn.disabled=false;btn.textContent='この価格に変更する';
+    // 応答が返らなかっただけで、シート側は書き換わっていることがある。
+    // 二重に押させないよう、まず確認してもらう文面にする。
+    msg.innerHTML=(e.name==='AbortError')
+      ? '応答が返ってきませんでした。<b>もう一度押さないでください。</b><br>書き込みは完了している可能性があります。「更新」を押してから価格をご確認ください。'
+      : '通信に失敗しました: '+e.message;
+    btn.disabled=false;btn.textContent=(e.name==='AbortError')?'閉じる前に価格を確認':'この価格に変更する';
   }
 }
 function closeModal2(){const m=document.getElementById('modal2');m.style.display='none';m.classList.remove('wide');document.getElementById('ov2').style.display='none';}
