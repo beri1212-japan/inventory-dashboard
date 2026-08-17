@@ -922,16 +922,58 @@ let STOCK=[],UNLISTED=[],SOLD=[];
 
 const csvUrl=gid=>`https://docs.google.com/spreadsheets/d/${SID}/export?format=csv&gid=${gid}`;
 function parseCsv(t){return t.split('\n').map(l=>{const c=[];let cur='',q=false;for(const ch of l){if(ch==='"')q=!q;else if(ch===','&&!q){c.push(cur.trim());cur='';}else cur+=ch;}c.push(cur.trim());return c;});}
+/* ─────────── シートの読み出し ───────────
+   export?format=csv は「セルの表示形式を適用した後の文字列」を返す。
+   原価やプライスの列が整数表示になっていると 66.8 が "67" として降ってくるため、
+   ダッシュボード側の金額がすべて丸め誤差を持つ。
+   そこで gviz（可視化API）を使い、表示形式を無視した生の値 v を読む。
+   返す形は従来のCSVパース結果とまったく同じ（行×列の文字列配列）なので、
+   これより下のパース処理は一切変更していない。 */
+const gvizUrl=gid=>`https://docs.google.com/spreadsheets/d/${SID}/gviz/tq?tqx=out:json&headers=0&gid=${gid}`;
+function gvizCell(c){
+  if(!c)return '';
+  const v=c.v;
+  if(v===null||v===undefined)return c.f!=null?String(c.f):'';
+  if(typeof v==='number')return String(v);
+  if(typeof v==='boolean')return v?'TRUE':'FALSE';
+  const s=String(v);
+  // 日付セルは Date(2026,7,11) の形で返るので yyyy/MM/dd に戻す
+  const m=s.match(/^Date\((\d+),(\d+),(\d+)/);
+  if(m)return `${m[1]}/${String(+m[2]+1).padStart(2,'0')}/${String(+m[3]).padStart(2,'0')}`;
+  return s;
+}
+function parseGviz(text){
+  const i=text.indexOf('{'), j=text.lastIndexOf('}');
+  if(i<0||j<=i)throw new Error('スプレッドシートの応答を解釈できませんでした');
+  const o=JSON.parse(text.slice(i,j+1));
+  if(!o.table||!o.table.rows)throw new Error('スプレッドシートにデータがありません');
+  const n=(o.table.cols||[]).length;
+  return o.table.rows.map(r=>{
+    const a=new Array(n).fill('');
+    (r.c||[]).forEach((c,k)=>{if(k<n)a[k]=gvizCell(c);});
+    return a;
+  });
+}
 async function fetchCsv(gid,tries=3){
   // Googleスプレッドシートは短時間に連続アクセスすると散発的に 400/429 を返すため、少し待って再試行する
   let last;
   for(let i=0;i<tries;i++){
     try{
+      const r=await fetch(gvizUrl(gid),{cache:'no-store'});
+      if(r.ok)return parseGviz(await r.text());
+      last=new Error(`HTTP ${r.status}`);
+    }catch(e){last=e;}
+    if(i<tries-1)await new Promise(res=>setTimeout(res,600*(i+1)));
+  }
+  // 保険：gvizが使えない場合は従来のCSVで読む（丸めは入るが画面は止めない）
+  console.warn('生値の取得に失敗したためCSVで読み込みます:', last&&last.message);
+  for(let i=0;i<2;i++){
+    try{
       const r=await fetch(csvUrl(gid),{cache:'no-store'});
       if(r.ok)return parseCsv(await r.text());
       last=new Error(`HTTP ${r.status}`);
     }catch(e){last=e;}
-    if(i<tries-1)await new Promise(res=>setTimeout(res,600*(i+1)));
+    await new Promise(res=>setTimeout(res,600));
   }
   throw last;
 }
