@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="zaiko-apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#f9fafb;--bg2:#ffffff;--bg3:#fbfcfd;--bg4:#f2f4f5;
@@ -25,7 +25,7 @@
   --amber:#ff862e;--amber-bg:#fff2e8;
   --teal:#0666ee;--teal-bg:#e9f0fe;
   --purple:#955be3;--purple-bg:#f3ebfd;
-  --font:Inter,system-ui,sans-serif;--mono:'DM Mono',ui-monospace,monospace;
+  --font:'IBM Plex Sans JP',Inter,system-ui,sans-serif;--mono:'DM Mono',ui-monospace,monospace;
   --side:250px;--r:12px;--rs:8px;
   --sh:0 1px 3px rgba(0,0,0,.1),0 1px 2px -1px rgba(0,0,0,.1);
 }
@@ -353,7 +353,7 @@ table.dtl tbody tr:hover td{background:#f7fafe!important;}
 
 /* --- 在庫一覧 --- */
 .tblwrap2{overflow:auto;max-height:calc(100vh - 210px);border-radius:0 0 14px 14px;}
-table.lst{width:100%;border-collapse:collapse;white-space:nowrap;min-width:1180px;}
+table.lst{width:100%;border-collapse:collapse;white-space:nowrap;min-width:1290px;}
 table.lst thead th{position:sticky;top:0;z-index:10;background:var(--bg4);color:var(--text2);font-size:11.5px;font-weight:600;
   padding:9px 8px;border:none;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;font-family:var(--font);
   width:auto;min-width:0;max-width:none;white-space:nowrap;}
@@ -363,6 +363,9 @@ table.lst tbody td{padding:8px 8px;border:none;border-bottom:1px solid var(--bor
   width:auto;min-width:0;max-width:none;text-align:left;overflow:hidden;text-overflow:ellipsis;}
 table.lst tbody td:first-child{position:static;background:transparent;width:auto;min-width:0;max-width:none;border-right:none;padding:8px 8px;font-size:13.2px;}
 table.lst tbody td.num{font-family:var(--mono);}
+/* 評点・レンタは幅を詰める（左端が間延びしないように） */
+table.lst thead th.tight,table.lst tbody td.tight,table.lst tbody td.tight:first-child{padding-left:4px;padding-right:4px;}
+table.lst tbody td.tight .mtag{padding:1px 4px;font-size:11px;}
 table.lst tbody tr:hover td{background:#f4f8fe!important;}
 table.lst tbody tr.ul td{background:#fffaf3;}
 table.lst tbody tr.ul:hover td{background:#fff4e6!important;}
@@ -891,6 +894,16 @@ table.lst tbody tr.ul td:last-child{background:#fffaf3;}
 </div>
 
 <script>
+/* 小数第1位の表示ルール：78.0 → 78 ／ 78.5 → 78.5
+   画面・PDF・帳票すべてで統一したいので toFixed(1) の出力側で末尾の .0 を落とす。
+   toFixed(0) や toFixed(2) の挙動は変えない。数値としての計算・送信には影響しない。 */
+(function(){
+  const _tf=Number.prototype.toFixed;
+  Number.prototype.toFixed=function(d){
+    const s=_tf.call(this,d);
+    return (d===1&&s.slice(-2)==='.0')?s.slice(0,-2):s;
+  };
+})();
 const SID='1688vaYsy-Ibhp9SaM875OzOrykJlfahVMIGteVclN3o';
 const GIDS={minivan:2047431649,suv:1044635441,hvcp:64189686,kei:1834933994,unlisted:1695712956,sold:222968280,master:790834883};
 const NAME_MAP={'ｳﾞｫｸｼｰ80系':'ヴォクシー80系','ｳﾞｫｸｼｰ90系':'ヴォクシー90系','ｳﾞｪﾙﾌｧｲｱ 30系':'ヴェルファイア30系','ﾉｱ80系':'ノア80系','ﾉｱ90系':'ノア90系','ｴｽｸｧｲｱ':'エスクァイア','ｼｴﾝﾀ':'シエンタ','ｽﾃｯﾌﾟﾜｺﾞﾝ':'ステップワゴン','ｾﾚﾅ 27前期':'セレナ27前期','ｾﾚﾅ 27後期':'セレナ27後期','ｾﾚﾅ 28現行':'セレナ28現行','ﾌﾘｰﾄﾞ':'フリード','ﾊﾘｱｰ80':'ハリアー80','ﾊﾘｱｰ80HV':'ハリアー80HV','ｳﾞｪｾﾞﾙ（現行）':'ヴェゼル現行','ｳﾞｪｾﾞﾙHV（現行）':'ヴェゼルHV現行','ｳﾞｪｾﾞﾙHV（前型）':'ヴェゼルHV前型','ｴｸｽﾄﾚｲﾙ32（前期）':'エクストレイル32前期','ｴｸｽﾄﾚｲﾙ32（後期）':'エクストレイル32後期','ｶﾛｰﾗｸﾛｽ':'カローラクロス','ﾌｫﾚｽﾀｰ':'フォレスター','ﾔﾘｽｸﾛｽ':'ヤリスクロス','ﾗｲｽﾞ':'ライズ','ｼﾞﾑニーﾉﾏﾄﾞ':'ジムニーノマド','ｱｸｱ前期':'アクア前期','ｱｸｱ中期':'アクア中期','ｱｸｱ後期':'アクア後期','ｱｸｱ現行':'アクア現行','ﾉｰﾄ前期':'ノート前期','ﾉｰﾄ中期':'ノート中期','ﾉｰﾄEpower':'ノートEpower','ﾉｰﾄEpower（現行）':'ノートEpower現行','ﾌﾟﾘｳｽ30系':'プリウス30系','ﾌﾟﾘｳｽ 50前期':'プリウス50前期','ﾌﾟﾘｳｽ 50後期':'プリウス50後期','ﾌﾟﾘｳｽ 50PHV':'プリウス50PHV','ﾌﾟﾘｳｽ 60':'プリウス60','ﾙｰﾐｰ':'ルーミー','ﾀﾝｸ':'タンク','ﾄｰﾙ':'トール','ｿﾘｵ':'ソリオ','ｽﾍﾟｲﾄﾞ':'スペイド','ｳﾞｨｯﾂ':'ヴィッツ','ｶﾛｰﾗｽﾎﾟｰﾂ':'カローラスポーツ','ｶﾛｰﾗﾂｰﾘﾝｸﾞ':'カローラツーリング','ﾏｰﾁ':'マーチ','ﾐﾗｰｼﾞｭ':'ミラージュ','N-BOXｶｽﾀﾑ':'N-BOXカスタム','Nﾜｺﾞﾝ':'Nワゴン','ｱﾙﾄ':'アルト','ｱﾙﾄﾗﾊﾟﾝ':'アルトラパン','ｴﾌﾞﾘｰ':'エブリー','ｷｬｽﾄ':'キャスト','ｷｬﾛﾙ':'キャロル','ｼﾞﾑﾆｰ':'ジムニー','ｽﾍﾟｰｼｱ':'スペーシア','ｽﾍﾟｰｼｱｶｽﾀﾑ':'スペーシアカスタム','ﾀﾝﾄ':'タント','ﾀﾝﾄｶｽﾀﾑ':'タントカスタム','ﾃﾞｲｽﾞ':'デイズ','ﾃﾞｲｽﾞﾙｰｸｽ':'デイズルークス','ﾊｽﾗｰ':'ハスラー','ﾐﾗｲｰｽ':'ミライース','ﾐﾗｼﾞｰﾉ':'ミラジーノ','ﾑｰｳﾞｺﾝﾃ':'ムーヴコンテ','ﾓｺ':'モコ','ﾙｰｸｽ':'ルークス','ﾙｰｸｽ\u3000ﾊｲｳｪｲｽﾀｰ':'ルークスHW','ﾜｺﾞﾝＲ':'ワゴンR','AZﾜｺﾞﾝ':'AZワゴン','EKﾜｺﾞﾝ':'EKワゴン','ｸﾘｯﾊﾟｰﾘｵ':'クリッパーリオ','ｵｰﾗ':'オーラ','ﾗﾝｸﾙ250':'ランクル250','ﾌｪｱﾚﾃﾞｨZ':'フェアレディZ','ﾛｰﾄﾞｽﾀｰ':'ロードスター','ｲﾝﾌﾟﾚｯｻｽﾎﾟｰﾂ':'インプレッサスポーツ','ﾌﾟﾘｳｽ60PHEV':'プリウス60PHEV'};
@@ -1744,10 +1757,10 @@ function rentChip(v){
   return `<span class="mtag" style="background:${s.bg};color:${s.c}">${s.l}</span>`;
 }
 const LS_COLS=[
-  {k:'rating', l:'評価点',   w:46,  a:'c'},
-  {k:'rent',   l:'レンタ',   w:62,  a:'c'},
-  {k:'source', l:'仕入先',   w:56,  a:'c'},
-  {k:'sid',    l:'SID',      w:56,  a:'c', mono:1},
+  {k:'rating', l:'評点',     w:34,  a:'c', tight:1},
+  {k:'rent',   l:'レンタ',   w:44,  a:'c', tight:1},
+  {k:'source', l:'仕入先',   w:52,  a:'c'},
+  {k:'sid',    l:'SID',      w:52,  a:'c', mono:1},
   {k:'lower4', l:'車体番号', w:62,  a:'c', mono:1},
   {k:'name',   l:'車名',     w:132},
   {k:'grade',  l:'グレード', w:150},
@@ -1815,10 +1828,10 @@ function renderList(){
     set.forEach(v=>{const o=document.createElement('option');o.value=o.textContent=v;sel.appendChild(o);});
   }
   const rows=listRows();
-  const th=LS_COLS.map(c=>`<th style="width:${c.w}px;text-align:${c.a==='r'?'right':c.a==='c'?'center':'left'}"
+  const th=LS_COLS.map(c=>`<th class="${c.tight?'tight':''}" style="width:${c.w}px;text-align:${c.a==='r'?'right':c.a==='c'?'center':'left'}"
       onclick="lsSort('${c.k}')">${c.l}${_lsSort.k===c.k?(_lsSort.asc?' ▲':' ▼'):''}</th>`).join('');
   const body=rows.map(d=>`<tr${d.unlisted?' class="ul"':''}>`+LS_COLS.map(c=>
-      `<td style="text-align:${c.a==='r'?'right':c.a==='c'?'center':'left'}"${c.mono?' class="num"':''}>${lsFmt(d,c)}</td>`).join('')
+      `<td style="text-align:${c.a==='r'?'right':c.a==='c'?'center':'left'}" class="${c.mono?'num ':''}${c.tight?'tight':''}">${lsFmt(d,c)}</td>`).join('')
       +`<td>${d.lower4&&!d.unlisted?`<button class="minibtn" onclick="openPriceChange('${encodeURIComponent(d.lower4)}','${encodeURIComponent(d.name)}',${d.price!=null?d.price:0},'${encodeURIComponent(d.cat||'')}')">価格</button>`:''}</td></tr>`).join('');
   box.innerHTML=`<table class="lst"><thead><tr>${th}<th style="width:52px"></th></tr></thead><tbody>${body}</tbody></table>`;
   const cost=rows.reduce((a,b)=>a+(b.cost||0),0), prof=rows.reduce((a,b)=>a+(b.profit||0),0);
