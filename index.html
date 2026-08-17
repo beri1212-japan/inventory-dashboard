@@ -900,13 +900,16 @@ table.lst tbody tr.ul td:last-child{background:#fffaf3;}
           <svg class="ic ic-s"><use href="#i-down"></use></svg>CSVを読み込む
           <input type="file" id="cmFile" accept=".csv,text/csv" style="display:none" onchange="cmLoadFile(this)">
         </label>
-        <button class="rbtn ghost" onclick="cmClear()">読み込みを消す</button>
+        <select class="sel" id="cmMonth" style="display:none" onchange="cmSetMonth(this.value)"></select>
+        <button class="rbtn ghost" onclick="cmDropMonth()">この月を消す</button>
+        <button class="rbtn ghost" onclick="cmClear()">全部消す</button>
       </div>
       <span style="margin-left:auto;font-size:12.6px;color:var(--text3)" id="cmMeta">未読込</span>
     </div>
     <div class="sec-body" style="padding:10px 14px;font-size:12.6px;color:var(--text3);line-height:1.8" id="cmHelp">
       C-match →「反響（物件別）」→ 期間を選んで <b>ダウンロード</b> で出たCSVをそのまま選んでください。
-      在庫表と <b>車台末番3桁 ＋ 年式 ＋ 走行距離</b> で自動的に突き合わせます。読み込んだ内容はこのブラウザに保存され、次に開いたときも残ります。
+      在庫表と <b>車台末番3桁 ＋ 年式 ＋ 走行距離</b> で自動的に突き合わせます。
+      <b>月を変えて何度でも読み込めます</b>。読み込んだ月はこのブラウザに貯まっていき、上のプルダウンで切り替え・前月比較ができます。
     </div>
   </div>
 
@@ -2171,8 +2174,15 @@ function paCopyPrompt(enc){
    ・突合キーは 車台末番3桁 ＋ 年式(西暦) ＋ 走行距離。この3点で在庫は一意に決まる
      （末番だけだと3桁のため別車とぶつかる。価格は掲載側とズレることがあるのでキーに使わない）
    ・読み込んだ結果は localStorage に保存し、次回以降も表示する            */
-const CM_KEY='cmatch_v1';
-let CM=null;   // {ym, exported, rows:[...]}
+const CM_KEY='cmatch_v2';
+const CM_KEY_OLD='cmatch_v1';
+/* CM = { months:{ '2026年08月':{ym,exported,rows[],savedAt}, ... }, cur:'2026年08月' }
+   月別に貯めていくので、月を切り替えて見たり前月と比べたりできる。 */
+let CM=null;
+function cmMonths(){return CM?Object.keys(CM.months).sort():[];}          // 古い順
+function cmCur(){return CM&&CM.months[CM.cur]||null;}
+function cmPrevKey(k){const a=cmMonths();const i=a.indexOf(k||CM.cur);return i>0?a[i-1]:null;}
+function cmPrev(){const k=CM&&cmPrevKey();return k?CM.months[k]:null;}
 
 const CM_METRIC={
   '詳細閲覧数':'view', '複数画像閲覧数':'img', 'MAP閲覧数':'map',
@@ -2211,7 +2221,7 @@ function cmParse(text){
     const yr=parseInt(r[7])||null, km=parseInt(r[10]);
     const k=suf+'|'+yr+'|'+km;
     const v=V[k]||(V[k]={
-      suf, maker:(r[0]||'').trim(), car:(r[1]||'').trim(),
+      k, suf, maker:(r[0]||'').trim(), car:(r[1]||'').trim(),
       grade:((r[2]||'')+' '+(r[3]||'')).trim(),
       priceDisp:(r[4]||'').trim(), price:(parseInt(r[5])||0)/10000,
       wareki:(r[6]||'').trim(), year:yr, kmDisp:(r[9]||'').trim(), km:isNaN(km)?null:km,
@@ -2248,10 +2258,15 @@ function cmLoadFile(input){
       try{ text=new TextDecoder('shift_jis',{fatal:false}).decode(buf); }
       catch(e){ text=new TextDecoder('utf-8').decode(buf); }
       if(!/メーカー/.test(text.slice(0,4000)))text=new TextDecoder('utf-8').decode(buf);
-      CM=cmParse(text);
-      try{ localStorage.setItem(CM_KEY,JSON.stringify(CM)); }
-      catch(e){ console.warn('保存できませんでした（容量超過の可能性）:',e.message); }
+      const one=cmParse(text);
+      if(!CM)CM={months:{},cur:one.ym};
+      const dup=!!CM.months[one.ym];
+      CM.months[one.ym]=one;
+      CM.cur=one.ym;
+      cmSave();
       renderCmatch();
+      const n=cmMonths().length;
+      alert(`${one.ym} を${dup?'上書きで':''}読み込みました（${one.rows.length}物件）。\n保存されている月：${n}か月（${cmMonths().join(' / ')}）`);
     }catch(e){
       alert('読み込めませんでした：'+e.message);
     }
@@ -2259,21 +2274,76 @@ function cmLoadFile(input){
   rd.readAsArrayBuffer(f);
   input.value='';
 }
+/* 保存。日別配列はカンマ区切りの文字列に畳んで容量を抑える。
+   それでも入りきらないときは古い月から捨てる（消した月は画面で知らせる） */
+function cmPack(o){
+  return {months:Object.fromEntries(Object.entries(o.months).map(([k,mo])=>[k,{
+    ym:mo.ym,exported:mo.exported,savedAt:mo.savedAt,
+    rows:mo.rows.map(r=>{
+      const c=Object.assign({},r);delete c._hit;
+      c.d=Object.fromEntries(Object.entries(r.d||{}).map(([mk,a])=>[mk,a.map(v=>v==null?'':v).join(',')]));
+      return c;
+    })}])), cur:o.cur};
+}
+function cmUnpack(o){
+  if(!o||!o.months)return null;
+  Object.values(o.months).forEach(mo=>mo.rows.forEach(r=>{
+    if(r.d)Object.keys(r.d).forEach(mk=>{
+      if(typeof r.d[mk]==='string')r.d[mk]=r.d[mk].split(',').map(s=>s===''?null:+s);
+    });
+  }));
+  return o;
+}
+function cmSave(){
+  const dropped=[];
+  for(let i=0;i<12;i++){
+    try{ localStorage.setItem(CM_KEY,JSON.stringify(cmPack(CM)));
+         if(dropped.length)alert('保存容量の上限のため、古い月を削除しました：'+dropped.join(' / '));
+         return true; }
+    catch(e){
+      const a=cmMonths();
+      if(a.length<=1){console.warn('反響データを保存できませんでした:',e.message);return false;}
+      const old=a[0]===CM.cur?a[1]:a[0];
+      delete CM.months[old];dropped.push(old);
+    }
+  }
+  return false;
+}
 function cmRestore(){
-  try{ const s=localStorage.getItem(CM_KEY); if(s)CM=JSON.parse(s); }catch(e){}
+  try{
+    const s=localStorage.getItem(CM_KEY);
+    if(s){CM=cmUnpack(JSON.parse(s));return;}
+    // 旧形式（単月）が残っていれば引き継ぐ
+    const o=localStorage.getItem(CM_KEY_OLD);
+    if(o){const one=JSON.parse(o);if(one&&one.rows){CM={months:{[one.ym]:one},cur:one.ym};cmSave();localStorage.removeItem(CM_KEY_OLD);}}
+  }catch(e){console.warn('反響データの読み出しに失敗:',e.message);}
+}
+function cmSetMonth(k){if(CM&&CM.months[k]){CM.cur=k;cmSave();renderCmatch();}}
+function cmDropMonth(){
+  if(!CM||!CM.cur)return;
+  if(!confirm(CM.cur+' の反響データを消しますか？'))return;
+  delete CM.months[CM.cur];
+  const a=cmMonths();
+  if(!a.length){CM=null;try{localStorage.removeItem(CM_KEY);}catch(e){}}
+  else{CM.cur=a[a.length-1];cmSave();}
+  renderCmatch();
 }
 function cmClear(){
-  if(!confirm('読み込んだ反響データを消しますか？'))return;
-  CM=null;try{localStorage.removeItem(CM_KEY);}catch(e){}
+  if(!confirm('保存されている反響データを全部消しますか？'))return;
+  CM=null;try{localStorage.removeItem(CM_KEY);localStorage.removeItem(CM_KEY_OLD);}catch(e){}
   renderCmatch();
 }
 /* 在庫 ↔ C-match の突合。末番3桁で候補を出し、年式・走行で1台に決める */
 function cmAttach(){
-  STOCK.forEach(d=>{d.cm=null;});
-  if(!CM)return;
-  CM.rows.forEach(r=>{r._hit=null;});
+  STOCK.forEach(d=>{d.cm=null;d.cmP=null;});
+  const cur=cmCur();
+  if(!cur)return;
+  const prev=cmPrev();
+  const pMap={};
+  if(prev)prev.rows.forEach(r=>{pMap[r.k]=r;});
+  cur.rows.forEach(r=>{r._hit=null;});
   const bySuf={};
-  CM.rows.forEach(r=>{(bySuf[r.suf]=bySuf[r.suf]||[]).push(r);});
+  cur.rows.forEach(r=>{(bySuf[r.suf]=bySuf[r.suf]||[]).push(r);});
   STOCK.forEach(d=>{
     const suf=(d.lower4||'').slice(-3);
     const cand=bySuf[suf];
@@ -2292,7 +2362,7 @@ function cmAttach(){
       if(cand.length===1)s+=1;
       if(s>bestScore){bestScore=s;best=r;}
     });
-    if(best&&bestScore>=4){ d.cm=best; best._hit=d; }
+    if(best&&bestScore>=4){ d.cm=best; best._hit=d; d.cmP=pMap[best.k]||null; }
   });
 }
 function cmNum(v){return v==null?0:v;}
@@ -2300,12 +2370,13 @@ function cmNum(v){return v==null?0:v;}
 /* ───── グラフ（依存ライブラリなし・インラインSVG） ─────
    ルール：1つのグラフに1系列・1軸だけ。閲覧数と問合せ数は桁が違うので
    同じ絵に重ねず、指標を切り替えて見る形にしている。 */
-const CM_TREND={metric:'view'};
+const CM_TREND={metric:'view',cmp:true};
 const CM_METRIC_LABEL={view:'詳細閲覧数',inq:'問合せ数',fav:'お気に入り登録',pw:'値下げ待ち登録'};
-function cmDaily(metric){
+function cmDaily(metric,mo){
   const n=31,sum=new Array(n).fill(0),has=new Array(n).fill(false);
-  if(!CM)return {sum,has,days:0};
-  CM.rows.forEach(r=>{
+  const src=mo||cmCur();
+  if(!src)return {sum,has,days:0};
+  src.rows.forEach(r=>{
     const a=r.d&&r.d[metric];if(!a)return;
     for(let i=0;i<Math.min(n,a.length);i++){ if(a[i]!=null){sum[i]+=a[i];has[i]=true;} }
   });
@@ -2329,10 +2400,14 @@ function cmSpark(vals,w,h,color){
 function cmTrendSvg(){
   const m=CM_TREND.metric;
   const {sum,has,days}=cmDaily(m);
+  const prevMo=CM_TREND.cmp?cmPrev():null;
+  const pd=prevMo?cmDaily(m,prevMo):null;
   const W=1000,H=260,L=52,R=16,T=18,B=30;
   const n=Math.max(days,1);
   const vals=sum.slice(0,n);
-  const max=Math.max(...vals,1);
+  // 前月は当月と同じ日数までで描く（月末までの分を混ぜると不公平に見える）
+  const pvals=pd?pd.sum.slice(0,Math.min(Math.max(pd.days,1),n)):null;
+  const max=Math.max(...vals,...(pvals||[]),1);
   // 目盛りはキリのいい数に丸める
   const step=Math.pow(10,Math.floor(Math.log10(max/3||1)));
   const unit=[1,2,2.5,5,10].map(x=>x*step).find(x=>max/x<=4)||step*10;
@@ -2350,6 +2425,11 @@ function cmTrendSvg(){
     xlab+=`<text x="${px(i).toFixed(1)}" y="${H-8}" text-anchor="middle" font-size="12" fill="#8b95a1" font-family="var(--mono)">${i+1}</text>`; }
   const line=vals.map((v,i)=>(i?'L':'M')+px(i).toFixed(1)+' '+py(v).toFixed(1)).join(' ');
   const area=`M${px(0).toFixed(1)} ${py(0).toFixed(1)} `+vals.map((v,i)=>'L'+px(i).toFixed(1)+' '+py(v).toFixed(1)).join(' ')+` L${px(n-1).toFixed(1)} ${py(0).toFixed(1)} Z`;
+  // 前月は同じ指標・同じ軸の2本目。破線＋淡色にして当月を主役にする
+  const pline=pvals&&pvals.length>1
+    ? `<path d="${pvals.map((v,i)=>(i?'L':'M')+px(i).toFixed(1)+' '+py(v).toFixed(1)).join(' ')}"
+        fill="none" stroke="#9aa5b1" stroke-width="2" stroke-dasharray="5 4" stroke-linecap="round" stroke-linejoin="round"/>`
+    : '';
   return `<svg id="cmTrendSvg" viewBox="0 0 ${W} ${H}" style="width:100%;height:260px;display:block"
       onmousemove="cmTrendHover(event)" onmouseleave="cmTrendOut()">
     <defs><linearGradient id="cmg" x1="0" y1="0" x2="0" y2="1">
@@ -2357,6 +2437,7 @@ function cmTrendSvg(){
       <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>
     ${grid}${ylab}${xlab}
     <path d="${area}" fill="url(#cmg)"/>
+    ${pline}
     <path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     <line id="cmCross" x1="0" y1="${T}" x2="0" y2="${H-B}" stroke="#c8cfd6" stroke-width="1" stroke-dasharray="3 3" style="display:none"/>
     <circle id="cmDot" r="5" fill="#fff" stroke="var(--accent)" stroke-width="2.5" style="display:none"/>
@@ -2364,14 +2445,16 @@ function cmTrendSvg(){
   </svg>`;
 }
 function cmTrendHover(e){
-  const svg=document.getElementById('cmTrendSvg');if(!svg||!CM)return;
+  const svg=document.getElementById('cmTrendSvg');if(!svg||!cmCur())return;
   const m=CM_TREND.metric,{sum,days}=cmDaily(m);
+  const prevMo=CM_TREND.cmp?cmPrev():null;
+  const pd=prevMo?cmDaily(m,prevMo):null;
   const n=Math.max(days,1),W=1000,H=260,L=52,R=16,T=18,B=30;
   const box=svg.getBoundingClientRect();
   const x=(e.clientX-box.left)/box.width*W;
   let i=Math.round((x-L)/((W-L-R)||1)*(n-1));
   i=Math.max(0,Math.min(n-1,i));
-  const vals=sum.slice(0,n),max=Math.max(...vals,1);
+  const vals=sum.slice(0,n),max=Math.max(...vals,...(pd?pd.sum.slice(0,Math.max(pd.days,1)):[]),1);
   const step=Math.pow(10,Math.floor(Math.log10(max/3||1)));
   const unit=[1,2,2.5,5,10].map(z=>z*step).find(z=>max/z<=4)||step*10;
   const top=Math.ceil(max/unit)*unit;
@@ -2382,8 +2465,10 @@ function cmTrendHover(e){
   const tip=document.getElementById('cmTip');
   if(tip){
     tip.style.display='block';
-    tip.innerHTML=`<div style="font-size:11.5px;color:var(--text3)">${(CM.ym||'')} ${i+1}日</div>
-      <div style="font-size:16px;font-weight:700;font-family:var(--mono)">${vals[i]}<span style="font-size:11.5px;font-weight:500;color:var(--text3)"> ${CM_METRIC_LABEL[m]}</span></div>`;
+    const pv=pd?pd.sum[i]:null;
+    tip.innerHTML=`<div style="font-size:11.5px;color:var(--text3)">${CM.cur} ${i+1}日</div>
+      <div style="font-size:16px;font-weight:700;font-family:var(--mono)">${vals[i]}<span style="font-size:11.5px;font-weight:500;color:var(--text3)"> ${CM_METRIC_LABEL[m]}</span></div>
+      ${pd?`<div style="font-size:11.5px;color:var(--text3);margin-top:2px">${prevMo.ym} 同日 <b style="font-family:var(--mono)">${pv==null?'—':pv}</b></div>`:''}`;
     const left=cx/W*box.width;
     tip.style.left=Math.max(0,Math.min(box.width-140,left-70))+'px';
   }
@@ -2393,6 +2478,7 @@ function cmTrendOut(){
   const t=document.getElementById('cmTip');if(t)t.style.display='none';
 }
 function cmSetMetric(m){CM_TREND.metric=m;renderCmatch();}
+function cmToggleCmp(){CM_TREND.cmp=!CM_TREND.cmp;renderCmatch();}
 function cmJudge(d,med){
   const r=d.cm;if(!r)return null;
   const vpd=r.activeDays?r.m.view/r.activeDays:0;
@@ -2408,14 +2494,22 @@ function renderCmatch(){
   const box=document.getElementById('cmBody');if(!box)return;
   const meta=document.getElementById('cmMeta');
   const nb=document.getElementById('navCm');
-  if(!CM){
+  const sel=document.getElementById('cmMonth');
+  if(!CM||!cmCur()){
     if(meta)meta.textContent='未読込';
+    if(sel)sel.innerHTML='';
+    if(sel)sel.style.display='none';
     if(nb)nb.style.display='none';
-    box.innerHTML='<div class="sec"><div class="sec-body" style="padding:26px;text-align:center;color:var(--text3);font-size:13.2px">CSVを読み込むと、ここに反響分析が出ます。</div></div>';
+    box.innerHTML='<div class="sec"><div class="sec-body" style="padding:26px;text-align:center;color:var(--text3);font-size:13.2px">CSVを読み込むと、ここに反響分析が出ます。月ごとに読み込めば、前月との比較もできます。</div></div>';
     return;
   }
   cmAttach();
-  if(meta)meta.textContent=`${CM.ym} ／ ${CM.rows.length}物件 ／ 出力 ${CM.exported}`;
+  const cur=cmCur(), prevMo=cmPrev();
+  if(sel){
+    sel.style.display='';
+    sel.innerHTML=cmMonths().slice().reverse().map(k=>`<option value="${k}"${k===CM.cur?' selected':''}>${k}</option>`).join('');
+  }
+  if(meta)meta.textContent=`${cmMonths().length}か月分を保存中 ／ ${cur.rows.length}物件 ／ 出力 ${cur.exported}`;
 
   const hit=STOCK.filter(d=>d.cm);
   const listed=hit.filter(d=>d.cm.listed!=='非掲載');
@@ -2433,7 +2527,7 @@ function renderCmatch(){
 
   // 掲載モレ／削除モレ／価格ズレ
   const noCm  =STOCK.filter(d=>!d.cm);
-  const ghost =CM.rows.filter(r=>!r._hit&&r.listed!=='非掲載');
+  const ghost =cur.rows.filter(r=>!r._hit&&r.listed!=='非掲載');
   const gap   =hit.filter(d=>d.price!=null&&Math.abs(d.price-d.cm.price)>=0.05)
                   .sort((a,b)=>Math.abs(b.price-b.cm.price)-Math.abs(a.price-a.cm.price));
 
@@ -2443,18 +2537,43 @@ function renderCmatch(){
     const {sum,days}=dayOf(key);
     const v=sum.slice(0,Math.max(days,1));
     const total=v.reduce((a,b)=>a+b,0);
-    const half=Math.floor(v.length/2);
-    const first=v.slice(0,half).reduce((a,b)=>a+b,0), last=v.slice(half).reduce((a,b)=>a+b,0);
-    const trend=first>0?Math.round((last-first)/first*100):null;
+    // 前月があれば前月比。無ければ月内の前半→後半で見る
+    let trend=null,tlab='';
+    if(prevMo){
+      const p=cmDaily(key,prevMo);
+      const pv=p.sum.slice(0,Math.max(p.days,1));
+      // 当月がまだ途中なら、前月も同じ日数までで比べる（月末との不公平をなくす）
+      const nDays=v.length;
+      const pt=pv.slice(0,nDays).reduce((a,b)=>a+b,0);
+      if(pt>0){trend=Math.round((total-pt)/pt*100);tlab=`前月同期間 ${pt.toLocaleString()}`;}
+    }
+    if(trend==null){
+      const half=Math.floor(v.length/2);
+      const first=v.slice(0,half).reduce((a,b)=>a+b,0), last=v.slice(half).reduce((a,b)=>a+b,0);
+      if(first>0){trend=Math.round((last-first)/first*100);tlab='月後半 vs 前半';}
+    }
     const on=CM_TREND.metric===key;
     return `<div class="cmtile${on?' on':''}" onclick="cmSetMetric('${key}')">
       <div class="cmtile-lbl">${label}</div>
       <div class="cmtile-val" style="color:${color}">${total.toLocaleString()}</div>
       <div class="cmtile-foot">
         <span style="color:${trend==null?'var(--text3)':trend>=0?'#047857':'#b91c1c'}">${trend==null?'—':(trend>=0?'▲':'▼')+Math.abs(trend)+'%'}</span>
-        <span style="color:var(--text3)">月後半 vs 前半</span>
+        <span style="color:var(--text3);font-weight:500">${tlab||'比較データなし'}</span>
         <span style="margin-left:auto">${cmSpark(v,86,26,color)}</span>
       </div></div>`;
+  };
+  // 前月比（1台ごと）
+  const mom=d=>{
+    if(!d.cmP)return null;
+    const a=cmNum(d.cm.m.view), b=cmNum(d.cmP.m.view);
+    if(!b)return null;
+    return Math.round((a-b)/b*100);
+  };
+  const momTag=d=>{
+    const v=mom(d);
+    if(v==null)return '';
+    const c=v<=-40?'#b91c1c':v<0?'#d97706':'#047857';
+    return `<span class="mtag" style="background:transparent;color:${c};padding:0">${v>=0?'▲':'▼'}${Math.abs(v)}%</span>`;
   };
   const trendHead=`
   <div class="sec" style="margin-bottom:12px">
@@ -2467,15 +2586,20 @@ function renderCmatch(){
         <div class="cmtile" style="cursor:default">
           <div class="cmtile-lbl">突合できた在庫</div>
           <div class="cmtile-val">${hit.length}<span style="font-size:14px;color:var(--text3);font-weight:600"> / ${STOCK.length}台</span></div>
-          <div class="cmtile-foot"><span style="color:var(--text3)">1日あたり閲覧の中央値 ${med.toFixed(1)}</span></div>
+          <div class="cmtile-foot"><span style="color:var(--text3);font-weight:500">1日あたり閲覧の中央値 ${med.toFixed(1)}</span></div>
         </div>
       </div>
     </div>
   </div>
   <div class="sec" style="margin-bottom:12px">
-    <div class="sec-hdr">
+    <div class="sec-hdr" style="gap:10px;flex-wrap:wrap">
       <span class="sec-title">${CM_METRIC_LABEL[CM_TREND.metric]}の推移</span>
-      <span style="font-size:12.6px;color:var(--text3)">${CM.ym} ・ 日別 ・ 全掲載物件の合計。上のタイルをクリックすると指標が切り替わります</span>
+      <span style="font-size:12.6px;color:var(--text3)">${CM.cur} ・ 日別 ・ 全掲載物件の合計。上のタイルをクリックすると指標が切り替わります</span>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:14px;font-size:12.6px">
+        <span style="display:flex;align-items:center;gap:5px"><i style="display:inline-block;width:16px;height:2px;background:var(--accent)"></i>${CM.cur}</span>
+        ${prevMo?`<label class="chklbl" style="gap:5px"><input type="checkbox" ${CM_TREND.cmp?'checked':''} onchange="cmToggleCmp()">
+          <span style="display:flex;align-items:center;gap:5px"><i style="display:inline-block;width:16px;height:0;border-top:2px dashed #9aa5b1"></i>${prevMo.ym}と比較</span></label>`:''}
+      </div>
     </div>
     <div class="sec-body" style="padding:8px 12px 4px">
       <div style="position:relative">
@@ -2517,7 +2641,7 @@ function renderCmatch(){
           <b>${d.price!=null?d.price.toFixed(1):'—'}万</b>${Math.abs((d.price||0)-r.price)>=0.05?`<span style="color:var(--red)">（掲載 ${r.price.toFixed(1)}万）</span>`:''}
           ／ 在庫${d.days!=null?d.days:'—'}日</div>
         <div class="adet" style="margin-top:2px">
-          閲覧 <b>${cmNum(r.m.view)}</b>（1日${vpd}）・画像 ${cmNum(r.m.img)}・お気に入り ${cmNum(r.m.fav)}・値下げ待ち ${cmNum(r.m.pw)}・問合せ <b>${cmNum(r.m.inq)}</b>
+          閲覧 <b>${cmNum(r.m.view)}</b>（1日${vpd}）${d.cmP?` 前月${cmNum(d.cmP.m.view)} ${momTag(d)}`:''}・画像 ${cmNum(r.m.img)}・お気に入り ${cmNum(r.m.fav)}・値下げ待ち ${cmNum(r.m.pw)}・問合せ <b>${cmNum(r.m.inq)}</b>
         </div>
       </div>
       <button class="minibtn" onclick="openPriceChange('${encodeURIComponent(d.lower4)}','${encodeURIComponent(d.name)}',${d.price!=null?d.price:0},'${encodeURIComponent(d.cat||'')}')">価格</button>
@@ -2535,6 +2659,10 @@ function renderCmatch(){
 
   ${sec('<svg class="ic ic-s"><use href="#i-zap"></use></svg>問合せが入っている','最優先で追客。ここを落とすのが一番もったいない',hot,'今月の問合せはまだありません。')}
   ${sec('<svg class="ic ic-s"><use href="#i-alert"></use></svg>値下げ待ちが付いている','「価格が下がったら知らせて」を押された車。下げれば動く可能性が高い',pw,'該当なし。')}
+  ${prevMo?sec('<svg class="ic ic-s"><use href="#i-down"></use></svg>反響が落ちた車（前月比▲40%以上）',
+    `${prevMo.ym} → ${CM.cur}。飽きられた合図。写真の差し替え・価格の見直しで露出を作り直す`,
+    hit.filter(d=>{const v=mom(d);return v!=null&&v<=-40;}).sort((a,b)=>mom(a)-mom(b)),
+    '該当なし。'):''}
   ${sec('<svg class="ic ic-s"><use href="#i-warn"></use></svg>見られているのに問合せゼロ','露出は取れている＝価格か中身が刺さっていない。値付けと装備表記を見直す',seen,'該当なし。')}
   ${sec('<svg class="ic ic-s"><use href="#i-slash"></use></svg>閲覧ゼロ・露出不足','そもそも見られていない＝写真・掲載内容・価格帯の問題',dead.concat(low),'該当なし。')}
 
@@ -2572,7 +2700,8 @@ function renderCmatch(){
       <span style="margin-left:auto;font-size:12.6px;color:var(--text3)">閲覧の多い順。1日あたり閲覧の中央値は ${med.toFixed(1)}</span></div>
     <div class="sec-body" style="padding:0"><div class="tblwrap2"><table class="lst" style="min-width:1100px"><thead><tr>
       <th>判定</th><th>ジャンル</th><th>車名</th><th>年式</th><th style="text-align:right">距離</th><th style="text-align:right">価格</th>
-      <th style="text-align:right">在庫日数</th><th style="text-align:right">閲覧</th><th style="text-align:right">1日</th><th style="text-align:right">画像</th>
+      <th style="text-align:right">在庫日数</th><th style="text-align:right">閲覧</th><th style="text-align:right">前月</th><th style="text-align:right">前月比</th>
+      <th style="text-align:right">1日</th><th style="text-align:right">画像</th>
       <th style="text-align:right">お気に入り</th><th style="text-align:right">値下待</th><th style="text-align:right">問合せ</th></tr></thead><tbody>
       ${hit.slice().sort((a,b)=>cmNum(b.cm.m.view)-cmNum(a.cm.m.view)).map(d=>{const r=d.cm,j=d.cmJ;
         return `<tr>
@@ -2582,6 +2711,8 @@ function renderCmatch(){
         <td class="num" style="text-align:right">${d.price!=null?d.price.toFixed(1):'—'}</td>
         <td class="num" style="text-align:right">${d.days!=null?d.days:'—'}</td>
         <td class="num" style="text-align:right;font-weight:700">${cmNum(r.m.view)}</td>
+        <td class="num" style="text-align:right;color:var(--text3)">${d.cmP?cmNum(d.cmP.m.view):'—'}</td>
+        <td class="num" style="text-align:right">${momTag(d)||'—'}</td>
         <td class="num" style="text-align:right">${r.activeDays?(r.m.view/r.activeDays).toFixed(1):'—'}</td>
         <td class="num" style="text-align:right">${cmNum(r.m.img)}</td>
         <td class="num" style="text-align:right">${cmNum(r.m.fav)}</td>
