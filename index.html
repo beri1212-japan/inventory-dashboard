@@ -335,6 +335,10 @@ table.dtl tbody tr:hover td{background:#f7fafe!important;}
 /* --- 価格変更 --- */
 .ov2{z-index:110;}
 .modal2{z-index:120;max-width:430px;}
+/* 反響詳細はグラフを入れるので広く使う */
+.modal2.wide{max-width:900px;width:calc(100vw - 80px);}
+@media(max-width:760px){.modal2.wide{width:calc(100vw - 24px);}
+  .modal2.wide .cmstats{grid-template-columns:repeat(2,1fr)!important;}}
 .minibtn{border:1px solid var(--border);background:var(--bg2);color:var(--accent);border-radius:7px;padding:4px 10px;font-size:12.6px;font-weight:600;font-family:var(--font);cursor:pointer;white-space:nowrap;}
 .minibtn:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
 .pchg{font-size:12.6px;font-family:var(--mono);color:var(--text2);cursor:help;border-bottom:1px dotted var(--border2);}
@@ -356,8 +360,8 @@ table.dtl tbody tr:hover td{background:#f7fafe!important;}
 .pc-now em{font-size:12.6px;font-style:normal;color:var(--text3);margin-left:3px;font-weight:500;}
 .pc-diff{font-size:14.9px;font-weight:700;font-family:var(--mono);width:74px;text-align:right;}
 .pc-diff.dn{color:var(--red);}.pc-diff.up{color:var(--green);}
-.pc-quick{display:flex;gap:6px;margin:-4px 0 13px 84px;}
-.pc-quick button{flex:1;border:1px solid var(--border);background:var(--bg2);border-radius:7px;padding:6px 0;font-size:13.2px;font-family:var(--mono);color:var(--text2);cursor:pointer;}
+.pc-quick{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:-4px 0 13px 84px;}
+.pc-quick button{border:1px solid var(--border);background:var(--bg2);border-radius:7px;padding:6px 0;font-size:13.2px;font-family:var(--mono);color:var(--text2);cursor:pointer;}
 .pc-quick button:hover{border-color:var(--accent);color:var(--accent);background:#f4f8fe;}
 .pc-msg{font-size:13.2px;line-height:1.6;margin-bottom:10px;}
 .pc-msg.ok{color:var(--green);background:var(--green-bg);border-radius:8px;padding:9px 11px;}
@@ -1935,8 +1939,11 @@ function renderList(){
       onclick="lsSort('${c.k}')">${c.l}${_lsSort.k===c.k?(_lsSort.asc?' ▲':' ▼'):''}</th>`).join('');
   const body=rows.map(d=>`<tr${d.unlisted?' class="ul"':''}>`+LS_COLS.map(c=>
       `<td style="text-align:${c.a==='r'?'right':c.a==='c'?'center':'left'}" class="${c.mono?'num ':''}${c.tight?'tight':''}">${lsFmt(d,c)}</td>`).join('')
-      +`<td>${d.lower4&&!d.unlisted?`<button class="minibtn" onclick="openPriceChange('${encodeURIComponent(d.lower4)}','${encodeURIComponent(d.name)}',${d.price!=null?d.price:0},'${encodeURIComponent(d.cat||'')}')">価格</button>`:''}</td></tr>`).join('');
-  box.innerHTML=`<table class="lst"><thead><tr>${th}<th style="width:52px"></th></tr></thead><tbody>${body}</tbody></table>`;
+      +`<td>${d.lower4&&!d.unlisted?`<span style="display:flex;gap:4px;justify-content:flex-end">
+        <button class="minibtn" title="この車の閲覧数・問合せ数と価格アドバイス" onclick="openCmDetail('${encodeURIComponent(d.lower4)}','${encodeURIComponent(d.name)}','${encodeURIComponent(d.cat||'')}')" ${d.cm?'':'style="opacity:.55"'}>反響</button>
+        <button class="minibtn" onclick="openPriceChange('${encodeURIComponent(d.lower4)}','${encodeURIComponent(d.name)}',${d.price!=null?d.price:0},'${encodeURIComponent(d.cat||'')}')">価格</button>
+      </span>`:''}</td></tr>`).join('');
+  box.innerHTML=`<table class="lst"><thead><tr>${th}<th style="width:106px"></th></tr></thead><tbody>${body}</tbody></table>`;
   const cost=rows.reduce((a,b)=>a+(b.cost||0),0), prof=rows.reduce((a,b)=>a+(b.profit||0),0);
   document.getElementById('lsCount').innerHTML=
     `<b style="color:var(--text);font-size:14.9px">${rows.length}</b>台 ・ 原価計 ${Math.round(cost).toLocaleString()}万 ・ 想定利益 ${Math.round(prof).toLocaleString()}万`;
@@ -2626,6 +2633,255 @@ function cmSetMetric(m){CM_TREND.metric=m;renderCmatch();}
 function cmToggleCmp(){CM_TREND.cmp=!CM_TREND.cmp;renderCmatch();}
 function cmSetPeriod(p){CM_VIEW.period=p;renderCmatch();}
 
+/* ═══ 1台ごとの反響詳細（在庫一覧の「反響」ボタン） ═══ */
+/* その車の月ごとの反響。C-matchのキー（末番|年式|走行）で全月を串刺しにする */
+function cmCarMonthly(key){
+  if(!CM||!key)return [];
+  return cmMonths().map(ym=>{
+    const mo=CM.months[ym];
+    const r=mo&&mo.rows.find(x=>x.k===key);
+    return {ym, view:(r&&r.m.view)||0, inq:(r&&r.m.inq)||0, fav:(r&&r.m.fav)||0,
+            pw:(r&&r.m.pw)||0, img:(r&&r.m.img)||0, act:(r&&r.activeDays)||0, has:!!r};
+  }).filter(x=>x.has);
+}
+/* 日別が残っている一番新しい月を返す */
+function cmCarDailyMonth(key){
+  const a=cmMonths().slice().reverse();
+  for(const ym of a){
+    const mo=CM.months[ym];
+    if(!mo||mo.slim)continue;
+    const r=mo.rows.find(x=>x.k===key);
+    if(r&&r.d&&r.d.view)return {ym,rec:r};
+  }
+  return null;
+}
+/* 価格を1段下げるならいくらか。50万・100万…の検索の壁をまたげるならそれを優先 */
+function cmPriceStep(p){
+  if(p==null||!(p>0))return null;
+  const walls=[50,100,150,200,250,300,350,400,450,500];
+  for(const w of walls){ if(p>w && p-w<=12) return Math.round((w-0.2)*10)/10; }
+  return Math.round((p-10)*10)/10;
+}
+/* 個車の診断。反響・価格・在庫日数・値下げ履歴を突き合わせて打ち手を1つに決める */
+function cmCarAdvice(d){
+  const r=d.cm;
+  const price=d.price, cost=d.cost, gyo=d.gyohan;
+  const days=d.days;
+  const ps=priceSummary(d);
+  const out={reasons:[],rec:null,recNote:'',lv:'ok',head:'',act:'',vpd:0,medAll:0,medSame:0};
+  if(!r){
+    out.lv='none';out.head='反響データがありません';
+    out.reasons.push('C-matchのCSVが未読込か、この車が掲載データに見つかりません。反響分析ページでCSVを読み込んでください。');
+    return out;
+  }
+  const vpd=r.activeDays?r.m.view/r.activeDays:0;
+  // 比較の物差し：全在庫と同車種の「1日あたり閲覧」の中央値
+  const mk=a=>{const v=a.filter(x=>x.cm&&x.cm.activeDays>0).map(x=>x.cm.m.view/x.cm.activeDays).sort((p,q)=>p-q);
+               return v.length?v[Math.floor(v.length/2)]:0;};
+  const medAll=mk(STOCK), medSame=mk(STOCK.filter(x=>x.name===d.name));
+  out.vpd=vpd;out.medAll=medAll;out.medSame=medSame;
+
+  // 値下げ効果の検証（日別が残っている月の中で、直近の値下げの前後を比べる）
+  const dm=cmCarDailyMonth(r.k);
+  let cutEffect=null;
+  if(dm&&ps&&ps.log.length){
+    const ymNum=dm.ym.replace(/[^0-9]/g,'');           // 202608
+    const last=ps.log[ps.log.length-1];
+    const ld=last.date.replace(/-/g,'');               // 20260812
+    if(ld.slice(0,6)===ymNum){
+      const day=+ld.slice(6,8);
+      const arr=dm.rec.d.view||[];
+      const pre=arr.slice(Math.max(0,day-8),day-1).filter(v=>v!=null);
+      const post=arr.slice(day-1,day+6).filter(v=>v!=null);
+      if(pre.length>=3&&post.length>=3){
+        const x=pre.reduce((p,q)=>p+q,0)/pre.length, y=post.reduce((p,q)=>p+q,0)/post.length;
+        cutEffect={pre:x,post:y,rate:x>0?Math.round((y-x)/x*100):null,date:last.date,diff:last.diff};
+      }
+    }
+  }
+  out.cutEffect=cutEffect;
+
+  const inq=cmNum(r.m.inq), fav=cmNum(r.m.fav), pw=cmNum(r.m.pw);
+  const step=cmPriceStep(price);
+  const belowGyo=step!=null&&gyo!=null&&step<gyo;
+
+  if(inq>0){
+    out.lv='good';out.head='問合せが入っています。価格より追客が先';
+    out.reasons.push(`期間内に問合せ ${inq}件。反響が取れている状態なので、いま価格を動かす理由はありません。`);
+    out.act='価格は据え置き。問合せの取りこぼしがないか確認する';
+    return out;
+  }
+  if(pw>0){
+    out.lv='bad';out.head=`値下げ待ちが ${pw}件。価格だけが障害になっています`;
+    out.reasons.push(`「価格が下がったら知らせて」を ${pw}人が登録済み。車自体は気に入られていて、価格だけで止まっています。`);
+    out.reasons.push(`閲覧 ${r.m.view}回（1日${vpd.toFixed(1)}）、お気に入り ${fav}件。`);
+    out.rec=step;out.recNote='下げれば登録者に通知が飛ぶので、反応が読みやすい';
+    out.act=step!=null?`${step.toFixed(1)}万まで下げる`:'価格を見直す';
+  }else if(vpd>=Math.max(medAll,medSame)*1.2){
+    out.lv='bad';out.head='見られているのに問合せゼロ。刺さっていません';
+    out.reasons.push(`1日あたり閲覧 ${vpd.toFixed(1)}回は、全在庫の中央値 ${medAll.toFixed(1)}回を上回っています。露出は十分。`);
+    out.reasons.push('見られたうえで選ばれていないので、原因は価格か掲載内容（総額・車検・装備の書き方・写真）です。');
+    out.rec=step;out.recNote='まず総額表示と車検を確認し、それでも動かないなら価格';
+    out.act='掲載内容を直す。改善しなければ '+(step!=null?step.toFixed(1)+'万へ':'値下げ');
+  }else if(vpd<=Math.max(medAll,0.01)*0.6){
+    out.lv='warn';out.head='そもそも見られていません。露出の問題です';
+    out.reasons.push(`1日あたり閲覧 ${vpd.toFixed(1)}回は、全在庫の中央値 ${medAll.toFixed(1)}回を大きく下回っています。`);
+    out.reasons.push('検索結果に出ていないか、出ても選ばれていません。価格帯の切りどころ・写真枚数・グレード表記を疑ってください。');
+    if(step!=null&&price!=null&&Math.floor(price/50)!==Math.floor(step/50))
+      out.reasons.push(`${step.toFixed(1)}万にすると検索の「${Math.floor(step/50)*50+50}万以下」に入り、見られる母数が変わります。`);
+    out.rec=step;out.recNote='価格帯の壁をまたぐ下げ方が効きます';
+    out.act='写真と表記を直す。価格帯をまたぐ値下げも検討';
+  }else{
+    out.lv='ok';out.head='反響は平均的です';
+    out.reasons.push(`1日あたり閲覧 ${vpd.toFixed(1)}回（全在庫の中央値 ${medAll.toFixed(1)}回）。`);
+    out.act=days!=null&&days>=180?'長期化しているので動かす':'現状維持で様子見';
+  }
+  if(cutEffect&&cutEffect.rate!=null){
+    if(cutEffect.rate<10){
+      out.reasons.push(`${cutEffect.date} に ${cutEffect.diff}万の値下げをしましたが、閲覧は1日${cutEffect.pre.toFixed(1)}→${cutEffect.post.toFixed(1)}回（${cutEffect.rate>=0?'+':''}${cutEffect.rate}%）。効いていません。下げ幅が中途半端だった可能性が高いです。`);
+      out.recNote='前回が効いていないので、刻むより一段まとめて下げる';
+    }else{
+      out.reasons.push(`${cutEffect.date} の値下げ後、閲覧は1日${cutEffect.pre.toFixed(1)}→${cutEffect.post.toFixed(1)}回（+${cutEffect.rate}%）。値下げは効いています。`);
+    }
+  }
+  if(days!=null&&days>=180)out.reasons.push(`在庫 ${days}日。資金が寝ています。`);
+  if(cost!=null&&price!=null&&price<cost)out.reasons.push(`現在価格が原価 ${cost.toFixed(1)}万を下回っています（${(price-cost).toFixed(1)}万）。`);
+  if(belowGyo){
+    out.rec=null;
+    out.reasons.push(`これ以上下げると業販価格 ${gyo.toFixed(1)}万を割ります。小売で粘る意味が薄いので、業販に切り替える判断どきです。`);
+    out.act='業販へ切り替える';
+  }
+  return out;
+}
+/* 個車の日別グラフ（値下げの位置を縦線で重ねる） */
+function cmCarDailySvg(rec,ym,pchg){
+  const arr=(rec.d&&rec.d.view)||[];
+  const iq=(rec.d&&rec.d.inq)||[];
+  let n=0;for(let i=0;i<arr.length;i++)if(arr[i]!=null)n=i+1;
+  while(n>1&&arr[n-1]===0)n--;
+  if(n<2)return '<div style="font-size:12.6px;color:var(--text3);padding:10px">日別データがありません。</div>';
+  const W=760,H=170,L=40,R=12,T=16,B=24;
+  const vals=arr.slice(0,n).map(v=>v==null?0:v);
+  const max=Math.max(...vals,1);
+  const px=i=>L+(n>1?i/(n-1):0)*(W-L-R);
+  const py=v=>T+(1-v/max)*(H-T-B);
+  let grid='';
+  [0,.5,1].forEach(f=>{const y=T+(1-f)*(H-T-B);
+    grid+=`<line x1="${L}" y1="${y}" x2="${W-R}" y2="${y}" stroke="#eef0f2"/>`
+        +`<text x="${L-6}" y="${y+4}" text-anchor="end" font-size="10" fill="#8b95a1" font-family="var(--mono)">${Math.round(max*f)}</text>`;});
+  const line=vals.map((v,i)=>(i?'L':'M')+px(i).toFixed(1)+' '+py(v).toFixed(1)).join(' ');
+  const area=`M${px(0)} ${py(0)} `+vals.map((v,i)=>'L'+px(i).toFixed(1)+' '+py(v).toFixed(1)).join(' ')+` L${px(n-1)} ${py(0)} Z`;
+  let inqDots='';
+  iq.slice(0,n).forEach((v,i)=>{if(v)inqDots+=`<circle cx="${px(i).toFixed(1)}" cy="${py(vals[i]).toFixed(1)}" r="4" fill="#047857"><title>${i+1}日 問合せ${v}件</title></circle>`;});
+  let cuts='';
+  const ymNum=ym.replace(/[^0-9]/g,'');
+  (pchg||[]).forEach(c=>{
+    const cd=c.date.replace(/-/g,'');
+    if(cd.slice(0,6)!==ymNum)return;
+    const day=+cd.slice(6,8);if(day<1||day>n)return;
+    const x=px(day-1);
+    cuts+=`<line x1="${x.toFixed(1)}" y1="${T}" x2="${x.toFixed(1)}" y2="${H-B}" stroke="#d97706" stroke-width="1.5" stroke-dasharray="4 3"/>`
+        +`<text x="${x.toFixed(1)}" y="${T-4}" text-anchor="middle" font-size="10" fill="#b45309" font-weight="700">▼${Math.abs(c.diff)}万</text>`;
+  });
+  let xlab='';
+  for(let i=0;i<n;i++)if(i===0||i===n-1||(i+1)%5===0)
+    xlab+=`<text x="${px(i).toFixed(1)}" y="${H-6}" text-anchor="middle" font-size="10" fill="#8b95a1" font-family="var(--mono)">${i+1}</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:170px;display:block">
+    <defs><linearGradient id="cmcg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="var(--accent)" stop-opacity=".18"/><stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>
+    ${grid}${xlab}<path d="${area}" fill="url(#cmcg)"/>
+    <path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    ${cuts}${inqDots}</svg>`;
+}
+/* 個車の月次グラフ（棒） */
+function cmCarMonthlySvg(rows){
+  if(rows.length<2)return '';
+  const W=760,H=150,L=40,R=12,T=16,B=26;
+  const max=Math.max(...rows.map(r=>r.view),1);
+  const bw=Math.min(46,(W-L-R)/rows.length*0.62);
+  const cx=i=>L+((W-L-R)/rows.length)*(i+0.5);
+  const py=v=>T+(1-v/max)*(H-T-B);
+  let bars='',labs='',xlab='';
+  rows.forEach((r,i)=>{
+    const y=py(r.view),h=Math.max(H-B-y,1);
+    bars+=`<rect x="${(cx(i)-bw/2).toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="3" fill="${r.inq>0?'#047857':'var(--accent)'}" opacity=".9"><title>${r.ym} 閲覧${r.view} 問合せ${r.inq}</title></rect>`;
+    labs+=`<text x="${cx(i).toFixed(1)}" y="${(y-5).toFixed(1)}" text-anchor="middle" font-size="11" font-weight="700" fill="#42505f" font-family="var(--mono)">${r.view}</text>`;
+    xlab+=`<text x="${cx(i).toFixed(1)}" y="${H-8}" text-anchor="middle" font-size="10" fill="#8b95a1">${r.ym.replace('年','/').replace('月','')}</text>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:150px;display:block">
+    <line x1="${L}" y1="${H-B}" x2="${W-R}" y2="${H-B}" stroke="#e3e5e6"/>${bars}${labs}${xlab}</svg>`;
+}
+function openCmDetail(l4,nm,cat){
+  l4=decodeURIComponent(l4);nm=decodeURIComponent(nm);cat=cat?decodeURIComponent(cat):'';
+  const d=STOCK.find(x=>x.lower4===l4&&x.name===nm&&(!cat||x.cat===cat))||STOCK.find(x=>x.lower4===l4);
+  if(!d){alert('車両が見つかりません');return;}
+  const a=cmCarAdvice(d), r=d.cm;
+  const mrows=r?cmCarMonthly(r.k):[];
+  const dm=r?cmCarDailyMonth(r.k):null;
+  const ps=priceSummary(d);
+  const col={good:'#047857',ok:'#0559d2',warn:'#d97706',bad:'#b91c1c',none:'#6b7785'}[a.lv];
+  const bg ={good:'#ecfdf5',ok:'#eff6ff',warn:'#fffbeb',bad:'#fef2f2',none:'#f2f4f6'}[a.lv];
+  const stat=(l,v,s,c)=>`<div style="background:var(--bg3);border-radius:8px;padding:8px 11px">
+    <div style="font-size:11.5px;color:var(--text3)">${l}</div>
+    <div style="font-size:22px;font-weight:700;font-family:var(--mono);line-height:1.15;color:${c||'var(--text)'}">${v}</div>
+    <div style="font-size:11.5px;color:var(--text3)">${s||''}</div></div>`;
+  const vpd=r&&r.activeDays?(r.m.view/r.activeDays):0;
+  document.getElementById('modal2-title').textContent=`反響 ─ ${d.name}　車体${d.lower4}`;
+  document.getElementById('modal2-body').innerHTML=`
+    <div style="font-size:13.2px;color:var(--text2);margin-bottom:10px">
+      ${d.grade||''} ／ ${d.year} ／ ${d.km!=null?(d.km/10000).toFixed(1)+'万km':'—'} ／ ${d.color||'—'}
+      ${d.fwd==='〇'?' ／ 4WD':''}${d.hv==='〇'?' ／ HV':''}
+      ／ 在庫 <b>${d.days!=null?d.days:'—'}日</b>
+      ／ 原価 <b>${d.cost!=null?d.cost.toFixed(1):'—'}万</b>
+      ／ 本体 <b>${d.price!=null?d.price.toFixed(1):'—'}万</b>
+      ／ 業販 <b>${d.gyohan!=null?d.gyohan.toFixed(1):'—'}万</b>
+    </div>
+
+    ${r?`<div class="cmstats" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px">
+      ${stat('閲覧数',r.m.view||0,cmScopeLabel(),'#0559d2')}
+      ${stat('1日あたり',vpd.toFixed(1),`全在庫の中央値 ${a.medAll.toFixed(1)}`,vpd>=a.medAll?'#047857':'#d97706')}
+      ${stat('問合せ',cmNum(r.m.inq),'件',cmNum(r.m.inq)?'#047857':'var(--text3)')}
+      ${stat('お気に入り',cmNum(r.m.fav),'件','#b45309')}
+      ${stat('値下げ待ち',cmNum(r.m.pw),'件',cmNum(r.m.pw)?'#b91c1c':'var(--text3)')}
+    </div>`:''}
+
+    <div style="border-left:4px solid ${col};background:${bg};border-radius:8px;padding:12px 14px;margin-bottom:12px">
+      <div style="font-size:15.5px;font-weight:700;color:${col};margin-bottom:6px">${a.head}</div>
+      <ul style="margin:0 0 8px 18px;padding:0;font-size:13.2px;line-height:1.85">${a.reasons.map(x=>`<li>${x}</li>`).join('')}</ul>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:13.2px">
+        <span style="font-weight:700">打ち手：${a.act}</span>
+        ${a.rec!=null?`<span class="mtag" style="background:${col};color:#fff;font-size:13.2px">推奨 ${a.rec.toFixed(1)}万</span>
+          <span style="color:var(--text3)">現在 ${d.price!=null?d.price.toFixed(1):'—'}万 → ${(a.rec-(d.price||0)).toFixed(1)}万
+          ／ そのときの想定利益 ${d.cost!=null?(a.rec-d.cost).toFixed(1)+'万':'—'}</span>`:''}
+      </div>
+      ${a.recNote?`<div style="font-size:12.6px;color:var(--text3);margin-top:4px">※${a.recNote}</div>`:''}
+    </div>
+
+    ${mrows.length>1?`<div style="margin-bottom:12px">
+      <div style="font-size:12.6px;font-weight:700;margin-bottom:4px">月ごとの閲覧数<span style="font-weight:400;color:var(--text3)">（緑＝その月に問合せあり）</span></div>
+      ${cmCarMonthlySvg(mrows)}</div>`:''}
+
+    ${dm?`<div style="margin-bottom:12px">
+      <div style="font-size:12.6px;font-weight:700;margin-bottom:4px">${dm.ym} の日別閲覧数
+        <span style="font-weight:400;color:var(--text3)">（オレンジの点線＝値下げした日、緑の点＝問合せが入った日）</span></div>
+      ${cmCarDailySvg(dm.rec,dm.ym,d.pchg)}</div>`:''}
+
+    ${ps?`<div style="margin-bottom:12px">
+      <div style="font-size:12.6px;font-weight:700;margin-bottom:4px">値下げ履歴</div>
+      <div style="font-size:13.2px;color:var(--text2)">初回 ${ps.first.toFixed(1)}万 → 現在 ${ps.now.toFixed(1)}万（${ps.n}回・累計 ${ps.total.toFixed(1)}万）</div>
+      <div style="font-size:12.6px;color:var(--text3);margin-top:2px">${ps.log.map(x=>`${x.date} ${x.before}→${x.after}`).join('　/　')}</div>
+    </div>`:'<div style="font-size:12.6px;color:var(--text3);margin-bottom:12px">値下げ履歴なし（入庫から一度も価格を動かしていません）</div>'}
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="rbtn" onclick="closeModal2();openPriceChange('${encodeURIComponent(d.lower4)}','${encodeURIComponent(d.name)}',${d.price!=null?d.price:0},'${encodeURIComponent(d.cat||'')}')">この車の価格を変更する</button>
+      <button class="rbtn ghost" onclick="closeModal2();openModelDetail('${encodeURIComponent(d.cat)}','${encodeURIComponent(d.name)}')">同じ車種の在庫を見る</button>
+    </div>`;
+  const mo=document.getElementById('modal2');
+  mo.classList.add('wide');
+  mo.style.display='block';
+  document.getElementById('ov2').style.display='block';
+}
+
 /* ── 掲載突合チェックのPDF出力（担当者に渡して直してもらうための作業票） ── */
 let CM_CHECK={gap:[],noCm:[],ghost:[],label:''};
 function cmCheckPdf(){
@@ -3034,11 +3290,10 @@ function openPriceChange(lower4,name,cur,cat){
       <input type="number" id="pcNew" step="0.1" inputmode="decimal" placeholder="例 179.8" oninput="pcPreview()">
       <span id="pcDiff" class="pc-diff"></span></div>
     <div class="pc-quick">
-      <button onclick="pcSet(-5)">−5万</button><button onclick="pcSet(-10)">−10万</button>
-      <button onclick="pcSet(-15)">−15万</button><button onclick="pcSet(-20)">−20万</button></div>
+      ${[1,2,3,4,5,6,7,8,9,10].map(n=>`<button onclick="pcSet(-${n})">−${n}万</button>`).join('')}</div>
     <div class="pc-row"><label>理由</label>
       <select id="pcReason" class="sel" style="flex:1">
-        <option>長期在庫のため</option><option>相場下落</option><option>競合対策</option>
+        <option>長期在庫のため</option><option>台数UPの為</option><option>相場下落</option><option>競合対策</option>
         <option>問い合わせが少ない</option><option>決算・月末</option><option>その他</option></select></div>
     <div class="pc-row"><label>担当者</label><input type="text" id="pcStaff" placeholder="任意"></div>
     <div id="pcMsg" class="pc-msg"></div>
@@ -3092,7 +3347,7 @@ async function submitPriceChange(){
     btn.disabled=false;btn.textContent='この価格に変更する';
   }
 }
-function closeModal2(){document.getElementById('modal2').style.display='none';document.getElementById('ov2').style.display='none';}
+function closeModal2(){const m=document.getElementById('modal2');m.style.display='none';m.classList.remove('wide');document.getElementById('ov2').style.display='none';}
 
 // ═══════════════════════════════════════════════
 //  車種詳細（散布図 ＋ 一覧 ＋ 自動読み取り）
