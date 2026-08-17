@@ -2191,15 +2191,15 @@ let CM=null;
 const CM_FULL_MONTHS=3;   // 日別データまで保持する月数。それ以前は月合計だけにして容量を抑える
 const CM_VIEW={period:'cur'};   // cur | 3 | 6 | 12 | all
 function cmMonths(){return CM?Object.keys(CM.months).sort():[];}          // 古い順
-/* 対象期間に含まれる月（古い順） */
+/* 対象期間に含まれる月（古い順）
+   「この月だけ」＝プルダウンで選んだ月。
+   それ以外＝一番新しい月から遡ってN か月（選択中の月には左右されない）。 */
 function cmScope(){
   const a=cmMonths();if(!a.length)return [];
-  const i=a.indexOf(CM.cur);
-  const upto=a.slice(0,i<0?a.length:i+1);          // 選択中の月まで
-  if(CM_VIEW.period==='cur')return upto.slice(-1);
-  if(CM_VIEW.period==='all')return upto;
+  if(CM_VIEW.period==='cur')return a.includes(CM.cur)?[CM.cur]:a.slice(-1);
+  if(CM_VIEW.period==='all')return a;
   const n=parseInt(CM_VIEW.period)||1;
-  return upto.slice(-n);
+  return a.slice(-n);
 }
 function cmScopeLabel(){
   const s=cmScope();
@@ -2625,6 +2625,84 @@ function cmMonthSvg(){
 function cmSetMetric(m){CM_TREND.metric=m;renderCmatch();}
 function cmToggleCmp(){CM_TREND.cmp=!CM_TREND.cmp;renderCmatch();}
 function cmSetPeriod(p){CM_VIEW.period=p;renderCmatch();}
+
+/* ── 掲載突合チェックのPDF出力（担当者に渡して直してもらうための作業票） ── */
+let CM_CHECK={gap:[],noCm:[],ghost:[],label:''};
+function cmCheckPdf(){
+  const g=CM_CHECK.gap||[], n=CM_CHECK.noCm||[], h=CM_CHECK.ghost||[];
+  if(!g.length&&!n.length&&!h.length){alert('直すべき項目がありません。');return;}
+  const esc=v=>String(v==null?'':v).replace(/[<>&]/g,m=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[m]));
+  const now=new Date().toLocaleString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const km=v=>v==null?'—':(v/10000).toFixed(1)+'万km';
+  const f1=v=>v==null?'—':v.toFixed(1);
+  const rows1=g.map(d=>{const diff=Math.round((d.price-d.cm.price)*10)/10;
+    return `<tr><td class="c chk">□</td><td>${esc(d.name)}</td><td class="c mono">${esc(d.lower4)}</td>
+      <td class="c">${esc(d.year)}</td><td class="r mono">${km(d.km)}</td>
+      <td class="r mono">${f1(d.price)}</td><td class="r mono">${f1(d.cm.price)}</td>
+      <td class="r mono ${diff>0?'bad':'good'}">${diff>0?'+':''}${diff.toFixed(1)}</td>
+      <td class="memo"></td></tr>`;}).join('');
+  const rows2=n.map(d=>`<tr><td class="c chk">□</td><td>${esc(d.cat)}</td><td>${esc(d.name)}</td>
+      <td class="c mono">${esc(d.lower4)}</td><td class="c">${esc(d.year)}</td><td class="r mono">${km(d.km)}</td>
+      <td>${esc(d.color)}</td><td class="r mono">${f1(d.price)}</td>
+      <td class="r mono ${d.days>=200?'bad':''}">${d.days!=null?d.days:'—'}</td><td class="memo"></td></tr>`).join('');
+  const rows3=h.map(r=>`<tr><td class="c chk">□</td><td>${esc(r.car)}</td><td class="c mono">${esc(r.suf)}</td>
+      <td class="c">${esc(r.wareki)}</td><td class="r mono">${r.km!=null?(r.km/10000).toFixed(1)+'万km':'—'}</td>
+      <td class="r mono">${f1(r.price)}</td><td class="r mono">${(r.m&&r.m.view)||0}</td><td class="memo"></td></tr>`).join('');
+  const sec=(no,title,why,head,body,count)=>!count?'':`
+    <div class="sec">
+      <div class="sec-h"><span class="no">${no}</span>${title}<span class="cnt">${count}台</span></div>
+      <div class="why">${why}</div>
+      <table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>
+    </div>`;
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><title>掲載突合チェック ${now}</title>
+  <style>
+    @page{size:A4 portrait;margin:10mm}
+    *{box-sizing:border-box}
+    body{font-family:'Yu Gothic','Hiragino Sans',Meiryo,sans-serif;font-size:8.6pt;color:#111;margin:0}
+    h1{font-size:14pt;margin:0 0 3px}
+    .meta{font-size:8pt;color:#555;margin-bottom:4px;display:flex;gap:16px;flex-wrap:wrap}
+    .meta b{color:#111}
+    .lead{font-size:8.2pt;color:#333;background:#f4f6f8;border:.4pt solid #ccd1d6;border-radius:3px;padding:5px 8px;margin-bottom:10px;line-height:1.6}
+    .sec{margin-bottom:14px;page-break-inside:auto}
+    .sec-h{font-size:10.5pt;font-weight:700;border-left:3px solid #0559d2;padding-left:7px;margin-bottom:3px;display:flex;align-items:center;gap:8px}
+    .no{background:#0559d2;color:#fff;border-radius:3px;font-size:8pt;padding:1px 6px}
+    .cnt{margin-left:auto;font-size:8.5pt;font-weight:400;color:#555}
+    .why{font-size:8pt;color:#555;margin:0 0 4px 10px}
+    table{width:100%;border-collapse:collapse}
+    thead{display:table-header-group}
+    th{background:#eef0f2;border:.4pt solid #b8bec4;padding:3px 4px;font-size:7.6pt;font-weight:700;text-align:left;white-space:nowrap}
+    td{border:.4pt solid #ccd1d6;padding:4px;white-space:nowrap;height:17px}
+    td.c{text-align:center}td.r{text-align:right}
+    td.mono{font-family:'SFMono-Regular',Consolas,monospace}
+    td.bad{color:#c00;font-weight:700}td.good{color:#060;font-weight:700}
+    td.chk{width:24px;font-size:11pt;color:#666}
+    td.memo{width:150px;background:#fffdf5}
+    tbody tr:nth-child(even) td{background:#fafbfc}
+    tbody tr:nth-child(even) td.memo{background:#fffdf5}
+    .ft{margin-top:8px;font-size:7.6pt;color:#555;display:flex;justify-content:space-between}
+  </style></head><body>
+  <h1>カーセンサー掲載 突合チェック表</h1>
+  <div class="meta"><span>出力: ${now}</span><span>対象期間: <b>${esc(CM_CHECK.label)}</b></span>
+    <span>価格ズレ <b>${g.length}台</b></span><span>掲載モレ <b>${n.length}台</b></span><span>削除モレ <b>${h.length}台</b></span>
+    <span>株式会社インディオ富山</span></div>
+  <div class="lead">
+    在庫管理表とC-matchの掲載内容を突き合わせた結果です。<b>左端の□にチェック</b>を入れながら潰してください。<br>
+    ①価格ズレ … 社内価格が正ならカーセンサー側を直す／掲載側が正なら在庫表を直す。どちらが正しいか確認してから修正すること。<br>
+    ②掲載モレ … 在庫にあるのにカーセンサーに出ていません。掲載するか、掲載しない理由を右欄に記入。<br>
+    ③削除モレ … カーセンサーに出ているが在庫表にありません。売却済なら掲載を止める。在庫表の記入モレなら在庫表に追加。
+  </div>
+  ${sec(1,'社内価格と掲載価格が違う','在庫表のプライスとカーセンサーの掲載価格が一致していない車両',
+    '<th>済</th><th>車名</th><th>車体番号</th><th>年式</th><th>走行</th><th>社内価格</th><th>掲載価格</th><th>差</th><th>対応・確認欄</th>',rows1,g.length)}
+  ${sec(2,'在庫にあるのにC-matchに無い（掲載モレ疑い）','在庫表にあるのにカーセンサーの反響データに存在しない車両',
+    '<th>済</th><th>ジャンル</th><th>車名</th><th>車体番号</th><th>年式</th><th>走行</th><th>色</th><th>価格</th><th>在庫日数</th><th>対応・確認欄</th>',rows2,n.length)}
+  ${sec(3,'C-matchに出ているが在庫表に無い（削除モレ疑い）','カーセンサーに掲載中だが在庫表に該当が見つからない車両',
+    '<th>済</th><th>車種</th><th>車台末番</th><th>年式</th><th>走行</th><th>掲載価格</th><th>閲覧数</th><th>対応・確認欄</th>',rows3,h.length)}
+  <div class="ft"><span>確認者：＿＿＿＿＿＿＿＿＿　完了日：＿＿＿／＿＿＿</span><span>INDIO inventory management</span></div>
+  </body></html>`);
+  w.document.close();
+  setTimeout(()=>{w.focus();w.print();},400);
+}
 function cmJudge(d,med){
   const r=d.cm;if(!r)return null;
   const vpd=r.activeDays?r.m.view/r.activeDays:0;
@@ -2657,6 +2735,10 @@ function renderCmatch(){
   if(sel){
     sel.style.display='';
     sel.innerHTML=cmMonths().slice().reverse().map(k=>`<option value="${k}"${k===CM.cur?' selected':''}>${k}</option>`).join('');
+    // 通算表示のときは「最新月から遡ってN か月」なので、月の選択は効かない
+    sel.disabled=multi;
+    sel.style.opacity=multi?'.45':'';
+    sel.title=multi?'通算表示中は月の選択は使いません（最新月から遡って集計します）':'';
   }
   const psel=document.getElementById('cmPeriod');
   if(psel){psel.style.display='';psel.value=CM_VIEW.period;}
@@ -2679,8 +2761,11 @@ function renderCmatch(){
   // 掲載モレ／削除モレ／価格ズレ
   const noCm  =STOCK.filter(d=>!d.cm);
   const ghost =CM_ROWS.filter(r=>!r._hit&&r.listed!=='非掲載');
+  // PDF出力から参照できるように保持
+  CM_CHECK={gap:null,noCm,ghost,label:cmScopeLabel()};
   const gap   =hit.filter(d=>d.price!=null&&Math.abs(d.price-d.cm.price)>=0.05)
                   .sort((a,b)=>Math.abs(b.price-b.cm.price)-Math.abs(a.price-a.cm.price));
+  CM_CHECK.gap=gap;
 
   // ── GA風のヘッダー：KPIタイル（スパークライン付き）＋日別トレンド ──
   const dayOf=k=>cmDaily(k);
@@ -2832,8 +2917,9 @@ function renderCmatch(){
   ${sec('<svg class="ic ic-s"><use href="#i-slash"></use></svg>閲覧ゼロ・露出不足','そもそも見られていない＝写真・掲載内容・価格帯の問題',dead.concat(low),'該当なし。')}
 
   <div class="sec">
-    <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s"><use href="#i-checks"></use></svg>掲載の突合チェック</span>
-      <span style="margin-left:auto;font-size:12.6px;color:var(--text3)">価格ズレ ${gap.length}台 ／ 掲載モレ ${noCm.length}台 ／ 削除モレ ${ghost.length}台</span></div>
+    <div class="sec-hdr" style="gap:10px;flex-wrap:wrap"><span class="sec-title"><svg class="ic ic-s"><use href="#i-checks"></use></svg>掲載の突合チェック</span>
+      <span style="margin-left:auto;font-size:12.6px;color:var(--text3)">価格ズレ ${gap.length}台 ／ 掲載モレ ${noCm.length}台 ／ 削除モレ ${ghost.length}台</span>
+      <button class="rbtn ghost" onclick="cmCheckPdf()"><svg class="ic ic-s"><use href="#i-pdf"></use></svg>PDF出力（作業票）</button></div>
     <div class="sec-body">
       <div class="two-col">
         <div>
