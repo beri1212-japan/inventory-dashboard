@@ -759,7 +759,7 @@ table.lst tbody tr.ul td:last-child{background:#fffaf3;}
   </div>
   <div class="two-col">
     <div class="sec">
-      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-cart"></use></svg>仕入れ優先リスト</span><span style="font-size:11.5px;color:var(--text3)">不足台数 × 売約実績で自動計算</span></div>
+      <div class="sec-hdr"><span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-cart"></use></svg>仕入れ優先リスト</span><span style="display:flex;gap:6px;align-items:center"><span style="font-size:11.5px;color:var(--text3)">売約実績から買う条件を自動算出</span><button class="minibtn" onclick="buyExportPdf()">下見リストPDF</button></span></div>
       <div class="sec-body" style="max-height:360px;overflow-y:auto;"><div class="cards-grid" id="buyListL"></div></div>
     </div>
     <div class="sec">
@@ -1622,6 +1622,180 @@ function renderLong(){
   }).join('');
 }
 
+
+/* ═══════════ 仕入れ仕様（買う条件を数字で出す） ═══════════
+   売約実績＝実際に自社で売れた車。ここから「どの年式・走行・色・価格帯なら
+   回るのか」を出し、市場データで競合台数を添える。 */
+function bqt(a,f){a=a.filter(v=>v!=null&&!isNaN(v)).sort((x,y)=>x-y);return a.length?a[Math.min(a.length-1,Math.floor(a.length*f))]:null;}
+function bRound(v,step){return v==null?null:Math.round(v/step)*step;}
+function buySpec(cat,name){
+  const sd=SOLD.filter(s=>s.name===name);
+  const st=STOCK.filter(d=>d.name===name);
+  const o={cat:cat,name:name,n:sd.length,stock:st.length,teisu:TEISU[cat+'_'+name]};
+  if(!sd.length)return o;
+  const yrs=sd.map(s=>mkY(s.year)).filter(v=>v);
+  o.yr=[bqt(yrs,.25),bqt(yrs,.75)];
+  o.km=[bRound(bqt(sd.map(s=>s.km),.25),5000), bRound(bqt(sd.map(s=>s.km),.75),5000)];
+  o.retail={lo:bqt(sd.map(s=>s.price),.25), med:bqt(sd.map(s=>s.price),.5), hi:bqt(sd.map(s=>s.price),.75)};
+  o.cost  ={lo:bqt(sd.map(s=>s.cost),.25),  med:bqt(sd.map(s=>s.cost),.5),  hi:bqt(sd.map(s=>s.cost),.75)};
+  o.profit=bqt(sd.map(s=>s.profit),.5);
+  // 仕入上限は「想定小売 − 目標利益」。実績の原価中央値は参考として別に持つ
+  o.costActual=o.cost.med;
+  o.buyMax=(o.retail.med!=null&&o.profit!=null)?Math.round((o.retail.med-o.profit)*10)/10:o.cost.med;
+  o.turn  =bqt(sd.map(s=>s.days),.5);
+  const c={};sd.forEach(s=>{if(s.color)c[s.color]=(c[s.color]||0)+1;});
+  o.colors=Object.entries(c).sort((a,b)=>b[1]-a[1]).map(x=>({c:x[0],n:x[1],p:Math.round(x[1]/sd.length*100)}));
+  const sc={};st.forEach(d=>{if(d.color)sc[d.color]=(sc[d.color]||0)+1;});
+  o.want=o.colors.filter(x=>x.p>=15).slice(0,3).map(x=>x.c);
+  if(!o.want.length)o.want=o.colors.slice(0,2).map(x=>x.c);
+  o.missing=o.colors.filter(x=>x.n>=2&&!sc[x.c]).map(x=>x.c);
+  o.hv=sd.filter(s=>s.hv==='〇').length; o.fwd=sd.filter(s=>s.fwd==='〇').length;
+  // 直近6か月の売れ行き
+  const ms=[...new Set(sd.map(s=>s.month).filter(Boolean))].sort();
+  o.recent=ms.length?sd.filter(s=>s.month>=ms[Math.max(0,ms.length-6)]).length:0;
+  // 市場の競合台数（同条件・北陸甲信越）
+  const code=MK_CODE[name];
+  if(MKDATA&&code&&MKDATA.cars[code]&&o.yr[0]&&o.km){
+    const gv=gvFilter({name:name,grade:''});
+    const rows=MKDATA.cars[code].rows.map(l=>l.split('\t')).filter(r=>{
+      if(r[8]!=='0')return false;
+      if(gv&&!gv.f(r[11]))return false;
+      const y=+r[4], k=parseFloat(r[5])*10000;
+      return y>=o.yr[0]-1&&y<=o.yr[1]+1&&k>=o.km[0]&&k<=o.km[1];
+    });
+    o.mktAll=rows.length;
+    o.mktHoku=rows.filter(r=>r[0]==='北陸甲信越').length;
+    const p=rows.map(r=>parseFloat(r[3])).filter(v=>v>0);
+    o.mktMed=bqt(p,.5);
+  }
+  return o;
+}
+/* 処分予定＝値下げ or 原価超えで、120日以上たっている在庫 */
+function buyDisposal(name){
+  return paRows().filter(r=>r.car.name===name&&(r.car.days||0)>=120&&(r.g.cat.key==='A'||r.g.dead)).length;
+}
+/* ①即仕入（いま規定割れ）と ②先行仕入（処分すると規定割れ） */
+function buyRows(){
+  const sm={};
+  STOCK.forEach(d=>{const k=d.cat+'_'+d.name;(sm[k]=sm[k]||{cat:d.cat,name:d.name,cnt:0}).cnt++;});
+  Object.keys(TEISU).forEach(k=>{if(!sm[k]){const i=k.indexOf('_');sm[k]={cat:k.slice(0,i),name:k.slice(i+1),cnt:0};}});
+  const out=[];
+  Object.keys(sm).forEach(k=>{
+    const v=sm[k], t=TEISU[k];
+    if(t==null)return;
+    const disp=buyDisposal(v.name);
+    const after=v.cnt-disp;
+    const now=t-v.cnt, future=t-after;
+    let kind=null,need=0;
+    if(now>=1){kind='now';need=now;}
+    else if(future>=1){kind='soon';need=future;}
+    if(!kind)return;
+    const sp=buySpec(v.cat,v.name);
+    const score=need*3+(sp.recent||0)*2+(sp.n||0)*0.5+(kind==='now'?6:0)+((sp.turn!=null&&sp.turn<90)?4:0);
+    out.push(Object.assign(sp,{kind,need,disp,after,teisu:t,stock:v.cnt,score,
+      rank:score>=24?'S':score>=14?'A':'B'}));
+  });
+  return out.sort((a,b)=>b.score-a.score);
+}
+function buyCond(o){
+  const L=[];
+  if(o.yr&&o.yr[0])L.push('年式 '+o.yr[0]+'〜'+o.yr[1]+'年');
+  if(o.km&&o.km[0]!=null)L.push('走行 '+(o.km[0]/10000).toFixed(1)+'〜'+(o.km[1]/10000).toFixed(1)+'万km');
+  if(o.want&&o.want.length)L.push('色 '+o.want.join('・'));
+  if(o.hv&&o.n&&o.hv/o.n>=0.6)L.push('HV優先');
+  if(o.fwd&&o.n&&o.fwd/o.n>=0.5)L.push('4WD優先');
+  return L.join(' / ');
+}
+
+
+/* ═══ 仕入れ下見リスト PDF（担当者に配る用） ═══ */
+function buyExportPdf(){
+  const rows=(window.__BUY&&window.__BUY.length)?window.__BUY:buyRows();
+  if(!rows.length){alert('対象がありません。');return;}
+  const esc=v=>String(v==null?'':v).replace(/[<>&]/g,m=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[m]));
+  const now=new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'});
+  const f=(v,d)=>v==null?'—':Number(v).toFixed(d===undefined?1:d);
+  const card=(d,i)=>{
+    const kind=d.kind==='now'?'即仕入':'先行仕入';
+    const kc=d.kind==='now'?'#b91c1c':'#d97706';
+    const cond=[];
+    if(d.yr&&d.yr[0])cond.push('<span class="cd"><i>年式</i>'+d.yr[0]+'〜'+d.yr[1]+'年</span>');
+    if(d.km&&d.km[0]!=null)cond.push('<span class="cd"><i>走行</i>'+(d.km[0]/10000).toFixed(1)+'〜'+(d.km[1]/10000).toFixed(1)+'万km</span>');
+    if(d.want&&d.want.length)cond.push('<span class="cd"><i>色</i>'+esc(d.want.join('・'))+'</span>');
+    if(d.hv&&d.n&&d.hv/d.n>=0.6)cond.push('<span class="cd"><i>仕様</i>HV優先</span>');
+    if(d.fwd&&d.n&&d.fwd/d.n>=0.5)cond.push('<span class="cd"><i>駆動</i>4WD優先</span>');
+    return '<div class="card">'
+      +'<div class="hd"><span class="no">'+(i+1)+'</span>'
+      +'<span class="rk rk'+d.rank+'">'+d.rank+'級</span>'
+      +'<span class="kd" style="background:'+kc+'">'+kind+'</span>'
+      +'<b class="nm">'+esc(d.name)+'</b><span class="cat">'+esc(d.cat)+'</span>'
+      +'<span class="need">'+d.need+'台</span></div>'
+      +'<div class="row1">規定 '+d.teisu+'台 ／ 在庫 '+d.stock+'台'
+        +(d.kind==='soon'?'（うち処分予定 '+d.disp+'台 → 実質 '+d.after+'台）':'')
+        +' ／ 売約実績 '+d.n+'台'+(d.turn!=null?'・平均 '+d.turn+'日で回転':'')+'</div>'
+      +(cond.length?'<div class="cond">'+cond.join('')+'</div>':'<div class="cond none">売約実績が少なく、条件を出せません</div>')
+      +'<div class="money">'
+        +'<div><i>仕入上限</i><b class="big">'+f(d.buyMax)+'万</b><s>実績原価は'+f(d.costActual)+'万</s></div>'
+        +'<div><i>想定小売</i><b class="big">'+f(d.retail&&d.retail.med)+'万</b><s>'+f(d.retail&&d.retail.lo)+'〜'+f(d.retail&&d.retail.hi)+'万</s></div>'
+        +'<div><i>想定利益</i><b class="big">'+f(d.profit)+'万</b><s>実績の中央値</s></div>'
+        +'<div><i>競合（北陸）</i><b class="big">'+(d.mktHoku!=null?d.mktHoku:'—')+'台</b><s>'+(d.mktAll!=null?'東海含め'+d.mktAll+'台':'')+'</s></div>'
+        +'<div><i>市場中央</i><b class="big">'+f(d.mktMed)+'万</b><s>同条件の掲載</s></div>'
+      +'</div>'
+      +(d.missing&&d.missing.length?'<div class="miss">在庫に無い売れ色：<b>'+esc(d.missing.join('・'))+'</b></div>':'')
+      +(d.colors&&d.colors.length?'<div class="cols">売れている色：'+d.colors.slice(0,5).map(c=>esc(c.c)+' '+c.p+'%').join('　')+'</div>':'')
+      +'<div class="memo"><span>下見メモ</span><span class="line"></span></div>'
+      +'<div class="chk"><label>□ 下見済</label><label>□ 応札</label><label>□ 落札</label><label>担当　　　　　　</label></div>'
+      +'</div>';
+  };
+  const nowList=rows.filter(d=>d.kind==='now'), soonList=rows.filter(d=>d.kind==='soon');
+  const w=window.open('','_blank');
+  w.document.write('<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><title>仕入れ下見リスト '+now+'</title><style>'
+   +'@page{size:A4;margin:10mm}*{box-sizing:border-box}'
+   +"body{font-family:'Yu Gothic','Hiragino Sans',Meiryo,sans-serif;color:#111;margin:0;font-size:9pt}"
+   +'h1{font-size:15pt;margin:0 0 3px}'
+   +'h2{font-size:11pt;margin:14px 0 6px;padding:4px 8px;color:#fff;border-radius:3px}'
+   +'h2.n{background:#b91c1c}h2.s{background:#d97706}'
+   +'h2 small{font-weight:400;font-size:8.5pt;opacity:.9}'
+   +'.meta{font-size:8pt;color:#555;margin-bottom:10px;display:flex;gap:14px;flex-wrap:wrap}'
+   +'.lead{font-size:8.5pt;color:#333;background:#f5f7fa;border-left:3px solid #94a3b8;padding:6px 9px;margin-bottom:10px;line-height:1.6}'
+   +'.card{border:.8pt solid #c9d1da;border-radius:4px;padding:8px 10px;margin-bottom:8px;break-inside:avoid}'
+   +'.hd{display:flex;align-items:center;gap:7px;margin-bottom:5px}'
+   +'.no{width:17px;height:17px;border-radius:50%;background:#1f2937;color:#fff;font-size:8pt;display:inline-flex;align-items:center;justify-content:center}'
+   +'.rk{font-size:8pt;font-weight:700;padding:1px 6px;border-radius:3px}'
+   +'.rkS{background:#fee2e2;color:#991b1b}.rkA{background:#fef3c7;color:#92400e}.rkB{background:#e0f2fe;color:#075985}'
+   +'.kd{color:#fff;font-size:8pt;font-weight:700;padding:1px 7px;border-radius:3px}'
+   +'.nm{font-size:12pt}.cat{font-size:8pt;color:#666}'
+   +'.need{margin-left:auto;font-size:12pt;font-weight:700;color:#b91c1c}'
+   +'.row1{font-size:8.2pt;color:#444;margin-bottom:5px}'
+   +'.cond{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}'
+   +'.cd{border:.8pt solid #0559d2;background:#eff6ff;border-radius:3px;padding:3px 8px;font-size:10pt;font-weight:700;color:#0b3a86}'
+   +'.cd i{font-style:normal;font-size:7.5pt;color:#5b7db1;font-weight:400;margin-right:5px}'
+   +'.cond.none{font-size:8.5pt;color:#999}'
+   +'.money{display:flex;gap:6px;margin-bottom:5px}'
+   +'.money>div{flex:1;border:.5pt solid #dde3ea;border-radius:3px;padding:3px 6px;text-align:center}'
+   +'.money i{display:block;font-style:normal;font-size:7pt;color:#666}'
+   +'.money .big{font-size:11pt}.money s{display:block;text-decoration:none;font-size:6.8pt;color:#888}'
+   +'.miss{font-size:8.5pt;color:#b45309;margin-bottom:3px}'
+   +'.cols{font-size:8pt;color:#555;margin-bottom:5px}'
+   +'.memo{display:flex;align-items:flex-end;gap:6px;margin-bottom:5px}'
+   +'.memo span:first-child{font-size:7.5pt;color:#888}'
+   +'.memo .line{flex:1;border-bottom:.5pt dotted #999;height:15px}'
+   +'.chk{display:flex;gap:14px;font-size:8.5pt;color:#333;border-top:.5pt solid #eee;padding-top:4px}'
+   +'</style></head><body>'
+   +'<h1>仕入れ下見リスト</h1>'
+   +'<div class="meta"><span>株式会社インディオ富山</span><span>作成 '+now+'</span>'
+   +'<span>売約実績 '+SOLD.length+'台から算出</span>'
+   +'<span>市場データ '+(MKDATA?MKDATA.collected:'—')+'取得</span></div>'
+   +'<div class="lead">「買う条件」は、実際に自社で売れた車（売約実績）の年式・走行・色の中央50%の範囲です。'
+   +'「想定小売」は売れた本体価格の中央値、「想定利益」は実績利益の中央値で、「仕入上限」はその差（この値段までなら買える）です。'
+   +'「競合」は、その条件に当てはまるカーセンサー掲載の台数（修復歴なし）です。</div>'
+   +(nowList.length?'<h2 class="n">① 即仕入　<small>いま規定台数を割っている車種。欠品が集客に響くので優先</small></h2>'+nowList.map(card).join(''):'')
+   +(soonList.length?'<h2 class="s">② 先行仕入　<small>いまは足りているが、長期在庫を値下げ処分すると規定を割る車種。仕入から商品化まで2週間かかるため今から動く</small></h2>'+soonList.map(card).join(''):'')
+   +'<script>window.onload=function(){setTimeout(function(){window.print();},400)};<\/script>'
+   +'</body></html>');
+  w.document.close();
+}
+
 function renderAction(){
   const sc={};SOLD.forEach(d=>{sc[d.name]=(sc[d.name]||0)+1;});
   const srt=[],exc=[];
@@ -1632,8 +1806,26 @@ function renderAction(){
   const noSt=['未入庫','鈑金','未仕上','不明','鈑金入庫中'];
   document.getElementById('k-ready').textContent=UNLISTED.filter(d=>!noSt.includes(d.status)&&d.name&&d.name.length>1).length;
   document.getElementById('k-long').textContent=STOCK.filter(d=>d.days!=null&&d.days>=100&&d.days<10000).length;
-  const bl=srt.map(d=>{const s=Math.abs(d.diff)*2+(d.sc||0);const p=s>=20?'S':s>=10?'A':'B';return{...d,s,p};}).sort((a,b)=>b.s-a.s);
-  document.getElementById('buyListL').innerHTML=bl.map(d=>{const pc=d.p==='S'?'pri-s':d.p==='A'?'pri-a':'pri-b';return `<div class="aitem"><div><div class="aname"><span class="pri ${pc}">${d.p}級</span>${d.name}</div><div class="adet">${d.cat} / 規定${d.t}台→実${d.cnt}台（${d.diff}） / 売約実績${d.sc}台</div><div class="score-bar"><div class="score-fill" style="width:${Math.min(d.s/30*100,100)}%;background:${d.p==='S'?'var(--red)':d.p==='A'?'var(--amber)':'var(--accent)'}"></div></div></div><span class="pill pill-r">${d.diff}</span></div>`;}).join('');
+  const bl=buyRows();
+  window.__BUY=bl;
+  document.getElementById('k-short').textContent=bl.filter(x=>x.kind==='now').length;
+  const pc=p=>p==='S'?'pri-s':p==='A'?'pri-a':'pri-b';
+  document.getElementById('buyListL').innerHTML=bl.map(d=>{
+    const kindTag=d.kind==='now'
+      ? '<span class="mtag" style="background:#b91c1c;color:#fff">即仕入</span>'
+      : '<span class="mtag" style="background:#d97706;color:#fff">先行仕入</span>';
+    const cond=buyCond(d);
+    return `<div class="aitem" style="align-items:flex-start">
+      <div style="flex:1">
+        <div class="aname"><span class="pri ${pc(d.rank)}">${d.rank}級</span>${kindTag}${d.name}</div>
+        <div class="adet">${d.cat} / 規定${d.teisu}台 → 在庫${d.stock}台${d.kind==='soon'?`（処分予定${d.disp}台を引くと${d.after}台）`:''} / 売約実績${d.n}台${d.turn!=null?`・回転中央${d.turn}日`:''}</div>
+        ${cond?`<div class="adet" style="color:var(--text);font-weight:600;margin-top:3px">買う条件：${cond}</div>`:'<div class="adet" style="color:var(--text3);margin-top:3px">売約実績が無いため条件を出せません</div>'}
+        ${d.buyMax!=null?`<div class="adet" style="margin-top:2px">仕入上限 <b>${d.buyMax.toFixed(1)}万</b> → 想定小売 <b>${d.retail.med.toFixed(1)}万</b> / 想定利益 ${d.profit!=null?d.profit.toFixed(1):'—'}万</div>`:''}
+        ${d.mktHoku!=null?`<div class="adet" style="margin-top:2px;color:var(--text3)">この条件の競合：北陸甲信越 ${d.mktHoku}台 / 東海含め ${d.mktAll}台${d.mktMed!=null?`・市場中央${d.mktMed.toFixed(1)}万`:''}</div>`:''}
+        ${d.missing&&d.missing.length?`<div class="adet" style="margin-top:2px;color:#b45309">在庫に無い売れ色：${d.missing.join('・')}</div>`:''}
+      </div>
+      <span class="pill pill-r" style="flex-shrink:0">${d.need}台</span></div>`;}).join('')
+    ||'<div style="padding:14px;color:var(--text3);font-size:13.2px">仕入れが必要な車種はありません。</div>';
   exc.sort((a,b)=>b.diff-a.diff);
   document.getElementById('excessListL').innerHTML=exc.map(d=>{const avg=STOCK.filter(s=>s.name===d.name&&s.days!=null&&s.days<10000).reduce((a,b,_,arr)=>a+b.days/arr.length,0);return `<div class="aitem"><div><div class="aname">${d.name}</div><div class="adet">${d.cat} / 規定${d.t}台→実${d.cnt}台 / 平均${Math.round(avg)}日在庫</div></div><span class="pill pill-y">+${d.diff}</span></div>`;}).join('');
   document.getElementById('longActionL').innerHTML=STOCK.filter(d=>d.days!=null&&d.days>=100&&d.days<10000).sort((a,b)=>b.days-a.days).slice(0,30).map(d=>{const cls=d.days>=300?'pill-r':d.days>=150?'pill-y':'pill-p';const msg=d.days>=300?'早急値下げ推奨':d.days>=150?'価格見直し推奨':'要注意';return `<div class="aitem"><div><div class="aname">${d.name}</div><div class="adet">${d.year} / ${d.price!=null?d.price+'万円':'—'} / ${d.color||'—'} → ${msg}</div></div><span class="pill ${cls}">${d.days}日</span></div>`;}).join('');
@@ -4295,16 +4487,8 @@ async function aiConsult(){
 3. 今すぐ手を打つべき在庫（年式と対応方針）
 4. 3ヶ月後にどうなっていれば成功か（数値目標）`;
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':key.trim().replace(/[^a-zA-Z0-9\-_]/g,''),
-        'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:aiModel(),max_tokens:2600,messages:[{role:'user',content:prompt}]})
-    });
-    if(!res.ok){const e=await res.json();throw new Error(e.error?.message||('HTTP '+res.status));}
-    const data=await res.json();
-    const txt=data.content.filter(b=>b.type==='text').map(b=>b.text).join('\n');
-    body.innerHTML=`<div style="font-size:14.4px;line-height:1.85;white-space:pre-wrap">${txt.replace(/[<>]/g,m=>m==='<'?'&lt;':'&gt;')}</div>`;
+    const txt=await aiSend(prompt,{max:9000});
+    body.innerHTML=`<div style="font-size:14.4px;line-height:1.85">${mdLite(txt)}</div>`;
   }catch(e){
     body.innerHTML=`<div class="errbox" style="margin:0">分析に失敗しました: ${e.message}</div>`;
   }
@@ -4711,6 +4895,32 @@ function mdLite(t){
   return html;
 }
 
+
+/* ═══ Anthropic API 共通呼び出し ═══
+   Opus 5 は既定で thinking を行う。max_tokens が小さいと思考だけで枠を使い切り
+   本文が空で返るため、余裕を持たせたうえで、空なら thinking を切って1回だけ再試行する。 */
+async function aiSend(prompt,opts){
+  opts=opts||{};
+  const key=(localStorage.getItem('anthropic_api_key')||'').trim().replace(/[^a-zA-Z0-9\-_]/g,'');
+  if(!key)throw new Error('APIキーが設定されていません');
+  async function call(extra){
+    const body=Object.assign({model:aiModel(),max_tokens:opts.max||8000,
+      messages:[{role:'user',content:prompt}]},extra||{});
+    if(opts.effort&&!(extra&&extra.thinking))body.output_config={effort:opts.effort};
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,
+        'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify(body)});
+    const j=await res.json();
+    if(!res.ok)throw new Error((j.error&&j.error.message)||('HTTP '+res.status));
+    return {text:(j.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n'), stop:j.stop_reason};
+  }
+  let r=await call();
+  if(!r.text)r=await call({thinking:{type:'disabled'}});   // 思考で枠を使い切った場合の保険
+  if(!r.text)throw new Error('本文が返りませんでした（stop_reason: '+r.stop+'）');
+  return r.text;
+}
+
 /* ═══ 掲載コメント生成（ゴール③） ═══
    実データ（市場での立ち位置・希少性・反響）だけを根拠に、カーセンサーの
    販売店コメント案を作る。装備の情報は在庫表に無いので、AIには書かせない。 */
@@ -4762,13 +4972,7 @@ ${CM}
 
 3案のあとに「■この車で言えないこと」として、装備や状態など、掲載前に人が追記すべき項目を3〜5個、箇条書きで挙げてください。`;
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':apiKey.trim().replace(/[^a-zA-Z0-9\-_]/g,''),
-        'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:aiModel(),max_tokens:2600,messages:[{role:'user',content:prompt}]})});
-    if(!res.ok){const e=await res.json();throw new Error((e.error&&e.error.message)||('HTTP '+res.status));}
-    const data=await res.json();
-    const text=data.content.filter(b=>b.type==='text').map(b=>b.text).join('\n');
+    const text=await aiSend(prompt,{max:9000});
     window.__CMT=text;
     document.getElementById('ai-modal-title').textContent='掲載コメント案：'+d.name+'　車体'+(d.lower4||'');
     document.getElementById('ai-modal-body').innerHTML=
@@ -4866,29 +5070,7 @@ ${CM}
 6. 注意（データが薄い・偏っている場合はここで正直に指摘する）`;
 
   try{
-    const cleanKey=apiKey.trim().replace(/[^a-zA-Z0-9\-_]/g,'');
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'x-api-key':cleanKey,
-        'anthropic-version':'2023-06-01',
-        'anthropic-dangerous-direct-browser-access':'true'
-      },
-      body:JSON.stringify({
-        model:aiModel(),
-        max_tokens:2400,
-        messages:[{role:'user',content:prompt}]
-      })
-    });
-
-    if(!res.ok){
-      const err=await res.json();
-      throw new Error(err.error?.message||'API Error');
-    }
-
-    const data=await res.json();
-    const text=data.content.filter(b=>b.type==='text').map(b=>b.text).join('\n');
+    const text=await aiSend(prompt,{max:10000});
 
     const areaLabel=getSearchArea(d.cat,d.days||0);
     document.getElementById('ai-modal-title').textContent=`AI価格診断: ${d.name}`;
@@ -5233,26 +5415,7 @@ ${BRIEF}
 日本語で回答してください。`;
 
   try{
-    const cleanKey=apiKey.trim();
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'x-api-key':cleanKey,
-        'anthropic-version':'2023-06-01',
-        'anthropic-dangerous-direct-browser-access':'true'
-      },
-      body:JSON.stringify({
-        model:aiModel(),
-        max_tokens:3000,
-        messages:[{role:'user',content:prompt}]
-      })
-    });
-
-    if(!res.ok){const err=await res.json();throw new Error(err.error?.message||`HTTP ${res.status}`);}
-
-    const data=await res.json();
-    const text=data.content.filter(b=>b.type==='text').map(b=>b.text).join('\n');
+    const text=await aiSend(prompt,{max:10000});
 
     const now=new Date();
     const dateStr=now.toLocaleDateString('ja-JP',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
@@ -5261,7 +5424,7 @@ ${BRIEF}
       <div style="background:var(--gbg);border-radius:6px;padding:7px 12px;margin-bottom:8px;font-size:12.6px;color:var(--green);font-weight:600">
         分析完了: ${car} / ${area}${yearCond}${priceCond} / ${repair}
       </div>
-      <div style="font-size:13.8px;line-height:1.8;white-space:pre-wrap;color:var(--text);margin-bottom:12px">${text}</div>
+      <div style="font-size:13.8px;line-height:1.8;color:var(--text);margin-bottom:12px">${mdLite(text)}</div>
       <div style="display:flex;gap:8px">
         <button onclick="exportMarketPdf('${encodeURIComponent(car)}','${encodeURIComponent(area)}')" style="background:#065f46;color:#fff;border:none;padding:7px 16px;border-radius:6px;cursor:pointer;font-size:13.8px;font-weight:500">📄 PDFで保存</button>
       </div>
