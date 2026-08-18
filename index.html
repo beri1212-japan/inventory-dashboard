@@ -1708,6 +1708,56 @@ function buyCond(o){
 }
 
 
+
+/* ═══ 仕入れ計算の設定（税率・諸費用） ═══
+   在庫表の原価は税込。オークション落札は税別。会場で使う数字は税別なので、
+   　落札上限（税別） =（仕入上限（税込原価） − 諸費用）÷（1＋税率）
+   で変換する。諸費用は陸送・整備・その他の見込み額。 */
+function buyCfg(){
+  let c={};
+  try{c=JSON.parse(localStorage.getItem('buy_cfg')||'{}');}catch(e){}
+  return {tax:c.tax!=null?Number(c.tax):10, kei:c.kei!=null?Number(c.kei):0, futsu:c.futsu!=null?Number(c.futsu):0};
+}
+function buySaveCfg(){
+  const g=id=>{const e=document.getElementById(id);return e?Number(e.value):0;};
+  localStorage.setItem('buy_cfg',JSON.stringify({tax:g('cfgTax'),kei:g('cfgKei'),futsu:g('cfgFutsu')}));
+  const st=document.getElementById('cfgStatus');
+  if(st){st.textContent='✅ 保存しました';st.style.color='var(--green)';}
+  if(document.getElementById('page-action')&&document.getElementById('page-action').classList.contains('active'))renderAction();
+}
+function buyFee(cat){const c=buyCfg();return cat==='軽'?c.kei:c.futsu;}
+/* 税込の仕入上限 → 会場で使う税別の落札上限 */
+function buyBidMax(o){
+  if(o.buyMax==null)return null;
+  const c=buyCfg();
+  const v=(o.buyMax-buyFee(o.cat))/(1+c.tax/100);
+  return Math.round(v*10)/10;
+}
+/* 必要台数を色に割り振る（売れ色の構成と、いまの在庫の色を突き合わせる） */
+function buyColorPlan(o){
+  if(!o.colors||!o.colors.length||!o.teisu||!o.need)return [];
+  const have={};STOCK.filter(d=>d.name===o.name).forEach(d=>{if(d.color)have[d.color]=(have[d.color]||0)+1;});
+  const rows=o.colors.map(c=>{
+    const target=Math.round(o.teisu*c.n/o.n);
+    return {c:c.c,p:c.p,target:target,have:have[c.c]||0,gap:Math.max(0,target-(have[c.c]||0))};
+  });
+  const plan=[];let left=o.need;
+  rows.slice().sort((a,b)=>(b.gap-a.gap)||(b.p-a.p)).forEach(r=>{
+    if(left<=0||r.gap<=0)return;
+    const t=Math.min(r.gap,left);plan.push({c:r.c,n:t});left-=t;
+  });
+  if(left>0){
+    const top=rows.slice().sort((a,b)=>b.p-a.p)[0];
+    const ex=plan.find(x=>x.c===top.c);
+    if(ex)ex.n+=left;else plan.push({c:top.c,n:left});
+  }
+  return plan.sort((a,b)=>b.n-a.n);
+}
+function buyPlanText(o){
+  const p=buyColorPlan(o);
+  return p.length?p.map(x=>x.c+' '+x.n+'台').join('・'):'';
+}
+
 /* ═══ 仕入れ下見リスト PDF（担当者に配る用） ═══ */
 function buyExportPdf(){
   const rows=(window.__BUY&&window.__BUY.length)?window.__BUY:buyRows();
@@ -1735,12 +1785,14 @@ function buyExportPdf(){
         +' ／ 売約実績 '+d.n+'台'+(d.turn!=null?'・平均 '+d.turn+'日で回転':'')+'</div>'
       +(cond.length?'<div class="cond">'+cond.join('')+'</div>':'<div class="cond none">売約実績が少なく、条件を出せません</div>')
       +'<div class="money">'
-        +'<div><i>仕入上限</i><b class="big">'+f(d.buyMax)+'万</b><s>実績原価は'+f(d.costActual)+'万</s></div>'
+        +'<div class="hl"><i>落札上限（税別）</i><b class="big">'+f(buyBidMax(d))+'万</b><s>諸費用'+buyFee(d.cat)+'万・税'+buyCfg().tax+'%で逆算</s></div>'
+        +'<div><i>仕入上限（税込原価）</i><b class="big">'+f(d.buyMax)+'万</b><s>実績原価は'+f(d.costActual)+'万</s></div>'
         +'<div><i>想定小売</i><b class="big">'+f(d.retail&&d.retail.med)+'万</b><s>'+f(d.retail&&d.retail.lo)+'〜'+f(d.retail&&d.retail.hi)+'万</s></div>'
         +'<div><i>想定利益</i><b class="big">'+f(d.profit)+'万</b><s>実績の中央値</s></div>'
         +'<div><i>競合（北陸）</i><b class="big">'+(d.mktHoku!=null?d.mktHoku:'—')+'台</b><s>'+(d.mktAll!=null?'東海含め'+d.mktAll+'台':'')+'</s></div>'
         +'<div><i>市場中央</i><b class="big">'+f(d.mktMed)+'万</b><s>同条件の掲載</s></div>'
       +'</div>'
+      +(buyPlanText(d)?'<div class="plan">この'+d.need+'台の色の内訳：<b>'+esc(buyPlanText(d))+'</b></div>':'')
       +(d.missing&&d.missing.length?'<div class="miss">在庫に無い売れ色：<b>'+esc(d.missing.join('・'))+'</b></div>':'')
       +(d.colors&&d.colors.length?'<div class="cols">売れている色：'+d.colors.slice(0,5).map(c=>esc(c.c)+' '+c.p+'%').join('　')+'</div>':'')
       +'<div class="memo"><span>下見メモ</span><span class="line"></span></div>'
@@ -1776,6 +1828,8 @@ function buyExportPdf(){
    +'.money i{display:block;font-style:normal;font-size:7pt;color:#666}'
    +'.money .big{font-size:11pt}.money s{display:block;text-decoration:none;font-size:6.8pt;color:#888}'
    +'.miss{font-size:8.5pt;color:#b45309;margin-bottom:3px}'
+   +'.plan{font-size:9.5pt;color:#0b3a86;background:#eff6ff;border-radius:3px;padding:3px 7px;margin-bottom:4px}'
+   +'.money .hl{border:1.2pt solid #b91c1c;background:#fff5f5}.money .hl .big{color:#b91c1c}'
    +'.cols{font-size:8pt;color:#555;margin-bottom:5px}'
    +'.memo{display:flex;align-items:flex-end;gap:6px;margin-bottom:5px}'
    +'.memo span:first-child{font-size:7.5pt;color:#888}'
@@ -1787,7 +1841,7 @@ function buyExportPdf(){
    +'<span>売約実績 '+SOLD.length+'台から算出</span>'
    +'<span>市場データ '+(MKDATA?MKDATA.collected:'—')+'取得</span></div>'
    +'<div class="lead">「買う条件」は、実際に自社で売れた車（売約実績）の年式・走行・色の中央50%の範囲です。'
-   +'「想定小売」は売れた本体価格の中央値、「想定利益」は実績利益の中央値で、「仕入上限」はその差（この値段までなら買える）です。'
+   +'「想定小売」は売れた本体価格の中央値、「想定利益」は実績利益の中央値、「仕入上限（税込原価）」はその差です。<b>「落札上限（税別）」は、そこから諸費用を引いて税を抜いた、会場でそのまま使える金額</b>です。台数は1台ずつ同じ条件という意味ではなく、上の年式・走行の範囲から色の内訳のとおり集める、という意味です。'
    +'「競合」は、その条件に当てはまるカーセンサー掲載の台数（修復歴なし）です。</div>'
    +(nowList.length?'<h2 class="n">① 即仕入　<small>いま規定台数を割っている車種。欠品が集客に響くので優先</small></h2>'+nowList.map(card).join(''):'')
    +(soonList.length?'<h2 class="s">② 先行仕入　<small>いまは足りているが、長期在庫を値下げ処分すると規定を割る車種。仕入から商品化まで2週間かかるため今から動く</small></h2>'+soonList.map(card).join(''):'')
@@ -1820,7 +1874,8 @@ function renderAction(){
         <div class="aname"><span class="pri ${pc(d.rank)}">${d.rank}級</span>${kindTag}${d.name}</div>
         <div class="adet">${d.cat} / 規定${d.teisu}台 → 在庫${d.stock}台${d.kind==='soon'?`（処分予定${d.disp}台を引くと${d.after}台）`:''} / 売約実績${d.n}台${d.turn!=null?`・回転中央${d.turn}日`:''}</div>
         ${cond?`<div class="adet" style="color:var(--text);font-weight:600;margin-top:3px">買う条件：${cond}</div>`:'<div class="adet" style="color:var(--text3);margin-top:3px">売約実績が無いため条件を出せません</div>'}
-        ${d.buyMax!=null?`<div class="adet" style="margin-top:2px">仕入上限 <b>${d.buyMax.toFixed(1)}万</b> → 想定小売 <b>${d.retail.med.toFixed(1)}万</b> / 想定利益 ${d.profit!=null?d.profit.toFixed(1):'—'}万</div>`:''}
+        ${buyPlanText(d)?`<div class="adet" style="margin-top:2px">色の内訳：<b>${buyPlanText(d)}</b></div>`:''}
+        ${d.buyMax!=null?`<div class="adet" style="margin-top:2px">落札上限（税別）<b style="color:#b91c1c;font-size:14px">${buyBidMax(d)!=null?buyBidMax(d).toFixed(1):'—'}万</b>　／　仕入上限（税込原価）${d.buyMax.toFixed(1)}万 → 想定小売 ${d.retail.med.toFixed(1)}万 / 利益 ${d.profit!=null?d.profit.toFixed(1):'—'}万</div>`:''}
         ${d.mktHoku!=null?`<div class="adet" style="margin-top:2px;color:var(--text3)">この条件の競合：北陸甲信越 ${d.mktHoku}台 / 東海含め ${d.mktAll}台${d.mktMed!=null?`・市場中央${d.mktMed.toFixed(1)}万`:''}</div>`:''}
         ${d.missing&&d.missing.length?`<div class="adet" style="margin-top:2px;color:#b45309">在庫に無い売れ色：${d.missing.join('・')}</div>`:''}
       </div>
@@ -4849,6 +4904,10 @@ function openApiModal(){
     if(!sel.options.length)AI_MODELS.forEach(m=>{const o=document.createElement('option');o.value=m.id;o.textContent=m.label;sel.appendChild(o);});
     sel.value=aiModel(); setAiModel(sel.value);
   }
+  const c=buyCfg();
+  ['cfgTax','cfgKei','cfgFutsu'].forEach(function(id,i){
+    const e=document.getElementById(id); if(e)e.value=[c.tax,c.kei,c.futsu][i];
+  });
   document.getElementById('modal-api').style.display='block';
   document.getElementById('ov-api').style.display='block';
 }
@@ -5899,6 +5958,24 @@ function renderMarket(){
     <button onclick="clearApiKey()" style="background:var(--rbg);color:var(--red);border:1px solid var(--red);padding:8px 12px;border-radius:6px;cursor:pointer;font-size:13.8px">削除</button>
   </div>
   <div id="apiKeyStatus" style="font-size:12.6px;margin-top:8px;color:var(--green)"></div>
+
+  <div style="border-top:1px solid var(--border);margin:14px 0 10px"></div>
+  <h3 style="font-size:15px;font-weight:700;margin-bottom:4px">🛒 仕入れ計算の設定</h3>
+  <div style="font-size:12.2px;color:var(--text2);margin-bottom:9px;line-height:1.6">
+    在庫表の原価は<b>税込</b>、オークション落札は<b>税別</b>です。下見リストの「落札上限」は<br>
+    <span style="font-family:var(--mono);font-size:11.5px">（仕入上限（税込原価）− 諸費用）÷（1＋税率）</span><br>
+    で計算します。諸費用は陸送・整備・その他の見込み額です。
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
+    <div><div style="font-size:11.5px;color:var(--text3);margin-bottom:3px">消費税率(%)</div>
+      <input type="number" id="cfgTax" step="1" style="width:100%;padding:7px 9px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--mono);background:var(--bg3);color:var(--text);box-sizing:border-box"></div>
+    <div><div style="font-size:11.5px;color:var(--text3);margin-bottom:3px">諸費用 軽(万)</div>
+      <input type="number" id="cfgKei" step="0.5" style="width:100%;padding:7px 9px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--mono);background:var(--bg3);color:var(--text);box-sizing:border-box"></div>
+    <div><div style="font-size:11.5px;color:var(--text3);margin-bottom:3px">諸費用 普通車(万)</div>
+      <input type="number" id="cfgFutsu" step="0.5" style="width:100%;padding:7px 9px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--mono);background:var(--bg3);color:var(--text);box-sizing:border-box"></div>
+  </div>
+  <button onclick="buySaveCfg()" style="width:100%;background:var(--accent);color:#fff;border:none;padding:8px;border-radius:6px;cursor:pointer;font-size:13.8px;font-weight:500">仕入れ設定を保存</button>
+  <div id="cfgStatus" style="font-size:12.6px;margin-top:8px;color:var(--green)"></div>
 </div>
 
 <!-- AI診断結果モーダル -->
