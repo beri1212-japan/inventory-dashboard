@@ -1747,6 +1747,7 @@ function buySpec(cat,name){
             + (Math.round(raw)-(nComp>=200?5:nComp>=100?3:0)>cfgp.posMax?'／上限'+cfgp.posMax+'%で頭打ち':'');
   o.retailBase = (o.mktPrices&&o.mktPrices.length)?bqt(o.mktPrices,o.posUsed/100):(o.mktPct!=null?o.mktPct:o.retail.med);
   o.retailSrc  = (o.mktPrices&&o.mktPrices.length)?('市場の'+o.posUsed+'%位置／'+o.posSrc):'売約実績の中央値';
+  o.silver=buySilverEdge(o);
   o.target=buyTargetProfit(cat);
   o.buyMax=(o.retailBase!=null)?Math.round((o.retailBase-o.target)*10)/10:o.cost.med;
   return o;
@@ -1781,14 +1782,19 @@ function buyRows(){
 /* 買うべき色。人気度（白黒＝人気）を優先し、いまの在庫に無い色を先に埋める。
    売約実績の色構成は「仕入れた色の偏り」なので、推奨には使わない。 */
 function buyWantColors(o){
-  const p=buyColorPlan(o);
+  const p=buyColorPlan(o).filter(x=>x.route!=='cold');
   if(p.length)return p.map(x=>x.c);
   return String(buyCfg().hot||'').split(/[,、\s]+/).filter(Boolean).slice(0,3);
 }
 function buyCond(o){
   const L=[];
   if(o.yr&&o.yr[0])L.push('年式 '+o.yr[0]+'〜'+o.yr[1]+'年');
-  if(o.km&&o.km[0]!=null)L.push('走行 '+(o.km[0]/10000).toFixed(1)+'〜'+(o.km[1]/10000).toFixed(1)+'万km');
+  const _R=buyKmRoutes(o);
+  const _kmS=a=>a?((a[0]/10000).toFixed(1)+'〜'+(a[1]/10000).toFixed(1)+'万km'):'';
+  if(_R&&_R.cold){
+    L.push('人気色は走行 '+_kmS(_R.hot));
+    L.push('シルバー系は走行 '+_kmS(_R.cold));
+  }else if(o.km&&o.km[0]!=null)L.push('走行 '+_kmS(o.km));
   const wc=buyWantColors(o);
   if(wc.length)L.push('色 '+wc.join('・'));
   if(o.hv&&o.n&&o.hv/o.n>=0.6)L.push('HV優先');
@@ -1813,19 +1819,25 @@ function buyCfg(){
           hot:c.hot||COLOR_TIER_DEFAULT.hot, mid:c.mid||COLOR_TIER_DEFAULT.mid, cold:c.cold||COLOR_TIER_DEFAULT.cold};
 }
 /* 色の人気度。白黒＝人気、茶紫カーキ等＝普通、シルバー＝不人気 */
+let _CT={};
 function colorTier(col){
   if(!col)return 1;
+  if(_CT[col]!==undefined)return _CT[col];
   const c=buyCfg();
+  const v=(function(){
   const has=(list)=>String(list||'').split(/[,、\s]+/).filter(Boolean).some(w=>String(col).indexOf(w)>=0);
   if(has(c.hot))return 2;
   if(has(c.cold))return 0;
   if(has(c.mid))return 1;
   return 1;
+  })();
+  _CT[col]=v; return v;
 }
 const TIER_LABEL=['不人気','普通','人気'];
 function buySaveCfg(){
   const g=id=>{const e=document.getElementById(id);return e?Number(e.value):0;};
   const t=id=>{const e=document.getElementById(id);return e?e.value.trim():'';};
+  _CT={}; _POS={};
   localStorage.setItem('buy_cfg',JSON.stringify({tax:g('cfgTax'),kei:g('cfgKei'),futsu:g('cfgFutsu'),
     pct:g('cfgPct')||25, posMax:g('cfgPosMax')||25, pKei:g('cfgPKei')||10, pFutsu:g('cfgPFutsu')||15, hot:t('cfgHot')||COLOR_TIER_DEFAULT.hot, mid:t('cfgMid')||COLOR_TIER_DEFAULT.mid, cold:t('cfgCold')||COLOR_TIER_DEFAULT.cold}));
   const st=document.getElementById('cfgStatus');
@@ -1842,6 +1854,93 @@ function buyBidMax(o){
   const v=(o.buyMax-buyFee(o.cat))/(1+c.tax/100);
   return Math.round(v*10)/10;
 }
+/* ═══ シルバーは「安く買える低走行」枠として使えるか、実データで測る ═══
+   MD の考え方：市場の安値圏を取る型は2つある。
+     ① 白・黒など人気色 → 同じ価格なら走行が多い個体になる
+     ② シルバー系      → 同じ価格でも走行が少ない個体が取れる
+   本当にそうなっているかを、価格帯をそろえた上で走行の中央値を比べて確認する。
+   差が出ない車種（シルバーが多すぎて安くない車種）ではシルバー枠を作らない。 */
+function buySilverEdge(o){
+  const code=MK_CODE[o.name];
+  if(!MKDATA||!code||!MKDATA.cars[code])return null;
+  const gv=gvFilter({name:o.name,grade:''});
+  const base=MKDATA.cars[code].rows.map(l=>l.split('\t')).filter(r=>{
+    if(r[8]!=='0')return false;                       // 修復歴ありは除外
+    if(gv&&!gv.f(r[11]))return false;                 // カスタム等の混在を防ぐ
+    const p=parseFloat(r[3]), k=parseFloat(r[5]);
+    return p>0&&!isNaN(k);
+  });
+  // 年式で絞るのが要。世代をまたぐとシルバーが古い世代に偏り、
+  // 「シルバーの方が走行が多い」という逆の結論が出てしまう（見かけ上の逆転）
+  const y0=(o.yr&&o.yr[0])?o.yr[0]-1:null, y1=(o.yr&&o.yr[1])?o.yr[1]+1:null;
+  const rows=y0?base.filter(r=>{const y=+r[4];return y>=y0&&y<=y1;}):base;
+  if(rows.length<40)return null;
+  const ps=rows.map(r=>parseFloat(r[3])).sort((a,b)=>a-b);
+  function calc(nb){
+    const cut=[];for(let i=0;i<=nb;i++)cut.push(ps[Math.min(ps.length-1,Math.floor(ps.length*i/nb))]);
+    const B=[];
+    for(let i=0;i<nb;i++){
+      const lo=cut[i], hi=cut[i+1];
+      const seg=rows.filter(r=>{const p=parseFloat(r[3]);return p>=lo&&(i===nb-1?p<=hi:p<hi);});
+      const H=[],C=[];
+      seg.forEach(r=>{const t=colorTier(r[6]), k=parseFloat(r[5]);
+        if(isNaN(k))return;
+        if(t===2)H.push(k); else if(t===0)C.push(k);});
+      if(H.length<5||C.length<5)continue;              // 少なすぎる帯は使わない
+      const hm=bqt(H,.5), cm=bqt(C,.5);
+      B.push({lo:lo,hi:hi,hotN:H.length,coldN:C.length,hot:hm,cold:cm,
+              diff:Math.round((hm-cm)*10)/10});
+    }
+    return B;
+  }
+  let bands=calc(4);
+  if(bands.length<2)bands=calc(3);
+  if(bands.length<2)bands=calc(2);
+  if(bands.length<2)return null;
+  const ds=bands.map(b=>b.diff).sort((a,b)=>a-b);
+  const med=Math.round(ds[Math.floor(ds.length/2)]*10)/10;
+  const win=bands.filter(b=>b.diff>=0.5).length;
+  return {bands:bands, diff:med, win:win, of:bands.length,
+          yr:y0?[y0,y1]:null,
+          n:bands.reduce((s,b)=>s+b.hotN+b.coldN,0),
+          ok:(med>=0.8 && win>=Math.ceil(bands.length*0.6))};
+}
+/* 走行の狙い目を色の型ごとに分ける。白黒は走行多め、シルバーはその分だけ低走行 */
+const KM_MIN_SPAN=15000;   // 下見で使えるだけの幅は必ず持たせる
+function buyKmRoutes(o){
+  if(!o.km||o.km[0]==null)return null;
+  const lo=o.km[0];
+  let hi=o.km[1];
+  if(hi-lo<KM_MIN_SPAN)hi=lo+KM_MIN_SPAN;
+  const sv=o.silver;
+  if(!sv||!sv.ok)return {hot:[lo,hi]};
+  // 人気色は同じ価格帯の中で走行が伸びる側、シルバーはその差の分だけ下を狙う
+  let hLo=Math.round((lo+hi)/2/5000)*5000;
+  if(hi-hLo<KM_MIN_SPAN)hLo=Math.max(0,hi-KM_MIN_SPAN);
+  const d=sv.diff*10000;
+  const cLo=Math.max(0,Math.round((hLo-d)/5000)*5000);
+  const cHi=Math.max(cLo+KM_MIN_SPAN,Math.round((hi-d)/5000)*5000);
+  return {hot:[hLo,hi],cold:[cLo,cHi],diff:sv.diff};
+}
+/* 下見リストに出す「2つの型」。色の内訳と走行の狙い目をセットで返す */
+function buyRoutes(o){
+  const plan=buyColorPlan(o);
+  if(!plan.length)return [];
+  const R=buyKmRoutes(o);
+  const kmS=a=>a?((a[0]/10000).toFixed(1)+'〜'+(a[1]/10000).toFixed(1)+'万km'):'';
+  const hot=plan.filter(x=>x.route!=='cold'), cold=plan.filter(x=>x.route==='cold');
+  const out=[];
+  const two=!!(R&&R.cold);
+  if(hot.length)out.push({t:2, cols:hot.map(x=>x.c+' '+x.n+'台').join('・'),
+    n:hot.reduce((s,x)=>s+x.n,0), km:two?kmS(R.hot):kmS(o.km),
+    note:two?'同じ価格帯なら人気色は走行が伸びる。距離は多めでよい':''});
+  if(cold.length&&two)out.push({t:0, cols:cold.map(x=>x.c+' '+x.n+'台').join('・'),
+    n:cold.reduce((s,x)=>s+x.n,0), km:kmS(R.cold),
+    note:'同じ価格帯で人気色より'+o.silver.diff.toFixed(1)+'万km低走行（'
+        +o.silver.win+'/'+o.silver.of+'の価格帯で確認）。低走行を安く取る枠'});
+  return out;
+}
+
 /* 必要台数を色に割り振る（売れ色の構成と、いまの在庫の色を突き合わせる） */
 /* 色の割り振り。人気度（白黒＝人気／茶紫等＝普通／シルバー＝不人気）を最優先し、
    同じ人気度の中では「いまの在庫に無い色」を先に埋める。
@@ -1851,25 +1950,43 @@ function buyColorPlan(o){
   const have={};STOCK.filter(d=>d.name===o.name).forEach(d=>{if(d.color)have[d.color]=(have[d.color]||0)+1;});
   const cand=[];
   const c=buyCfg();
+  // シルバー枠。低走行を安く取れることが実測できた車種だけ、上限3割
+  const sv=o.silver;
+  let sN=(sv&&sv.ok)?Math.min(Math.floor(o.need*0.3+0.2), o.need-1):0;
+  if(sN<0)sN=0;
+  const base=o.need-sN;
   String(c.hot||'').split(/[,、\s]+/).filter(Boolean).forEach(x=>cand.push({c:x,t:2}));
   String(c.mid||'').split(/[,、\s]+/).filter(Boolean).slice(0,6).forEach(x=>cand.push({c:x,t:1}));
   // 実績にある色も候補に足す（人気度で分類）
   (o.colors||[]).forEach(x=>{ if(!cand.some(y=>y.c===x.c))cand.push({c:x.c,t:colorTier(x.c)}); });
   cand.forEach(x=>{x.have=have[x.c]||0;});
   cand.sort((a,b)=>(b.t-a.t)||(a.have-b.have));
-  const plan=[];let left=o.need,i=0;
+  const plan=[];let left=base,i=0;
   // 人気色から順に、1台ずつ均等に積む（同じ色に偏らせない）
   const pool=cand.filter(x=>x.t>=1);
   while(left>0&&pool.length){
     const x=pool[i%pool.length];
     const ex=plan.find(y=>y.c===x.c);
-    const cap=x.t===2?Math.ceil(o.need*0.5):Math.ceil(o.need*0.34);
-    if(!ex||ex.n<cap){ if(ex)ex.n++;else plan.push({c:x.c,n:1,t:x.t}); left--; }
+    const cap=x.t===2?Math.ceil(base*0.5):Math.ceil(base*0.34);
+    if(!ex||ex.n<cap){ if(ex)ex.n++;else plan.push({c:x.c,n:1,t:x.t,route:'hot'}); left--; }
     i++;
     if(i>pool.length*8)break;
   }
   if(left>0&&plan.length)plan[0].n+=left;
-  return plan.sort((a,b)=>(b.t-a.t)||(b.n-a.n));
+  plan.sort((a,b)=>(b.t-a.t)||(b.n-a.n));
+  if(sN>0){
+    const cold=String(c.cold||'').split(/[,、\s]+/).filter(Boolean).slice(0,2)
+      .map(x=>({c:x,have:have[x]||0})).sort((a,b)=>a.have-b.have);
+    const cp=[];let l2=sN,j=0;
+    while(l2>0&&cold.length){
+      const x=cold[j%cold.length];
+      const ex=cp.find(y=>y.c===x.c);
+      if(ex)ex.n++;else cp.push({c:x.c,n:1,t:0,route:'cold'});
+      l2--;j++;
+    }
+    cp.forEach(x=>plan.push(x));
+  }
+  return plan;
 }
 function buyColorNote(o){
   const bad=(o.colors||[]).filter(x=>colorTier(x.c)===0&&x.p>=20);
@@ -1923,7 +2040,19 @@ function buyExportPdf(){
       +(d.mktGrades&&d.mktGrades.length?'<div class="grade">グレード別の相場（'+buyCfg().pct+'%点）：'
           +d.mktGrades.slice(0,6).map(function(g){return esc(g.g||'—')+' <b>'+g.lo.toFixed(1)+'万</b><s>'+g.n+'台</s>';}).join('　')+'</div>':'')
       +(d.gConc!=null&&d.gConc>=50?'<div class="warn">在庫の'+d.gConc+'%が「'+esc(d.gTop[0])+'」に偏っています。同じグレードばかりでは回転が落ちるため、別グレードで補うこと</div>':'')
-      +(buyPlanText(d)?'<div class="plan">この'+d.need+'台の色の内訳：<b>'+esc(buyPlanText(d))+'</b></div>':'')
+      +(function(){
+          const rt=buyRoutes(d);
+          if(!rt.length)return '';
+          if(rt.length===1)return '<div class="plan">この'+d.need+'台の色の内訳：<b>'+esc(rt[0].cols)+'</b></div>';
+          return '<div class="routes"><u>安値圏を取る2つの型（合計 '+d.need+'台）</u>'
+            +rt.map(function(r,ri){
+                return '<div class="rt rt'+r.t+'"><span class="rn">'+(ri+1)+'</span>'
+                  +'<b>'+esc(r.cols)+'</b>'
+                  +'<span class="rk2">走行 '+esc(r.km)+'</span>'
+                  +(r.note?'<s>'+esc(r.note)+'</s>':'')+'</div>';
+              }).join('')
+            +'</div>';
+        })()
       +(d.missing&&d.missing.length?'<div class="miss">在庫に無い売れ色：<b>'+esc(d.missing.join('・'))+'</b></div>':'')
       +(d.colors&&d.colors.length?'<div class="cols">売れている色：'+d.colors.slice(0,5).map(c=>esc(c.c)+' '+c.p+'%').join('　')+'</div>':'')
       +'<div class="memo"><span>下見メモ</span><span class="line"></span></div>'
@@ -1960,6 +2089,15 @@ function buyExportPdf(){
    +'.money .big{font-size:11pt}.money s{display:block;text-decoration:none;font-size:6.8pt;color:#888}'
    +'.miss{font-size:8.5pt;color:#b45309;margin-bottom:3px}'
    +'.plan{font-size:9.5pt;color:#0b3a86;background:#eff6ff;border-radius:3px;padding:3px 7px;margin-bottom:4px}'
+   +'.routes{border:.8pt solid #b7c6da;border-radius:3px;padding:4px 7px;margin-bottom:5px}'
+   +'.routes>u{display:block;font-size:7.5pt;color:#5b7db1;text-decoration:none;margin-bottom:3px}'
+   +'.rt{display:flex;align-items:center;gap:7px;padding:2px 0;font-size:9.5pt}'
+   +'.rt+.rt{border-top:.5pt dotted #cfd8e3}'
+   +'.rt .rn{width:14px;height:14px;border-radius:50%;color:#fff;font-size:7.5pt;display:inline-flex;align-items:center;justify-content:center;flex:none}'
+   +'.rt2 .rn{background:#0559d2}.rt0 .rn{background:#64748b}'
+   +'.rt2 b{color:#0b3a86}.rt0 b{color:#334155}'
+   +'.rt .rk2{font-weight:700;color:#111;white-space:nowrap}'
+   +'.rt s{text-decoration:none;font-size:7.2pt;color:#777;line-height:1.3}'
    +'.grade{font-size:8.6pt;color:#333;background:#f7f8fa;border-radius:3px;padding:3px 7px;margin-bottom:4px}'
    +'.grade s{text-decoration:none;color:#888;font-size:7pt;margin-left:2px}'
    +'.warn{font-size:8.6pt;color:#92400e;background:#fffbeb;border-left:2.5pt solid #d97706;padding:3px 7px;margin-bottom:4px}'
@@ -1976,7 +2114,10 @@ function buyExportPdf(){
    +'<span>市場データ '+(MKDATA?MKDATA.collected:'—')+'取得</span></div>'
    +'<div class="lead">「買う条件」は、実際に自社で売れた車（売約実績）の年式・走行・色の中央50%の範囲です。'
    +'「想定小売」は、その年式・走行でエリアに出ている掲載価格の安値圏（既定は下から25%）です。安値圏でないと動かないため、中央値ではなくここを基準にします。「目標利益」は設定値（軽・普通車それぞれ）、「仕入上限（税込原価）」はその差です。<b>「落札上限（税別）」は、そこから諸費用を引いて税を抜いた、会場でそのまま使える金額</b>です。台数は1台ずつ同じ条件という意味ではなく、上の年式・走行の範囲から色の内訳のとおり集める、という意味です。'
-   +'「競合」は、その条件に当てはまるカーセンサー掲載の台数（修復歴なし）です。<b>同じ車種・同じ年式でもグレードで数十万変わる</b>ため、グレード別の相場も併記しています。狙うグレードを決めてから応札してください。</div>'
+   +'「競合」は、その条件に当てはまるカーセンサー掲載の台数（修復歴なし）です。<b>同じ車種・同じ年式でもグレードで数十万変わる</b>ため、グレード別の相場も併記しています。狙うグレードを決めてから応札してください。'
+   +'<br><b>「安値圏を取る2つの型」</b>は、同じ価格帯でも色によって走行が違うことを市場データで確かめた結果です。'
+   +'人気色（白・パール・黒）は同じ価格なら走行が伸びるので距離は多めでよく、シルバー系は同じ価格でも低走行が取れます。'
+   +'シルバーは単体では不人気ですが、<b>低走行を安く仕入れる枠</b>として全体の3割までを目安に入れています。差が出ない車種ではこの枠は出しません。</div>'
    +(nowList.length?'<h2 class="n">① 即仕入　<small>いま規定台数を割っている車種。欠品が集客に響くので優先</small></h2>'+nowList.map(card).join(''):'')
    +(soonList.length?'<h2 class="s">② 先行仕入　<small>いまは足りているが、長期在庫を値下げ処分すると規定を割る車種。仕入から商品化まで2週間かかるため今から動く</small></h2>'+soonList.map(card).join(''):'')
    +'<script>window.onload=function(){setTimeout(function(){window.print();},400)};<\/script>'
@@ -2008,7 +2149,12 @@ function renderAction(){
         <div class="aname"><span class="pri ${pc(d.rank)}">${d.rank}級</span>${kindTag}${d.name}</div>
         <div class="adet">${d.cat} / 規定${d.teisu}台 → 在庫${d.stock}台${d.kind==='soon'?`（処分予定${d.disp}台を引くと${d.after}台）`:''} / 売約実績${d.n}台${d.turn!=null?`・回転中央${d.turn}日`:''}</div>
         ${cond?`<div class="adet" style="color:var(--text);font-weight:600;margin-top:3px">買う条件：${cond}</div>`:'<div class="adet" style="color:var(--text3);margin-top:3px">売約実績が無いため条件を出せません</div>'}
-        ${buyPlanText(d)?`<div class="adet" style="margin-top:2px">色の内訳：<b>${buyPlanText(d)}</b>${buyColorNote(d)?`<span style="color:#b45309"> ／ ${buyColorNote(d)}</span>`:''}</div>`:''}
+        ${(()=>{const rt=buyRoutes(d);if(!rt.length)return '';
+          const note=buyColorNote(d)?`<span style="color:#b45309"> ／ ${buyColorNote(d)}</span>`:'';
+          if(rt.length===1)return `<div class="adet" style="margin-top:2px">色の内訳：<b>${rt[0].cols}</b>${note}</div>`;
+          return `<div class="adet" style="margin-top:3px;line-height:1.7">安値圏を取る2つの型（計${d.need}台）`
+            +rt.map((r,i)=>`<div style="margin-left:4px"><b style="color:${r.t===2?'#0559d2':'#64748b'}">${i+1}. ${r.cols}</b>　走行 <b>${r.km}</b>${r.note?`<span style="color:#94a3b8;font-size:.92em"> — ${r.note}</span>`:''}</div>`).join('')
+            +`${note}</div>`;})()}
         ${d.buyMax!=null?`<div class="adet" style="margin-top:2px">落札上限（税別）<b style="color:#b91c1c;font-size:14px">${buyBidMax(d)!=null?buyBidMax(d).toFixed(1):'—'}万</b>　／　仕入上限（税込原価）${d.buyMax.toFixed(1)}万 → 想定小売 ${d.retailBase!=null?d.retailBase.toFixed(1):'—'}万（${d.retailSrc}） / 目標利益 ${d.target}万（実績${d.profit!=null?d.profit.toFixed(1):'—'}万）</div>`:''}
         ${d.mktHoku!=null?`<div class="adet" style="margin-top:2px;color:var(--text3)">この条件の競合：北陸甲信越 ${d.mktHoku}台 / 東海含め ${d.mktAll}台${d.mktMed!=null?`・市場は安値${d.mktLo.toFixed(1)}／${buyCfg().pct}%点${d.mktPct.toFixed(1)}／中央${d.mktMed.toFixed(1)}万`:''}</div>`:''}
         ${d.missing&&d.missing.length?`<div class="adet" style="margin-top:2px;color:#b45309">在庫に無い売れ色：${d.missing.join('・')}</div>`:''}
