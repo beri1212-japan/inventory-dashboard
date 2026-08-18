@@ -1641,7 +1641,6 @@ function buySpec(cat,name){
   o.profit=bqt(sd.map(s=>s.profit),.5);
   // 仕入上限は「想定小売 − 目標利益」。実績の原価中央値は参考として別に持つ
   o.costActual=o.cost.med;
-  o.buyMax=(o.retail.med!=null&&o.profit!=null)?Math.round((o.retail.med-o.profit)*10)/10:o.cost.med;
   o.turn  =bqt(sd.map(s=>s.days),.5);
   const c={};sd.forEach(s=>{if(s.color)c[s.color]=(c[s.color]||0)+1;});
   o.colors=Object.entries(c).sort((a,b)=>b[1]-a[1]).map(x=>({c:x[0],n:x[1],p:Math.round(x[1]/sd.length*100)}));
@@ -1653,7 +1652,7 @@ function buySpec(cat,name){
   // 直近6か月の売れ行き
   const ms=[...new Set(sd.map(s=>s.month).filter(Boolean))].sort();
   o.recent=ms.length?sd.filter(s=>s.month>=ms[Math.max(0,ms.length-6)]).length:0;
-  // 市場の競合台数（同条件・北陸甲信越）
+  // 市場（同条件・北陸甲信越）の価格分布。売れるのは安値圏なので、想定小売はここから取る
   const code=MK_CODE[name];
   if(MKDATA&&code&&MKDATA.cars[code]&&o.yr[0]&&o.km){
     const gv=gvFilter({name:name,grade:''});
@@ -1664,10 +1663,23 @@ function buySpec(cat,name){
       return y>=o.yr[0]-1&&y<=o.yr[1]+1&&k>=o.km[0]&&k<=o.km[1];
     });
     o.mktAll=rows.length;
-    o.mktHoku=rows.filter(r=>r[0]==='北陸甲信越').length;
-    const p=rows.map(r=>parseFloat(r[3])).filter(v=>v>0);
+    const hoku=rows.filter(r=>r[0]==='北陸甲信越');
+    o.mktHoku=hoku.length;
+    const use=hoku.length>=8?hoku:rows;
+    o.mktScope=hoku.length>=8?'北陸甲信越':'北陸＋東海';
+    const p=use.map(r=>parseFloat(r[3])).filter(v=>v>0);
     o.mktMed=bqt(p,.5);
+    o.mktLo=bqt(p,.10);
+    o.mktPct=bqt(p,buyCfg().pct/100);
+    // 色ごとの分布（人気度の裏取り用）
+    const byT=[[],[],[]];
+    use.forEach(r=>{const v=parseFloat(r[3]);if(v>0)byT[colorTier(r[6])].push(v);});
+    o.mktByTier=byT.map(a=>({n:a.length,med:bqt(a,.5)}));
   }
+  // 想定小売：市場の安値圏（既定25%点）。市場データが無ければ売約実績の中央値
+  o.retailBase = o.mktPct!=null ? o.mktPct : o.retail.med;
+  o.retailSrc  = o.mktPct!=null ? ('市場'+buyCfg().pct+'%点') : '売約実績の中央値';
+  o.buyMax=(o.retailBase!=null&&o.profit!=null)?Math.round((o.retailBase-o.profit)*10)/10:o.cost.med;
   return o;
 }
 /* 処分予定＝値下げ or 原価超えで、120日以上たっている在庫 */
@@ -1713,14 +1725,30 @@ function buyCond(o){
    在庫表の原価は税込。オークション落札は税別。会場で使う数字は税別なので、
    　落札上限（税別） =（仕入上限（税込原価） − 諸費用）÷（1＋税率）
    で変換する。諸費用は陸送・整備・その他の見込み額。 */
+const COLOR_TIER_DEFAULT={hot:'白,パール,黒',mid:'茶,ブラウン,紫,カーキ,緑,青,赤,黄,橙,桃',cold:'シルバー,銀,灰,グレー'};
 function buyCfg(){
   let c={};
   try{c=JSON.parse(localStorage.getItem('buy_cfg')||'{}');}catch(e){}
-  return {tax:c.tax!=null?Number(c.tax):10, kei:c.kei!=null?Number(c.kei):0, futsu:c.futsu!=null?Number(c.futsu):0};
+  return {tax:c.tax!=null?Number(c.tax):10, kei:c.kei!=null?Number(c.kei):0, futsu:c.futsu!=null?Number(c.futsu):0,
+          pct:c.pct!=null?Number(c.pct):25,
+          hot:c.hot||COLOR_TIER_DEFAULT.hot, mid:c.mid||COLOR_TIER_DEFAULT.mid, cold:c.cold||COLOR_TIER_DEFAULT.cold};
 }
+/* 色の人気度。白黒＝人気、茶紫カーキ等＝普通、シルバー＝不人気 */
+function colorTier(col){
+  if(!col)return 1;
+  const c=buyCfg();
+  const has=(list)=>String(list||'').split(/[,、\s]+/).filter(Boolean).some(w=>String(col).indexOf(w)>=0);
+  if(has(c.hot))return 2;
+  if(has(c.cold))return 0;
+  if(has(c.mid))return 1;
+  return 1;
+}
+const TIER_LABEL=['不人気','普通','人気'];
 function buySaveCfg(){
   const g=id=>{const e=document.getElementById(id);return e?Number(e.value):0;};
-  localStorage.setItem('buy_cfg',JSON.stringify({tax:g('cfgTax'),kei:g('cfgKei'),futsu:g('cfgFutsu')}));
+  const t=id=>{const e=document.getElementById(id);return e?e.value.trim():'';};
+  localStorage.setItem('buy_cfg',JSON.stringify({tax:g('cfgTax'),kei:g('cfgKei'),futsu:g('cfgFutsu'),
+    pct:g('cfgPct')||25, hot:t('cfgHot')||COLOR_TIER_DEFAULT.hot, mid:t('cfgMid')||COLOR_TIER_DEFAULT.mid, cold:t('cfgCold')||COLOR_TIER_DEFAULT.cold}));
   const st=document.getElementById('cfgStatus');
   if(st){st.textContent='✅ 保存しました';st.style.color='var(--green)';}
   if(document.getElementById('page-action')&&document.getElementById('page-action').classList.contains('active'))renderAction();
@@ -1734,24 +1762,42 @@ function buyBidMax(o){
   return Math.round(v*10)/10;
 }
 /* 必要台数を色に割り振る（売れ色の構成と、いまの在庫の色を突き合わせる） */
+/* 色の割り振り。人気度（白黒＝人気／茶紫等＝普通／シルバー＝不人気）を最優先し、
+   同じ人気度の中では「いまの在庫に無い色」を先に埋める。
+   ※当社の売約色構成は「仕入れた色の構成」であって人気度ではないため、配分には使わない。 */
 function buyColorPlan(o){
-  if(!o.colors||!o.colors.length||!o.teisu||!o.need)return [];
+  if(!o.need)return [];
   const have={};STOCK.filter(d=>d.name===o.name).forEach(d=>{if(d.color)have[d.color]=(have[d.color]||0)+1;});
-  const rows=o.colors.map(c=>{
-    const target=Math.round(o.teisu*c.n/o.n);
-    return {c:c.c,p:c.p,target:target,have:have[c.c]||0,gap:Math.max(0,target-(have[c.c]||0))};
-  });
-  const plan=[];let left=o.need;
-  rows.slice().sort((a,b)=>(b.gap-a.gap)||(b.p-a.p)).forEach(r=>{
-    if(left<=0||r.gap<=0)return;
-    const t=Math.min(r.gap,left);plan.push({c:r.c,n:t});left-=t;
-  });
-  if(left>0){
-    const top=rows.slice().sort((a,b)=>b.p-a.p)[0];
-    const ex=plan.find(x=>x.c===top.c);
-    if(ex)ex.n+=left;else plan.push({c:top.c,n:left});
+  const cand=[];
+  const c=buyCfg();
+  String(c.hot||'').split(/[,、\s]+/).filter(Boolean).forEach(x=>cand.push({c:x,t:2}));
+  String(c.mid||'').split(/[,、\s]+/).filter(Boolean).slice(0,6).forEach(x=>cand.push({c:x,t:1}));
+  // 実績にある色も候補に足す（人気度で分類）
+  (o.colors||[]).forEach(x=>{ if(!cand.some(y=>y.c===x.c))cand.push({c:x.c,t:colorTier(x.c)}); });
+  cand.forEach(x=>{x.have=have[x.c]||0;});
+  cand.sort((a,b)=>(b.t-a.t)||(a.have-b.have));
+  const plan=[];let left=o.need,i=0;
+  // 人気色から順に、1台ずつ均等に積む（同じ色に偏らせない）
+  const pool=cand.filter(x=>x.t>=1);
+  while(left>0&&pool.length){
+    const x=pool[i%pool.length];
+    const ex=plan.find(y=>y.c===x.c);
+    const cap=x.t===2?Math.ceil(o.need*0.5):Math.ceil(o.need*0.34);
+    if(!ex||ex.n<cap){ if(ex)ex.n++;else plan.push({c:x.c,n:1,t:x.t}); left--; }
+    i++;
+    if(i>pool.length*8)break;
   }
-  return plan.sort((a,b)=>b.n-a.n);
+  if(left>0&&plan.length)plan[0].n+=left;
+  return plan.sort((a,b)=>(b.t-a.t)||(b.n-a.n));
+}
+function buyColorNote(o){
+  const bad=(o.colors||[]).filter(x=>colorTier(x.c)===0&&x.p>=20);
+  const st=STOCK.filter(d=>d.name===o.name);
+  const stBad=st.filter(d=>colorTier(d.color)===0).length;
+  const L=[];
+  if(stBad>=2)L.push('いまの在庫に不人気色が'+stBad+'台');
+  if(bad.length)L.push('過去は'+bad.map(x=>x.c).join('・')+'を多く売っているが、これは仕入れた色の偏り');
+  return L.join('／');
 }
 function buyPlanText(o){
   const p=buyColorPlan(o);
@@ -1787,10 +1833,10 @@ function buyExportPdf(){
       +'<div class="money">'
         +'<div class="hl"><i>落札上限（税別）</i><b class="big">'+f(buyBidMax(d))+'万</b><s>諸費用'+buyFee(d.cat)+'万・税'+buyCfg().tax+'%で逆算</s></div>'
         +'<div><i>仕入上限（税込原価）</i><b class="big">'+f(d.buyMax)+'万</b><s>実績原価は'+f(d.costActual)+'万</s></div>'
-        +'<div><i>想定小売</i><b class="big">'+f(d.retail&&d.retail.med)+'万</b><s>'+f(d.retail&&d.retail.lo)+'〜'+f(d.retail&&d.retail.hi)+'万</s></div>'
+        +'<div><i>想定小売</i><b class="big">'+f(d.retailBase)+'万</b><s>'+esc(d.retailSrc||'')+'</s></div>'
         +'<div><i>想定利益</i><b class="big">'+f(d.profit)+'万</b><s>実績の中央値</s></div>'
         +'<div><i>競合（北陸）</i><b class="big">'+(d.mktHoku!=null?d.mktHoku:'—')+'台</b><s>'+(d.mktAll!=null?'東海含め'+d.mktAll+'台':'')+'</s></div>'
-        +'<div><i>市場中央</i><b class="big">'+f(d.mktMed)+'万</b><s>同条件の掲載</s></div>'
+        +'<div><i>市場（安値〜中央）</i><b class="big">'+f(d.mktLo)+'〜'+f(d.mktMed)+'</b><s>'+(d.mktScope||'')+'の掲載</s></div>'
       +'</div>'
       +(buyPlanText(d)?'<div class="plan">この'+d.need+'台の色の内訳：<b>'+esc(buyPlanText(d))+'</b></div>':'')
       +(d.missing&&d.missing.length?'<div class="miss">在庫に無い売れ色：<b>'+esc(d.missing.join('・'))+'</b></div>':'')
@@ -1841,7 +1887,7 @@ function buyExportPdf(){
    +'<span>売約実績 '+SOLD.length+'台から算出</span>'
    +'<span>市場データ '+(MKDATA?MKDATA.collected:'—')+'取得</span></div>'
    +'<div class="lead">「買う条件」は、実際に自社で売れた車（売約実績）の年式・走行・色の中央50%の範囲です。'
-   +'「想定小売」は売れた本体価格の中央値、「想定利益」は実績利益の中央値、「仕入上限（税込原価）」はその差です。<b>「落札上限（税別）」は、そこから諸費用を引いて税を抜いた、会場でそのまま使える金額</b>です。台数は1台ずつ同じ条件という意味ではなく、上の年式・走行の範囲から色の内訳のとおり集める、という意味です。'
+   +'「想定小売」は、その年式・走行でエリアに出ている掲載価格の安値圏（既定は下から25%）です。安値圏でないと動かないため、中央値ではなくここを基準にします。「想定利益」は実績利益の中央値、「仕入上限（税込原価）」はその差です。<b>「落札上限（税別）」は、そこから諸費用を引いて税を抜いた、会場でそのまま使える金額</b>です。台数は1台ずつ同じ条件という意味ではなく、上の年式・走行の範囲から色の内訳のとおり集める、という意味です。'
    +'「競合」は、その条件に当てはまるカーセンサー掲載の台数（修復歴なし）です。</div>'
    +(nowList.length?'<h2 class="n">① 即仕入　<small>いま規定台数を割っている車種。欠品が集客に響くので優先</small></h2>'+nowList.map(card).join(''):'')
    +(soonList.length?'<h2 class="s">② 先行仕入　<small>いまは足りているが、長期在庫を値下げ処分すると規定を割る車種。仕入から商品化まで2週間かかるため今から動く</small></h2>'+soonList.map(card).join(''):'')
@@ -1874,9 +1920,9 @@ function renderAction(){
         <div class="aname"><span class="pri ${pc(d.rank)}">${d.rank}級</span>${kindTag}${d.name}</div>
         <div class="adet">${d.cat} / 規定${d.teisu}台 → 在庫${d.stock}台${d.kind==='soon'?`（処分予定${d.disp}台を引くと${d.after}台）`:''} / 売約実績${d.n}台${d.turn!=null?`・回転中央${d.turn}日`:''}</div>
         ${cond?`<div class="adet" style="color:var(--text);font-weight:600;margin-top:3px">買う条件：${cond}</div>`:'<div class="adet" style="color:var(--text3);margin-top:3px">売約実績が無いため条件を出せません</div>'}
-        ${buyPlanText(d)?`<div class="adet" style="margin-top:2px">色の内訳：<b>${buyPlanText(d)}</b></div>`:''}
-        ${d.buyMax!=null?`<div class="adet" style="margin-top:2px">落札上限（税別）<b style="color:#b91c1c;font-size:14px">${buyBidMax(d)!=null?buyBidMax(d).toFixed(1):'—'}万</b>　／　仕入上限（税込原価）${d.buyMax.toFixed(1)}万 → 想定小売 ${d.retail.med.toFixed(1)}万 / 利益 ${d.profit!=null?d.profit.toFixed(1):'—'}万</div>`:''}
-        ${d.mktHoku!=null?`<div class="adet" style="margin-top:2px;color:var(--text3)">この条件の競合：北陸甲信越 ${d.mktHoku}台 / 東海含め ${d.mktAll}台${d.mktMed!=null?`・市場中央${d.mktMed.toFixed(1)}万`:''}</div>`:''}
+        ${buyPlanText(d)?`<div class="adet" style="margin-top:2px">色の内訳：<b>${buyPlanText(d)}</b>${buyColorNote(d)?`<span style="color:#b45309"> ／ ${buyColorNote(d)}</span>`:''}</div>`:''}
+        ${d.buyMax!=null?`<div class="adet" style="margin-top:2px">落札上限（税別）<b style="color:#b91c1c;font-size:14px">${buyBidMax(d)!=null?buyBidMax(d).toFixed(1):'—'}万</b>　／　仕入上限（税込原価）${d.buyMax.toFixed(1)}万 → 想定小売 ${d.retailBase!=null?d.retailBase.toFixed(1):'—'}万（${d.retailSrc}） / 利益 ${d.profit!=null?d.profit.toFixed(1):'—'}万</div>`:''}
+        ${d.mktHoku!=null?`<div class="adet" style="margin-top:2px;color:var(--text3)">この条件の競合：北陸甲信越 ${d.mktHoku}台 / 東海含め ${d.mktAll}台${d.mktMed!=null?`・市場は安値${d.mktLo.toFixed(1)}／${buyCfg().pct}%点${d.mktPct.toFixed(1)}／中央${d.mktMed.toFixed(1)}万`:''}</div>`:''}
         ${d.missing&&d.missing.length?`<div class="adet" style="margin-top:2px;color:#b45309">在庫に無い売れ色：${d.missing.join('・')}</div>`:''}
       </div>
       <span class="pill pill-r" style="flex-shrink:0">${d.need}台</span></div>`;}).join('')
@@ -4905,8 +4951,8 @@ function openApiModal(){
     sel.value=aiModel(); setAiModel(sel.value);
   }
   const c=buyCfg();
-  ['cfgTax','cfgKei','cfgFutsu'].forEach(function(id,i){
-    const e=document.getElementById(id); if(e)e.value=[c.tax,c.kei,c.futsu][i];
+  ['cfgTax','cfgKei','cfgFutsu','cfgPct','cfgHot','cfgMid','cfgCold'].forEach(function(id,i){
+    const e=document.getElementById(id); if(e)e.value=[c.tax,c.kei,c.futsu,c.pct,c.hot,c.mid,c.cold][i];
   });
   document.getElementById('modal-api').style.display='block';
   document.getElementById('ov-api').style.display='block';
@@ -5973,6 +6019,14 @@ function renderMarket(){
       <input type="number" id="cfgKei" step="0.5" style="width:100%;padding:7px 9px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--mono);background:var(--bg3);color:var(--text);box-sizing:border-box"></div>
     <div><div style="font-size:11.5px;color:var(--text3);margin-bottom:3px">諸費用 普通車(万)</div>
       <input type="number" id="cfgFutsu" step="0.5" style="width:100%;padding:7px 9px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--mono);background:var(--bg3);color:var(--text);box-sizing:border-box"></div>
+  </div>
+  <div style="font-size:11.5px;color:var(--text3);margin:4px 0 3px">想定小売の位置（市場分布の下から何%か。安値圏でないと動かないため既定25%）</div>
+  <input type="number" id="cfgPct" step="5" min="5" max="60" style="width:100%;padding:7px 9px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--mono);background:var(--bg3);color:var(--text);margin-bottom:8px;box-sizing:border-box">
+  <div style="font-size:11.5px;color:var(--text3);margin-bottom:3px">色の人気度（カンマ区切り）</div>
+  <div style="display:grid;grid-template-columns:1fr;gap:5px;margin-bottom:8px">
+    <input type="text" id="cfgHot"  placeholder="人気：白,パール,黒" style="width:100%;padding:6px 9px;border:1px solid var(--border2);border-radius:6px;font-size:12.6px;background:var(--bg3);color:var(--text);box-sizing:border-box">
+    <input type="text" id="cfgMid"  placeholder="普通：茶,紫,カーキ…" style="width:100%;padding:6px 9px;border:1px solid var(--border2);border-radius:6px;font-size:12.6px;background:var(--bg3);color:var(--text);box-sizing:border-box">
+    <input type="text" id="cfgCold" placeholder="不人気：シルバー,グレー" style="width:100%;padding:6px 9px;border:1px solid var(--border2);border-radius:6px;font-size:12.6px;background:var(--bg3);color:var(--text);box-sizing:border-box">
   </div>
   <button onclick="buySaveCfg()" style="width:100%;background:var(--accent);color:#fff;border:none;padding:8px;border-radius:6px;cursor:pointer;font-size:13.8px;font-weight:500">仕入れ設定を保存</button>
   <div id="cfgStatus" style="font-size:12.6px;margin-top:8px;color:var(--green)"></div>
