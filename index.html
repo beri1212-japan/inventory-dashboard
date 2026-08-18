@@ -2045,8 +2045,9 @@ function renderList(){
         ${d.mkt!=null?`<button class="minibtn mktbtn" title="${PATROL?PATROL.cond+' ／ '+PATROL.area+'（'+PATROL.collected+'取得）':''}　クリックでカーセンサーの同条件検索を開く" onclick="window.open('${d.mktU}','_blank','noopener')">市場 <b>${d.mkt}</b></button>`:`<button class="minibtn mktbtn" disabled style="opacity:.35">市場 —</button>`}
         <button class="minibtn" title="この車の閲覧数・問合せ数と価格アドバイス" onclick="openCmDetail('${encodeURIComponent(d.lower4)}','${encodeURIComponent(d.name)}','${encodeURIComponent(d.cat||'')}')" ${d.cm?'':'style="opacity:.55"'}>反響</button>
         <button class="minibtn" onclick="openPriceChange('${encodeURIComponent(d.lower4)}','${encodeURIComponent(d.name)}',${d.price!=null?d.price:0},'${encodeURIComponent(d.cat||'')}')">価格</button>
+        <button class="minibtn" onclick="runComment('${d.sid}')">文案</button>
       </span>`:''}</td></tr>`).join('');
-  box.innerHTML=`<table class="lst"><thead><tr>${th}<th style="width:180px"></th></tr></thead><tbody>${body}</tbody></table>`;
+  box.innerHTML=`<table class="lst"><thead><tr>${th}<th style="width:238px"></th></tr></thead><tbody>${body}</tbody></table>`;
   const cost=rows.reduce((a,b)=>a+(b.cost||0),0), prof=rows.reduce((a,b)=>a+(b.profit||0),0);
   document.getElementById('lsCount').innerHTML=
     `<b style="color:var(--text);font-size:14.9px">${rows.length}</b>台 ・ 原価計 ${Math.round(cost).toLocaleString()}万 ・ 想定利益 ${Math.round(prof).toLocaleString()}万`;
@@ -2455,6 +2456,7 @@ function renderPriceAlert(){
         <span style="margin-left:auto;display:flex;gap:6px">
           <a class="minibtn" href="${m.url}" target="_blank" rel="noopener">カーセンサーで見る</a>
           <button class="minibtn" onclick="paAi('${c.sid}')">AI診断</button>
+          <button class="minibtn" onclick="runComment('${c.sid}')">コメント案</button>
           <button class="minibtn" onclick="openPriceChange('${encodeURIComponent(c.lower4)}','${encodeURIComponent(c.name)}',${c.price!=null?c.price:0},'${encodeURIComponent(c.cat||'')}')">価格を変更</button>
         </span>
       </div>
@@ -4708,6 +4710,90 @@ function mdLite(t){
   if(ul)html+='</ul>';
   return html;
 }
+
+/* ═══ 掲載コメント生成（ゴール③） ═══
+   実データ（市場での立ち位置・希少性・反響）だけを根拠に、カーセンサーの
+   販売店コメント案を作る。装備の情報は在庫表に無いので、AIには書かせない。 */
+function cmtSpecs(d){
+  const L=[];
+  L.push('車種：'+d.name+(d.grade?'（グレード表記：'+d.grade+'）':''));
+  L.push('年式：'+ymV4(d)+'　走行：'+(d.km!=null?(d.km/10000).toFixed(1)+'万km':'不明'));
+  L.push('本体価格：'+(d.price!=null?d.price+'万円':'未設定')+(d.total?'　総額：'+d.total+'万円':''));
+  L.push('色：'+(d.color||'不明')+'　'+(d.hv==='〇'?'ハイブリッド':'ガソリン')+'　'+(d.fwd==='〇'?'4WD':'2WD'));
+  if(d.shaken)L.push('車検：'+d.shaken);
+  if(d.rating)L.push('評価点：'+d.rating);
+  L.push('掲載日数：'+(d.days!=null?d.days+'日':'不明'));
+  return L.join('\n');
+}
+async function runComment(sid){
+  const apiKey=localStorage.getItem('anthropic_api_key');
+  if(!apiKey){alert('APIキーが設定されていません。\n左メニューの「API設定」から入力してください。');openApiModal();return;}
+  const d=STOCK.find(x=>String(x.sid)===String(sid))||STOCK.find(x=>x.lower4===String(sid));
+  if(!d){alert('車両が見つかりません。');return;}
+  document.getElementById('ai-modal-title').textContent='掲載コメントを作成中…';
+  document.getElementById('ai-modal-body').innerHTML='<div style="display:flex;align-items:center;gap:10px;padding:20px;color:var(--text2)">'
+    +'<div class="spin" style="display:block;width:20px;height:20px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite"></div>'
+    +'<span>市場での立ち位置から売り文句を組み立てています…</span></div>';
+  document.getElementById('modal-ai').style.display='block';
+  document.getElementById('ov-ai').style.display='block';
+  const BRIEF=await mktBrief(d), CM=cmBrief(d);
+  const prompt=`あなたは中古車販売店の掲載コメントを書くコピーライターです。
+株式会社インディオ富山（富山県の中古車販売店）の、カーセンサー掲載用の販売店コメント案を作ってください。
+
+【厳守】
+- 下のデータに書かれていない事実は書かないこと。とくに**装備・オプション・修復歴・整備歴・保証内容は一切書かない**（データが無いため）。
+- 「格安」「激安」「大人気」のような根拠のない誇張は使わない。数字で言えることだけを強く言う。
+- 台数や順位を書くときは、下のデータの数字をそのまま使う。丸めたり盛ったりしない。
+- 販売店名・電話番号・URLは書かない。
+
+【車両】
+${cmtSpecs(d)}
+
+【市場での立ち位置】
+${BRIEF}
+
+【いまの反響】
+${CM}
+
+【出力】次の3案を、それぞれ全角180〜220字で。見出し行を付けて、本文だけを書くこと。
+■案A（希少性で押す）… この年式・走行・仕様が地域にどれだけ少ないかを軸に
+■案B（価格の納得感で押す）… 同条件の中での価格の位置を軸に。安さではなく「なぜこの値付けか」が伝わるように
+■案C（探している人に呼びかける）… どんな人に向く車かを具体的に描いて呼びかける
+
+3案のあとに「■この車で言えないこと」として、装備や状態など、掲載前に人が追記すべき項目を3〜5個、箇条書きで挙げてください。`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey.trim().replace(/[^a-zA-Z0-9\-_]/g,''),
+        'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:aiModel(),max_tokens:2600,messages:[{role:'user',content:prompt}]})});
+    if(!res.ok){const e=await res.json();throw new Error((e.error&&e.error.message)||('HTTP '+res.status));}
+    const data=await res.json();
+    const text=data.content.filter(b=>b.type==='text').map(b=>b.text).join('\n');
+    window.__CMT=text;
+    document.getElementById('ai-modal-title').textContent='掲載コメント案：'+d.name+'　車体'+(d.lower4||'');
+    document.getElementById('ai-modal-body').innerHTML=
+      '<div style="font-size:12.6px;color:var(--text3);margin-bottom:10px">'+cmtSpecs(d).replace(/\n/g,'　/　')+'</div>'
+      +'<div style="font-size:13.8px;line-height:1.85;color:#1a2332">'+mdLite(text)+'</div>'
+      +'<div style="display:flex;gap:8px;margin-top:14px">'
+      +'<button class="minibtn" onclick="cmtCopy(\'A\')">案Aをコピー</button>'
+      +'<button class="minibtn" onclick="cmtCopy(\'B\')">案Bをコピー</button>'
+      +'<button class="minibtn" onclick="cmtCopy(\'C\')">案Cをコピー</button>'
+      +'<button class="minibtn" onclick="cmtCopy(\'\')">全部コピー</button></div>';
+  }catch(e){
+    document.getElementById('ai-modal-body').innerHTML='<div class="errbox" style="margin:0">作成に失敗しました: '+e.message+'</div>';
+  }
+}
+function cmtCopy(which){
+  const t=window.__CMT||'';
+  let out=t;
+  if(which){
+    const re=new RegExp('■案'+which+'[^\\n]*\\n([\\s\\S]*?)(?=\\n■|$)');
+    const m=t.match(re);
+    out=m?m[1].trim():t;
+  }
+  navigator.clipboard.writeText(out).then(()=>alert('コピーしました。'),()=>alert('コピーできませんでした。'));
+}
+
 // ═══ AI価格診断 ═══
 async function runAiDiagnosis(vehicleData){
   const apiKey=localStorage.getItem('anthropic_api_key');
