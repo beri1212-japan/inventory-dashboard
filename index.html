@@ -4070,7 +4070,7 @@ async function aiConsult(){
       method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':key.trim().replace(/[^a-zA-Z0-9\-_]/g,''),
         'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1600,messages:[{role:'user',content:prompt}]})
+      body:JSON.stringify({model:aiModel(),max_tokens:2600,messages:[{role:'user',content:prompt}]})
     });
     if(!res.ok){const e=await res.json();throw new Error(e.error?.message||('HTTP '+res.status));}
     const data=await res.json();
@@ -4411,9 +4411,31 @@ function showPage(n){
 
 
 // ═══ API設定 ═══
+/* AIモデル設定（既定は Opus 5：Fable 5 とほぼ同性能で単価は半分） */
+const AI_MODELS=[
+  {id:'claude-opus-5', label:'Claude Opus 5（推奨）', note:'入力 $5 / 出力 $25（100万トークンあたり）'},
+  {id:'claude-fable-5',label:'Claude Fable 5',        note:'入力 $10 / 出力 $50・長く複雑な分析ほど強い'},
+  {id:'claude-sonnet-5',label:'Claude Sonnet 5',      note:'速さ重視'},
+  {id:'claude-haiku-4-5',label:'Claude Haiku 4.5',    note:'いちばん安い・簡易チェック向け'}
+];
+function aiModel(){
+  const v=localStorage.getItem('ai_model');
+  return AI_MODELS.some(m=>m.id===v)?v:'claude-opus-5';
+}
+function setAiModel(v){
+  localStorage.setItem('ai_model',v);
+  const n=document.getElementById('aiModelNote');
+  const m=AI_MODELS.find(x=>x.id===v);
+  if(n&&m)n.textContent=m.note;
+}
 function openApiModal(){
   const saved=localStorage.getItem('anthropic_api_key');
   if(saved)document.getElementById('apiKeyInput').value=saved;
+  const sel=document.getElementById('aiModelSel');
+  if(sel){
+    if(!sel.options.length)AI_MODELS.forEach(m=>{const o=document.createElement('option');o.value=m.id;o.textContent=m.label;sel.appendChild(o);});
+    sel.value=aiModel(); setAiModel(sel.value);
+  }
   document.getElementById('modal-api').style.display='block';
   document.getElementById('ov-api').style.display='block';
 }
@@ -4533,8 +4555,8 @@ ${d.cat==='軽'?
         'anthropic-dangerous-direct-browser-access':'true'
       },
       body:JSON.stringify({
-        model:'claude-haiku-4-5-20251001',
-        max_tokens:1500,
+        model:aiModel(),
+        max_tokens:2400,
         tools:[{type:'web_search_20250305',name:'web_search'}],
         messages:[{role:'user',content:prompt}]
       })
@@ -4824,8 +4846,8 @@ async function runMarketAnalysis(){
         'anthropic-dangerous-direct-browser-access':'true'
       },
       body:JSON.stringify({
-        model:'claude-haiku-4-5-20251001',
-        max_tokens:2000,
+        model:aiModel(),
+        max_tokens:3000,
         tools:[{type:'web_search_20250305',name:'web_search'}],
         messages:[{role:'user',content:prompt}]
       })
@@ -5174,6 +5196,9 @@ function renderMarket(){
   <h3 style="font-size:16.1px;font-weight:700;margin-bottom:12px">⚙ AI価格診断 設定</h3>
   <div style="font-size:12.6px;color:var(--text2);margin-bottom:8px">Anthropic APIキーを入力してください。<br>ブラウザに保存されます（外部送信なし）。</div>
   <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-..." style="width:100%;padding:8px 10px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--mono);background:var(--bg3);color:var(--text);margin-bottom:10px;box-sizing:border-box">
+  <div style="font-size:12.6px;color:var(--text2);margin:2px 0 5px;font-weight:600">使用するモデル</div>
+  <select id="aiModelSel" onchange="setAiModel(this.value)" style="width:100%;padding:8px 10px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--font);background:var(--bg3);color:var(--text);margin-bottom:4px;box-sizing:border-box"></select>
+  <div id="aiModelNote" style="font-size:11.5px;color:var(--text3);margin-bottom:10px"></div>
   <div style="display:flex;gap:8px">
     <button onclick="saveApiKey()" style="flex:1;background:var(--accent);color:#fff;border:none;padding:8px;border-radius:6px;cursor:pointer;font-size:13.8px;font-weight:500">保存</button>
     <button onclick="clearApiKey()" style="background:var(--rbg);color:var(--red);border:1px solid var(--red);padding:8px 12px;border-radius:6px;cursor:pointer;font-size:13.8px">削除</button>
