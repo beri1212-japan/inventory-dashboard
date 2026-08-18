@@ -25,7 +25,7 @@
   --amber:#ff862e;--amber-bg:#fff2e8;
   --teal:#0666ee;--teal-bg:#e9f0fe;
   --purple:#955be3;--purple-bg:#f3ebfd;
-  --font:'IBM Plex Sans JP',Inter,system-ui,sans-serif;--mono:'DM Mono',ui-monospace,monospace;
+  --font:'IBM Plex Sans JP',Inter,system-ui,sans-serif;--mono:'IBM Plex Sans JP',Inter,system-ui,sans-serif;
   --side:250px;--r:12px;--rs:8px;
   --sh:0 1px 3px rgba(0,0,0,.1),0 1px 2px -1px rgba(0,0,0,.1);
 }
@@ -167,7 +167,8 @@ tbody tr:hover td{background:var(--accent-bg)!important;}
 
 /* ═══ Symphony-style refresh ═══ */
 html{-webkit-text-size-adjust:100%;}
-body{font-family:var(--font);font-size:14.9px;letter-spacing:.01em;-webkit-font-smoothing:antialiased;}
+body{font-family:var(--font);font-size:14.9px;letter-spacing:.01em;-webkit-font-smoothing:antialiased;
+  font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1,'lnum' 1;}
 .ic{width:19px;height:19px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
 .ic-s{width:16px;height:16px;}
 
@@ -1676,6 +1677,16 @@ const PRICE_BANDS_V4=["〜20万","20〜40万","40〜60万","60〜80万","80〜10
 function nmV4(s){s=String(s||'').trim();return NM_V4[s]||s;}
 function parseYearV4(v){if(v==null||v==='')return'不明';const s=String(v).trim();if(s.includes('/')){try{const y=parseInt(s);if(y<=8)return`R${y}`;if(y===31)return'H31/R1';return`H${y}`;}catch(e){}}try{const n=parseInt(s);if(isNaN(n))return'不明';if(n<=8)return`R${n}`;if(n===31)return'H31/R1';return`H${n}`;}catch(e){return'不明';}}
 const normYV4=y=>OLD_Y_V4.has(y)?'H23以前':(y==='R1'?'H31/R1':y);  // R1(2019)はH31/R1に寄せる
+/* 初年度登録の月（T列）を年式と合成して H27/1 の形にする。半角スラッシュ。 */
+function parseMonV4(v){const n=parseInt(String(v==null?'':v).trim(),10);return (n>=1&&n<=12)?n:null;}
+function ymV4(d){
+  const y=d&&d.year?String(d.year):'', m=d?d.mon:null;
+  if(!y||y==='不明')return y||'';
+  if(m==null)return y;
+  if(y==='H31/R1')return (m<=4?'H31/':'R1/')+m;   // 月で元号が確定する
+  if(/^[HR]\d+$/.test(y))return y+'/'+m;
+  return y;                                        // 「H23以前」などはそのまま
+}
 function kmBandV4(k){if(k==null)return null;if(k<20000)return'〜2万km';if(k<40000)return'2〜4万km';if(k<60000)return'4〜6万km';if(k<80000)return'6〜8万km';if(k<100000)return'8〜10万km';return'10万km超';}
 function pBandV4(p){if(p==null||p<=0)return null;const i=Math.floor(p/20);return i>=PRICE_BANDS_V4.length-1?'300万超':PRICE_BANDS_V4[i];}
 
@@ -1752,6 +1763,7 @@ async function loadStockV4(){
       res.push({
         cat:c.cat,name,
         year:normYV4(parseYearV4(r[18])),
+        mon:parseMonV4(r[19]),
         km:(km&&km<500000)?km:null,
         price:(price&&price>0&&price<2000)?price:null,
         cost:(cost&&cost>0&&cost<2000)?cost:null,
@@ -1791,6 +1803,7 @@ async function loadUnlistedV4(){
     res.push({
       cat:r[0]?.trim().replace('ﾐﾆﾊﾞﾝ','ミニバン')||'',
       name,year:normYV4(parseYearV4(r[18])),
+      mon:parseMonV4(r[19]),
       km:(km&&km<500000)?km:null,
       price:(price&&price>0&&price<2000)?price:null,
       cost:(cost&&cost>0&&cost<2000)?cost:null,
@@ -1909,7 +1922,7 @@ const LS_COLS=[
   {k:'grade',  l:'グレード', w:150},
   {k:'fwd',    l:'4WD',      w:44,  a:'c'},
   {k:'hv',     l:'HV',       w:40,  a:'c'},
-  {k:'year',   l:'年式',     w:56,  a:'c'},
+  {k:'year',   l:'年式',     w:64,  a:'c'},
   {k:'color',  l:'色',       w:74},
   {k:'km',     l:'距離',     w:76,  a:'r', mono:1},
   {k:'shaken', l:'車検',     w:64,  a:'c'},
@@ -1969,6 +1982,7 @@ function lsFmt(d,c){
     case 'rent':   return rentChip(v);
     case 'fwd':    return '<span class="mtag mtag-fwd">4WD</span>';
     case 'hv':     return '<span class="mtag mtag-hv">HV</span>';
+    case 'year':   return ymV4(d);
     case 'name':   return `<span class="mname" onclick="openModelDetail('${encodeURIComponent(d.cat)}','${encodeURIComponent(d.name)}')">${v}</span>`;
     default:       return String(v);
   }
@@ -2051,6 +2065,7 @@ function exportListPdf(){
     if(c.k==='cmView'||c.k==='cmInq')
       return d.cm?String(c.k==='cmView'?(d.cm.m.view||0):(d.cm.m.inq||0)):'';
     const v=d[c.k]; if(v==null||v==='')return '';
+    if(c.k==='year')return esc(ymV4(d));
     if(c.k==='km')return (v/10000).toFixed(1)+'万';
     if(['cost','price','gyohan','profit'].includes(c.k))return v.toFixed(1);
     return esc(v);
