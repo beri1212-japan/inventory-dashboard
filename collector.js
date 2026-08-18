@@ -36,9 +36,10 @@ function parsePage(html,areaName){
     const pref=(((c.querySelector('.cassetteSub__area')||{}).textContent)||'').replace(/\s+/g,'').match(/(..[都道府県]|東京都|北海道)/);
     const tip=[].filter.call(c.querySelectorAll('.carBodyInfoList__item'),function(x){return x.querySelector('.cassetteColorTip');})[0];
     const title=(((c.querySelector('.cassetteMain__title')||{}).textContent)||'')+' '+sp.join(' ');
+    const gname=(((c.querySelector('.cassetteMain__title')||{}).textContent)||'').replace(/\s+/g,' ').trim().slice(0,28).replace(/\t/g,' ');
     out.push([areaName,idm[1],tot,base,ym?ym[0]:'',kmm?kmm[1]:'',normColor(tip?tip.textContent:''),pref?pref[1]:'',
       sp.some(function(x){return /修復歴あり/.test(x);})?'1':'0',
-      W4RE.test(title)?'1':'0', HVRE.test(title)?'1':'0'].join('\t'));
+      W4RE.test(title)?'1':'0', HVRE.test(title)?'1':'0', gname].join('\t'));
   });
   return out;
 }
@@ -95,7 +96,7 @@ async function run(){
   }
   JSONOUT=JSON.stringify({collected:ymd, prev:PREV?PREV.collected:null,
     areas:['北陸甲信越(AR=7)','東海(AR=3)'],
-    fields:['area','id','total','base','year','km','color','pref','fix','wd4','hv'],
+    fields:['area','id','total','base','year','km','color','pref','fix','wd4','hv','grade'],
     summary:{cars:S.cars,rows:S.rows,gone:gone,newly:fresh},
     cars:OUT});
   S.gone=gone; S.newly=fresh; S.bytes=JSONOUT.length;

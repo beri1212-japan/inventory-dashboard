@@ -179,6 +179,7 @@ body{font-family:var(--font);font-size:14.9px;letter-spacing:.01em;-webkit-font-
 .mkseg{display:flex;border:1px solid var(--border);border-radius:7px;overflow:hidden;}
 .mkseg button{font-family:var(--font);font-size:12px;padding:4px 11px;border:0;background:#fff;color:#6b7280;cursor:pointer;}
 .mkseg button.on{background:var(--accent);color:#fff;font-weight:600;}
+.pa-n{font-size:19px;font-weight:700;font-family:var(--mono);}
 .mktbtn{color:var(--accent);}
 .mktbtn b{font-family:var(--mono);font-weight:700;}
 .mktlink{color:var(--accent);text-decoration:none;font-weight:600;}
@@ -2115,7 +2116,8 @@ function exportListPdf(){
      note   所見
      sample true = ダミー。実調査で置き換えること
 */
-const MARKET={
+/* 旧・手入力の相場メモ（現在は未使用。paMkt が実データから自動算出します） */
+const MARKET_LEGACY={
   '7317':{date:'2026/08/17',n:67,area:'北陸3県',cond:'年式2018〜2022 / 距離不問 / ガソリンHW',
     low:143.5,med:197.6,high:265.0,fair:195.3,
     url:'https://www.carsensor.net/usedcar/bNI/s012/index.html?YMIN=2018&YMAX=2022&AR=41*42*43',
@@ -2146,110 +2148,182 @@ function paLevel(price,fair){
   if(r<=0.96)return {lvl:1,label:'割安',      c:'#047857',bg:'#ecfdf5'};
   return {lvl:0,label:'相場内',c:'#0559d2',bg:'#eff6ff'};
 }
-function paRows(){
-  return Object.keys(MARKET).map(k=>{
-    const car=STOCK.find(d=>d.lower4===k);
-    if(!car)return null;
-    const m=MARKET[k];
-    const st=paLevel(car.price,m.fair);
-    const gap=car.price!=null?Math.round((car.price-m.fair)*10)/10:null;
-    // 相場内なのに121日超 → 価格ではなく中身（車検・写真・装備）が原因
-    const stuck=st.lvl===0&&car.days!=null&&car.days>=121;
-    return {k,m,car,st,gap,stuck};
-  }).filter(Boolean)
-    .sort((a,b)=>(b.st.lvl-a.st.lvl)||((b.car.days||0)-(a.car.days||0)));
+/* ═══ 価格アラート：実データから全在庫を判定する ═══ */
+const PA_TIERS=[
+  {k:'h1',lbl:'北陸甲信越・同条件'},
+  {k:'h2',lbl:'北陸甲信越＋東海・同条件'},
+  {k:'h3',lbl:'走行不問（年式±1・同仕様）'},
+  {k:'h4',lbl:'年式±1のみ（仕様不問）'}
+];
+function paMkt(d){
+  const code=MK_CODE[d.name], y=mkY(d.year);
+  if(!MKDATA||!code||!MKDATA.cars[code]||y==null)return null;
+  const all=MKDATA.cars[code].rows.map(l=>l.split('\t')).filter(r=>r[8]==='0');
+  const hv=d.hv==='〇', wd=d.fwd==='〇';
+  const spec=r=>((r[10]==='1')===hv)&&((r[9]==='1')===wd);
+  const yOk=r=>{const v=+r[4];return v>=y-1&&v<=y+1;};
+  const kOk=r=>{if(d.km==null)return true;const v=parseFloat(r[5])*10000;return v>=d.km-20000&&v<=d.km+20000;};
+  const hoku=r=>r[0]==='北陸甲信越';
+  const fs=[r=>hoku(r)&&yOk(r)&&kOk(r)&&spec(r), r=>yOk(r)&&kOk(r)&&spec(r), r=>yOk(r)&&spec(r), r=>yOk(r)];
+  for(let i=0;i<fs.length;i++){
+    const rows=all.filter(fs[i]);
+    const p=rows.map(r=>parseFloat(r[3])).filter(v=>v>0).sort((a,b)=>a-b);
+    if(p.length>=8||i===fs.length-1){
+      if(!p.length)return null;
+      const q=f=>p[Math.min(p.length-1,Math.floor(p.length*f))];
+      return {scope:PA_TIERS[i].lbl, n:p.length, low:p[0], q1:q(.25), med:q(.5), q3:q(.75),
+              high:p[p.length-1], fair:q(.5),
+              rank:d.price!=null?p.filter(v=>v<d.price).length+1:null,
+              url:(function(){const c=code.split('/');const qs=['AR='+(i===0?'7':'7*3'),'YMIN='+(y-1),'YMAX='+(y+1)];
+                   if(i<2&&d.km!=null){const lo=pSnapLo(d.km-20000),hi=pSnapHi(d.km+20000);if(lo)qs.push('SMIN='+lo);if(hi)qs.push('SMAX='+hi);}
+                   return 'https://www.carsensor.net/usedcar/b'+c[0]+'/'+c[1]+'/index.html?'+qs.join('&');})()};
+    }
+  }
+  return null;
 }
-function paMoney(v){return v==null?'—':v.toFixed(1);}
+function paCm(d){
+  if(!d.cm||!d.cm.m)return null;
+  const m=d.cm.m, ad=Math.max(1,d.cm.activeDays||1);
+  const peers=STOCK.filter(x=>x.cm&&x.cm.m&&x.cat===d.cat);
+  const rate=x=>(x.cm.m.view||0)/Math.max(1,x.cm.activeDays||1);
+  const mine=rate(d), arr=peers.map(rate).sort((a,b)=>a-b);
+  const pct=arr.length?Math.round(arr.filter(v=>v<mine).length/arr.length*100):null;
+  return {view:m.view||0, img:m.img||0, fav:m.fav||0, inq:m.inq||0, pw:m.pw||0,
+          days:d.cm.activeDays||0, perDay:mine, pct:pct, n:peers.length,
+          med:arr.length?arr[Math.floor(arr.length/2)]:null};
+}
+const PA_CAT={
+  A:{key:'A',label:'値下げ',      c:'#b91c1c',bg:'#fef2f2'},
+  B:{key:'B',label:'再掲載・見せ方',c:'#d97706',bg:'#fffbeb'},
+  C:{key:'C',label:'問合せ導線',   c:'#7c3aed',bg:'#f5f3ff'},
+  D:{key:'D',label:'値上げ余地',   c:'#047857',bg:'#ecfdf5'},
+  F:{key:'F',label:'経過観察',     c:'#0559d2',bg:'#eff6ff'},
+  X:{key:'X',label:'判定不可',     c:'var(--text3)',bg:'var(--bg3)'}
+};
+function paDiag(d,m,cm){
+  if(!m||d.price==null)return {cat:PA_CAT.X,rec:'市場の明細データがないため判定できません',score:0,dead:false};
+  const dead = d.cost!=null && d.cost > m.med;              // 原価が相場中央値を超える＝価格政策では回収不能
+  const hi   = d.price >= m.med*1.04;
+  const lo   = d.price <= m.q1;
+  const viewLow = cm && cm.pct!=null ? cm.pct < 50 : null;
+  const long = (d.days||0) >= 120;
+  let cat, rec;
+  if(hi){
+    cat=PA_CAT.A;
+    rec=(Math.round(m.med*10)/10).toFixed(1)+'万まで下げる（同条件'+m.n+'台の中央値）';
+  }else if(viewLow===true && long){
+    cat=PA_CAT.B;
+    rec='価格は据え置き。掲載をやり直して露出を戻す（写真・タイトル・装備表記）';
+  }else if(cm && cm.view>0 && cm.fav>0 && cm.inq===0 && long){
+    cat=PA_CAT.C;
+    rec='見られてお気に入りも付いている。総額表示・保証・車検残の見せ方を直す';
+  }else if(lo && viewLow===false){
+    cat=PA_CAT.D;
+    rec=(Math.round(m.med*10)/10).toFixed(1)+'万まで戻せる（反響は上位）';
+  }else{
+    cat=PA_CAT.F; rec='現状維持。次の巡回で再判定';
+  }
+  let score=(cat.key==='A'?80:cat.key==='B'?65:cat.key==='C'?55:cat.key==='D'?30:10)+Math.min(30,(d.days||0)/12);
+  if(dead)score+=15;
+  return {cat,rec,score,dead};
+}
+function paRows(){
+  return STOCK.map(d=>{
+    const m=paMkt(d), cm=paCm(d), g=paDiag(d,m,cm);
+    return {car:d,m,cm,g,gap:(m&&d.price!=null)?Math.round((d.price-m.med)*10)/10:null};
+  }).sort((a,b)=>b.g.score-a.g.score);
+}
+function paMoney(v){return v==null?'—':Number(v).toFixed(1);}
+function paAi(sid){const d=STOCK.find(x=>String(x.sid)===String(sid));if(d)runAiDiagnosis(d);}
 function renderPriceAlert(){
   const box=document.getElementById('paBody');if(!box)return;
+  if(!MKDATA){
+    box.innerHTML='<div style="padding:20px;color:var(--text3);font-size:13.2px">市場データを読み込んでいます…</div>';
+    mkLoad().then(()=>renderPriceAlert()).catch(()=>{
+      box.innerHTML='<div style="padding:20px;color:var(--text3);font-size:13.2px">市場データを読み込めませんでした。</div>';});
+    return;
+  }
+  if(!PATROL&&!PLOAD){pLoad().then(()=>renderPriceAlert());}
   const rows=paRows();
-  const todo=STOCK.filter(d=>d.days!=null&&d.days>=121&&d.days<3000&&!MARKET[d.lower4])
-                  .sort((a,b)=>(b.cost||0)-(a.cost||0));
-  document.getElementById('pa-k1').textContent=rows.length;
-  document.getElementById('pa-k2').textContent=rows.filter(r=>r.st.lvl>=2).length;
-  document.getElementById('pa-k3').textContent=rows.filter(r=>r.stuck).length;
-  document.getElementById('pa-k4').textContent=rows.filter(r=>r.st.lvl===1).length;
-  document.getElementById('pa-k5').textContent=todo.length;
+  const ok=rows.filter(r=>r.g.cat.key!=='X');
+  const cnt=k=>ok.filter(r=>r.g.cat.key===k).length;
+  document.getElementById('pa-k1').textContent=ok.length;
+  document.getElementById('pa-k2').textContent=cnt('A');
+  document.getElementById('pa-k3').textContent=cnt('B');
+  document.getElementById('pa-k4').textContent=ok.filter(r=>r.g.dead&&(r.car.days||0)>=120).length;
+  document.getElementById('pa-k5').textContent=rows.length-ok.length;
   const nb=document.getElementById('navPa');
-  const alerts=rows.filter(r=>r.st.lvl>=2||r.stuck).length;
+  const alerts=cnt('A')+cnt('B')+cnt('C');
   if(nb){nb.textContent=alerts;nb.style.display=alerts?'':'none';}
-  const smp=rows.filter(r=>r.m.sample).length;
   document.getElementById('pa-note').textContent=
-    `相場データ ${rows.length}件${smp?`（うち ${smp}件はサンプル）`:''}　※AI調査の結果をここに追記していきます`;
+    '出典：カーセンサー掲載 '+MKDATA.collected+'取得（'+MKDATA.areas.join('／')+'・修復歴なし）'
+    +'／反響は C-match '+(rows.find(r=>r.cm)?(STOCK.find(d=>d.cm)||{cm:{}}).cm.last||'':'未取込');
 
-  if(!rows.length){box.innerHTML='<div style="padding:20px;color:var(--text3);font-size:13.2px">相場データがまだありません。</div>';}
-  else box.innerHTML=rows.map(r=>{
-    const c=r.car,m=r.m,st=r.st;
-    // 相場のどこに自社価格が居るかを帯で示す
-    const span=Math.max(m.high-m.low,1);
-    const pos=v=>Math.max(0,Math.min(100,(v-m.low)/span*100));
-    const rec = st.lvl>=2 ? `${(Math.round(m.fair*10)/10).toFixed(1)}万まで下げる`
-              : st.lvl===1? `${(Math.round(m.fair*10)/10).toFixed(1)}万まで戻せる`
-              : r.stuck   ? '価格は据え置き。車検・写真・装備表記を先に直す'
-              : '現状維持';
-    const lossFair=c.cost!=null?Math.round((m.fair-c.cost)*10)/10:null;
-    return `<div style="border:1px solid var(--border);border-left:4px solid ${st.c};border-radius:8px;padding:12px 14px;margin-bottom:10px;background:${st.bg}">
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
-        <span class="mtag" style="background:${st.c};color:#fff">${st.label}</span>
-        ${r.stuck?'<span class="mtag" style="background:#fef3c7;color:#92400e">相場内なのに長期</span>':''}
-        ${m.sample?'<span class="mtag" style="background:var(--bg4);color:var(--text3)">サンプル</span>':''}
+  box.innerHTML=rows.filter(r=>r.g.cat.key!=='X'&&r.g.cat.key!=='F').slice(0,60).map(r=>{
+    const c=r.car,m=r.m,cm=r.cm,g=r.g;
+    const span=Math.max(m.high-m.low,1), pos=v=>Math.max(0,Math.min(100,(v-m.low)/span*100));
+    const lossFair=c.cost!=null?Math.round((m.med-c.cost)*10)/10:null;
+    return `<div style="border:1px solid var(--border);border-left:4px solid ${g.cat.c};border-radius:8px;padding:12px 14px;margin-bottom:10px;background:${g.cat.bg}">
+      <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:8px">
+        <span class="mtag" style="background:${g.cat.c};color:#fff">${g.cat.label}</span>
+        ${g.dead?'<span class="mtag" style="background:#fee2e2;color:#991b1b">原価が相場超え</span>':''}
         <b style="font-size:15.5px">${c.name}</b>
         <span style="font-size:12.6px;color:var(--text2)">${c.grade||''}</span>
-        <span style="font-size:12.6px;color:var(--text3)">${c.year} / ${c.km!=null?(c.km/10000).toFixed(1)+'万km':'—'} / ${c.color||'—'} / 車体${r.k}</span>
+        <span style="font-size:12.6px;color:var(--text3)">${ymV4(c)} / ${c.km!=null?(c.km/10000).toFixed(1)+'万km':'—'} / ${c.color||'—'} / 車体${c.lower4||'—'}</span>
         ${c.fwd==='〇'?'<span class="mtag mtag-fwd">4WD</span>':''}${c.hv==='〇'?'<span class="mtag mtag-hv">HV</span>':''}
-        <span style="margin-left:auto;font-size:12.6px"><span class="pill ${c.days>=300?'pill-r':c.days>=121?'pill-y':'pill-g'}">${c.days!=null?c.days+'日':'—'}</span></span>
+        <span style="margin-left:auto"><span class="pill ${(c.days||0)>=300?'pill-r':(c.days||0)>=121?'pill-y':'pill-g'}">${c.days!=null?c.days+'日':'—'}</span></span>
       </div>
-
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:10px">
-        <div><div style="font-size:11.5px;color:var(--text3)">自社価格</div><div style="font-size:19px;font-weight:700;font-family:var(--mono)">${paMoney(c.price)}<span style="font-size:12px">万</span></div></div>
-        <div><div style="font-size:11.5px;color:var(--text3)">相場の適正値</div><div style="font-size:19px;font-weight:700;font-family:var(--mono);color:#0559d2">${paMoney(m.fair)}<span style="font-size:12px">万</span></div></div>
-        <div><div style="font-size:11.5px;color:var(--text3)">乖離</div><div style="font-size:19px;font-weight:700;font-family:var(--mono);color:${r.gap>0?'#b91c1c':r.gap<0?'#047857':'var(--text)'}">${r.gap==null?'—':(r.gap>0?'+':'')+r.gap.toFixed(1)}<span style="font-size:12px">万</span></div></div>
-        <div><div style="font-size:11.5px;color:var(--text3)">原価</div><div style="font-size:19px;font-weight:700;font-family:var(--mono)">${paMoney(c.cost)}<span style="font-size:12px">万</span></div></div>
-        <div><div style="font-size:11.5px;color:var(--text3)">相場で売った場合</div><div style="font-size:19px;font-weight:700;font-family:var(--mono);color:${lossFair!=null&&lossFair<0?'#b91c1c':'var(--text)'}">${lossFair==null?'—':(lossFair>0?'+':'')+lossFair.toFixed(1)}<span style="font-size:12px">万</span></div></div>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:10px">
+        <div><div style="font-size:11.5px;color:var(--text3)">自社価格</div><div class="pa-n">${paMoney(c.price)}<span style="font-size:12px">万</span></div></div>
+        <div><div style="font-size:11.5px;color:var(--text3)">市場の中央値</div><div class="pa-n" style="color:#0559d2">${paMoney(m.med)}<span style="font-size:12px">万</span></div></div>
+        <div><div style="font-size:11.5px;color:var(--text3)">乖離</div><div class="pa-n" style="color:${r.gap>0?'#b91c1c':r.gap<0?'#047857':'var(--text)'}">${r.gap==null?'—':(r.gap>0?'+':'')+r.gap.toFixed(1)}<span style="font-size:12px">万</span></div></div>
+        <div><div style="font-size:11.5px;color:var(--text3)">安い順</div><div class="pa-n">${m.rank?m.rank+'<span style="font-size:12px">/'+(m.n+1)+'</span>':'—'}</div></div>
+        <div><div style="font-size:11.5px;color:var(--text3)">閲覧/日</div><div class="pa-n">${cm?cm.perDay.toFixed(1):'—'}${cm&&cm.pct!=null?'<span style="font-size:12px;color:'+(cm.pct<50?'#b91c1c':'#047857')+'"> 上位'+(100-cm.pct)+'%</span>':''}</div></div>
+        <div><div style="font-size:11.5px;color:var(--text3)">中央値で売ると</div><div class="pa-n" style="color:${lossFair!=null&&lossFair<0?'#b91c1c':'var(--text)'}">${lossFair==null?'—':(lossFair>0?'+':'')+lossFair.toFixed(1)}<span style="font-size:12px">万</span></div></div>
       </div>
-
       <div style="margin-bottom:8px">
         <div style="position:relative;height:26px">
           <div style="position:absolute;top:11px;left:0;right:0;height:5px;border-radius:3px;background:linear-gradient(90deg,#d1fae5,#dbeafe,#fee2e2)"></div>
-          <div style="position:absolute;top:6px;left:${pos(m.med)}%;width:2px;height:15px;background:#64748b" title="中央値 ${m.med}万"></div>
-          <div style="position:absolute;top:3px;left:${pos(m.fair)}%;width:2px;height:21px;background:#0559d2" title="適正 ${m.fair}万"></div>
-          ${c.price!=null?`<div style="position:absolute;top:1px;left:${pos(c.price)}%;transform:translateX(-50%);width:11px;height:11px;border-radius:50%;background:${st.c};border:2px solid #fff;box-shadow:0 0 0 1px ${st.c}" title="自社 ${c.price}万"></div>`:''}
+          <div style="position:absolute;top:6px;left:${pos(m.q1)}%;width:2px;height:15px;background:#94a3b8"></div>
+          <div style="position:absolute;top:3px;left:${pos(m.med)}%;width:2px;height:21px;background:#0559d2"></div>
+          <div style="position:absolute;top:6px;left:${pos(m.q3)}%;width:2px;height:15px;background:#94a3b8"></div>
+          ${c.price!=null?`<div style="position:absolute;top:1px;left:${pos(c.price)}%;transform:translateX(-50%);width:11px;height:11px;border-radius:50%;background:${g.cat.c};border:2px solid #fff;box-shadow:0 0 0 1px ${g.cat.c}"></div>`:''}
         </div>
         <div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--text3)">
-          <span>最安 ${m.low}万</span><span>中央値 ${m.med}万 ／ 適正 ${m.fair}万</span><span>最高 ${m.high}万</span>
+          <span>最安 ${paMoney(m.low)}万</span><span>25% ${paMoney(m.q1)} ／ 中央 ${paMoney(m.med)} ／ 75% ${paMoney(m.q3)}</span><span>最高 ${paMoney(m.high)}万</span>
         </div>
       </div>
-
-      <div style="font-size:13.2px;line-height:1.7;color:var(--text);margin-bottom:8px">
-        <b style="color:${st.c}">推奨：${rec}</b><br>${m.note}
+      <div style="font-size:13.2px;line-height:1.7;margin-bottom:8px"><b style="color:${g.cat.c}">推奨：${g.rec}</b>
+        ${cm?`<br><span style="color:var(--text2)">反響：${cm.days}日で閲覧${cm.view}・お気に入り${cm.fav}・問合せ${cm.inq}（同カテゴリ${cm.n}台の中央値は1日${cm.med!=null?cm.med.toFixed(1):'—'}回）</span>`:'<br><span style="color:var(--text3)">反響：突合できていません</span>'}
+        ${g.dead?`<br><span style="color:#991b1b">原価${paMoney(c.cost)}万が市場中央値${paMoney(m.med)}万を${(c.cost-m.med).toFixed(1)}万上回っています。価格政策では回収できません。</span>`:''}
       </div>
-
       <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:11.5px;color:var(--text3)">
-        <span>調査日 ${m.date}</span><span>競合 ${m.n}台</span><span>${m.area}</span><span>${m.cond}</span>
+        <span>照合：${m.scope}</span><span>競合 ${m.n}台</span>
         <span style="margin-left:auto;display:flex;gap:6px">
           <a class="minibtn" href="${m.url}" target="_blank" rel="noopener">カーセンサーで見る</a>
+          <button class="minibtn" onclick="paAi('${c.sid}')">AI診断</button>
           <button class="minibtn" onclick="openPriceChange('${encodeURIComponent(c.lower4)}','${encodeURIComponent(c.name)}',${c.price!=null?c.price:0},'${encodeURIComponent(c.cat||'')}')">価格を変更</button>
         </span>
       </div>
     </div>`;
-  }).join('');
+  }).join('')||'<div style="padding:20px;color:var(--text3);font-size:13.2px">対応が必要な在庫はありません。</div>';
 
   const tb=document.getElementById('paTodo');if(!tb)return;
-  if(!todo.length){tb.innerHTML='<div style="padding:16px;color:var(--text3);font-size:13.2px">121日超の未調査在庫はありません。</div>';return;}
-  tb.innerHTML=`<div style="overflow:auto;border:1px solid var(--border);border-radius:6px"><table class="lst" style="width:100%"><thead><tr>
-      <th>日数</th><th>ジャンル</th><th>車名</th><th>グレード</th><th>年式</th><th>距離</th><th>色</th><th>原価</th><th>本体</th><th>利益</th><th></th></tr></thead><tbody>`+
-    todo.slice(0,20).map(d=>`<tr>
-      <td style="text-align:right"><span class="pill ${d.days>=300?'pill-r':'pill-y'}">${d.days}</span></td>
-      <td>${d.cat}</td><td>${d.name}</td><td>${d.grade||'—'}</td><td style="text-align:center">${d.year}</td>
-      <td style="text-align:right" class="num">${d.km!=null?(d.km/10000).toFixed(1)+'万':'—'}</td>
-      <td>${colorChip(d.color,11)}${d.color||'—'}</td>
-      <td style="text-align:right" class="num">${paMoney(d.cost)}</td>
-      <td style="text-align:right" class="num">${paMoney(d.price)}</td>
-      <td style="text-align:right" class="num">${d.profit!=null?`<span style="color:${d.profit<0?'var(--red)':'var(--text)'}">${d.profit.toFixed(1)}</span>`:'—'}</td>
-      <td><button class="minibtn" onclick="paCopyPrompt('${encodeURIComponent(d.lower4)}')">調査依頼をコピー</button></td>
+  const nod=rows.filter(r=>r.g.cat.key==='X').map(r=>r.car).sort((a,b)=>(b.days||0)-(a.days||0));
+  if(!nod.length){tb.innerHTML='<div style="padding:16px;color:var(--text3);font-size:13.2px">全在庫が判定できています。</div>';return;}
+  tb.innerHTML=`<div style="padding:8px 12px;font-size:12.6px;color:var(--text3)">市場の明細データが無い車種です。次回の収集対象に加えると判定できるようになります。</div>
+    <div style="overflow:auto;border:1px solid var(--border);border-radius:6px"><table class="lst" style="width:100%"><thead><tr>
+    <th>日数</th><th>ジャンル</th><th>車名</th><th>年式</th><th>距離</th><th>原価</th><th>本体</th><th>利益</th></tr></thead><tbody>`+
+    nod.slice(0,25).map(d=>`<tr>
+      <td><span class="pill ${(d.days||0)>=300?'pill-r':(d.days||0)>=121?'pill-y':'pill-g'}">${d.days!=null?d.days:'—'}</span></td>
+      <td>${d.cat}</td><td>${d.name}</td><td>${ymV4(d)}</td>
+      <td class="num">${d.km!=null?(d.km/10000).toFixed(1)+'万':'—'}</td>
+      <td class="num">${paMoney(d.cost)}</td><td class="num">${paMoney(d.price)}</td>
+      <td class="num">${d.profit!=null?`<span style="color:${d.profit<0?'var(--red)':'var(--text)'}">${d.profit.toFixed(1)}</span>`:'—'}</td>
     </tr>`).join('')+`</tbody></table></div>
-    ${todo.length>20?`<div style="padding:8px 12px;font-size:12.6px;color:var(--text3)">ほか ${todo.length-20}台</div>`:''}`;
+    ${nod.length>25?`<div style="padding:8px 12px;font-size:12.6px;color:var(--text3)">ほか ${nod.length-25}台</div>`:''}`;
 }
+
 /* 調査依頼の文面を作る。年式±2年・距離不問・北陸＝今回セレナで決めたルール */
 function paCopyPrompt(enc){
   const l4=decodeURIComponent(enc);
@@ -4462,6 +4536,25 @@ function closeAiModal(){
   document.getElementById('ov-ai').style.display='none';
 }
 
+/* AI出力の簡易Markdown描画（太字・見出し・箇条書き・改行だけ） */
+function mdLite(t){
+  const esc=v=>String(v==null?'':v).replace(/[<>&]/g,m=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[m]));
+  const lines=esc(t).split(/\r?\n/);
+  let html='',ul=false;
+  const inline=x=>x.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/`(.+?)`/g,'<code style="background:#f1f3f5;padding:1px 4px;border-radius:3px">$1</code>');
+  lines.forEach(function(l){
+    const t2=l.trim();
+    const li=t2.match(/^[-・*]\s+(.*)$/);
+    if(li){ if(!ul){html+='<ul style="margin:4px 0 8px;padding-left:20px">';ul=true;} html+='<li style="margin:2px 0">'+inline(li[1])+'</li>'; return; }
+    if(ul){html+='</ul>';ul=false;}
+    if(!t2){html+='<div style="height:7px"></div>';return;}
+    const h=t2.match(/^\*\*(\d+\..*?)\*\*$/)||t2.match(/^#{1,4}\s*(.*)$/);
+    if(h){html+='<div style="font-weight:700;font-size:14.4px;margin:11px 0 3px;color:#0f172a">'+inline(h[1])+'</div>';return;}
+    html+='<div>'+inline(t2)+'</div>';
+  });
+  if(ul)html+='</ul>';
+  return html;
+}
 // ═══ AI価格診断 ═══
 async function runAiDiagnosis(vehicleData){
   const apiKey=localStorage.getItem('anthropic_api_key');
@@ -4503,6 +4596,7 @@ async function runAiDiagnosis(vehicleData){
   const searchArea = getSearchArea(d.cat, d.days||0);
 
   const BRIEF = await mktBrief(d);
+  const CM = cmBrief(d);
   const prompt=`あなたは中古車の価格戦略アドバイザーです。
 下に当社が実際に収集したカーセンサー掲載データを渡します。**web検索はしないでください。**
 判断の根拠は、下のデータに書かれている数字だけを使ってください。書かれていない項目は「データなし」と明記してください。
@@ -4519,12 +4613,18 @@ async function runAiDiagnosis(vehicleData){
 【市場の実測データ】
 ${BRIEF}
 
+${CM}
+
 【回答の形式】前置きなし、日本語、この順で簡潔に。
 1. 立ち位置（同条件の何台中何位か、中央値との差を数字で1〜2行）
 2. 価格の判定（高い／適正／安い）と、その根拠にした数字
 3. 推奨価格（1つの金額を出す）。原価と利益への影響も1行で。
-4. 価格以外に効く手（色・年式・走行・駆動の構成データから読める打ち手を1〜2点）
-5. 注意（データが薄い・偏っている場合はここで正直に指摘する）`;
+4. 反響の診断（下の3つのどれかを、閲覧数・お気に入り・問合せの実数で判定する）
+   a) 見られていない → 露出の問題。価格の検索区切り・写真・タイトル・掲載エリアを疑う
+   b) 見られているが、お気に入りが付かない → 見せ方の問題。写真・装備表記・価格の見え方
+   c) お気に入りは付くが問合せが来ない → 最後の一押しの問題。総額表示・保証・車検残
+5. 価格以外に効く手（4の判定と、色・年式・走行・駆動の構成データから、具体的に1〜2点）
+6. 注意（データが薄い・偏っている場合はここで正直に指摘する）`;
 
   try{
     const cleanKey=apiKey.trim().replace(/[^a-zA-Z0-9\-_]/g,'');
@@ -4555,7 +4655,10 @@ ${BRIEF}
     document.getElementById('ai-modal-title').textContent=`AI価格診断: ${d.name}`;
 
     // グラフ用データ準備
-    const soldData=SOLD.filter(s=>s.name===d.name);
+    const _code=MK_CODE[d.name];
+    let soldData=SOLD.filter(s=>s.name===d.name);
+    let _sameName=soldData.length>0;
+    if(!soldData.length&&_code)soldData=SOLD.filter(s=>MK_CODE[s.name]===_code);
     const avgSoldDays=soldData.filter(s=>s.days!=null).reduce((a,b,_,arr)=>a+b.days/arr.length,0)||0;
     const avgSoldPrice=soldData.filter(s=>s.price!=null).reduce((a,b,_,arr)=>a+b.price/arr.length,0)||0;
 
@@ -4591,22 +4694,23 @@ ${BRIEF}
 
     const reportHtml=`
       <div id="ai-report-content">
-        <div class="area-box" data-area="1">検索エリア: ${areaLabel}（在庫${d.days}日 / ${d.cat}）</div>
+        <div class="area-box" data-area="1">照合範囲: ${MKDATA?MKDATA.areas.join('／'):'—'}（掲載${d.days}日 / ${d.cat}）</div>
         <div class="cond-box">
-          <div><span style="color:#999">年式条件：</span>${d.year}±1年</div>
-          <div><span style="color:#999">走行条件：</span>${d.km?(Math.max(0,d.km/10000-1).toFixed(0)+'〜'+(d.km/10000+1).toFixed(0)+'万km'):'—'}</div>
-          <div><span style="color:#999">色条件：</span>${isPopularColor?'【人気色】白・パール・黒のみ':'【非人気色】全カラー'}</div>
-          <div><span style="color:#999">駆動条件：</span>${d.fwd==='〇'?'4WDのみ':'2WDのみ'}</div>
+          <div><span style="color:#999">年式条件：</span>${mkY(d.year)!=null?(mkY(d.year)-1)+'〜'+(mkY(d.year)+1)+'年':'—'}（±1年）</div>
+          <div><span style="color:#999">走行条件：</span>${d.km!=null?(Math.max(0,(d.km-20000)/10000).toFixed(1)+'〜'+((d.km+20000)/10000).toFixed(1)+'万km'):'—'}（±2万km）</div>
+          <div><span style="color:#999">動力・駆動：</span>${d.hv==='〇'?'HV':'ガソリン'}・${d.fwd==='〇'?'4WD':'2WD'} で一致</div>
+          <div><span style="color:#999">色条件：</span>絞り込みなし（色別の内訳は参考情報として提示）</div>
           <div><span style="color:#999">修復歴：</span>修復歴なしのみ</div>
+          <div><span style="color:#999">データ取得日：</span>${MKDATA?MKDATA.collected:'—'}</div>
         </div>
         <div class="info-box">
           ${d.year} / ${km} / ${d.price?d.price+'万円':'—'} / ${d.color||'—'} / ${d.days}日在庫
-          ${soldData.length>0?` ｜ 過去売約${soldData.length}台 / 平均売価${avgSoldPrice.toFixed(0)}万円 / 平均回転${Math.round(avgSoldDays)}日`:''}
+          ${soldData.length>0?` ｜ 過去売約${soldData.length}台${_sameName?'':'（同一車種・世代違いを含む）'} / 平均売価${avgSoldPrice.toFixed(0)}万円 / 平均回転${Math.round(avgSoldDays)}日`:''}
         </div>
         ${soldData.length>0?`
         <div class="chart-grid">
           <div class="chart-box">
-            <div class="chart-title">過去売約 価格帯分布（${soldData.length}台）</div>
+            <div class="chart-title">過去売約 価格帯分布（${soldData.length}台${_sameName?'':'・世代違い含む'}）</div>
             ${priceBar}
           </div>
           <div class="chart-box">
@@ -4615,7 +4719,7 @@ ${BRIEF}
           </div>
         </div>`:'<div style="font-size:12.6px;color:#999;margin-bottom:12px">※過去売約データなし</div>'}
         <div class="result-hdr">AI診断結果</div>
-        <div style="font-size:13.8px;line-height:1.8;white-space:pre-wrap;color:#1a2332">${text}</div>
+        <div style="font-size:13.8px;line-height:1.8;color:#1a2332">${mdLite(text)}</div>
       </div>
       <div style="margin-top:14px;display:flex;gap:8px">
         <button onclick="exportAiPdf('${encodeURIComponent(d.name)}','${d.year}','${km}','${d.price||'—'}万円')" style="background:#2979d4;color:#fff;border:none;padding:7px 16px;border-radius:6px;cursor:pointer;font-size:13.8px;font-weight:500">📄 PDFで保存</button>
@@ -5084,7 +5188,7 @@ function exportUnlistedPdf(){
 loadAll();
 
 // ═══════════ 市場マップ ═══════════
-const MK_CODE={"AZワゴン":"MA/s003","AZﾜｺﾞﾝ":"MA/s003","CX-30":"MA/s101","CX-5":"MA/s087","EKスペース":"MI/s109","Gクラス":"ME/s029","N-BOX":"HO/s094","N-BOXカスタム":"HO/s094","N-ONE":"HO/s098","NWGN":"HO/s100","Nワゴン":"HO/s100","RAV4":"TO/s147","RC":"LE/s015","RX":"LE/s008","ZR-V":"HO/s114","ZRV":"HO/s114","アクア":"TO/s228","アクア10中期":"TO/s228","アクア10前期":"TO/s228","アクア10後期":"TO/s228","アクア20現行":"TO/s228","アクア現行":"TO/s228","アルト":"SZ/s001","アルトラパン":"SZ/s002","インプレッサXV":"SB/s045","インプレッサスポーツ":"SB/s048","ウェイク":"DA/s069","エクストレイル":"NI/s020","エクストレイル32前期":"NI/s020","エクストレイル32後期":"NI/s020","エスクァイア":"TO/s234","エブリー":"SZ/s005","オーラ":"NI/s188","カローラクロス":"TO/s254","カローラスポーツ":"TO/s243","カローラツーリング":"TO/s245","キャスト":"DA/s071","キャリトラック":"SZ/s034","シエンタ":"TO/s077","ジムニーシエラ":"SZ/s011","ステップワゴン":"HO/s003","スペーシア":"SZ/s049","スペーシアカスタム":"SZ/s049","セレナ":"NI/s012","セレナ27後期":"NI/s012","セレナ28現行":"NI/s012","ソリオバンディット":"SZ/s014","タフト":"DA/s055","タント":"DA/s006","タントカスタム":"DA/s006","デイズ":"NI/s179","デイズルークス":"NI/s181","デリカD5":"MI/s089","トール":"DA/s074","ノア":"TO/s108","ノア90系":"TO/s108","ノート":"NI/s008","ノートEpower現行":"NI/s008","ノート前中期":"NI/s008","ノート前期":"NI/s008","ノート後期":"NI/s008","ハイゼット":"DA/s042","ハイゼットカーゴ":"DA/s032","ハスラー":"SZ/s050","ハリアー":"TO/s114","ハリアー80":"TO/s114","ハリアー80HV":"TO/s114","パッソ":"TO/s109","ピクシスバン":"TO/s227","フォレスター":"SB/s011","フリード":"HO/s083","プリウス":"TO/s122","プリウス30系":"TO/s122","プリウス50PHV":"TO/s122","プリウス50前期":"TO/s122","プリウス50後期":"TO/s122","プリウス60":"TO/s122","プリウス60PHEV":"TO/s122","ミライース":"DA/s065","ミラジーノ":"DA/s011","ミラージュ":"MI/s062","ムーヴ":"DA/s012","ヤリス":"TO/s249","ヤリスクロス":"TO/s251","ライズ":"TO/s247","ルークス":"NI/s162","ルークスHW":"NI/s162","ルーミー":"TO/s240","ワゴンR":"SZ/s015","ワゴンＲ":"SZ/s015","ヴィッツ":"TO/s018","ヴェゼルHV前型":"HO/s101","ヴェゼルHV現行":"HO/s101","ヴェルファイア30系":"TO/s200","ヴェルファイア40系":"TO/s200","ヴォクシー":"TO/s021","ヴォクシー70以前":"TO/s021","ヴォクシー80系":"TO/s021","ヴォクシー90系":"TO/s021","ｱｸｱ現行":"TO/s228","ｳﾞｨｯﾂ":"TO/s018","ｳﾞｪｾﾞﾙHV（前型）":"HO/s101","ｳﾞｪｾﾞﾙHV（現行）":"HO/s101","ｳﾞｪﾙﾌｧｲｱ 30系":"TO/s200","ｴｸｽﾄﾚｲﾙ32（前期）":"NI/s020","ｴｸｽﾄﾚｲﾙ32（後期）":"NI/s020","ｴｽｸｧｲｱ":"TO/s234","ｶﾛｰﾗｸﾛｽ":"TO/s254","ｶﾛｰﾗﾂｰﾘﾝｸﾞ":"TO/s245","ｷｬｽﾄ":"DA/s071","ｼｴﾝﾀ":"TO/s077","ｽﾍﾟｰｼｱ":"SZ/s049","ｾﾚﾅ 27後期":"NI/s012","ﾀﾝﾄ":"DA/s006","ﾃﾞｲｽﾞﾙｰｸｽ":"NI/s181","ﾉｰﾄEpower（現行）":"NI/s008","ﾉｰﾄ前期":"NI/s008","ﾉｱ90系":"TO/s108","ﾊﾘｱｰ80":"TO/s114","ﾌﾟﾘｳｽ 50前期":"TO/s122","ﾌﾟﾘｳｽ30系":"TO/s122","ﾐﾗｰｼﾞｭ":"MI/s062","ﾐﾗｲｰｽ":"DA/s065","ﾐﾗｼﾞｰﾉ":"DA/s011","ﾔﾘｽｸﾛｽ":"TO/s251","ﾜｺﾞﾝＲ":"SZ/s015"};
+const MK_CODE={"AZワゴン":"MA/s003","AZﾜｺﾞﾝ":"MA/s003","CX-30":"MA/s101","CX-5":"MA/s087","CX30":"MA/s101","EKスペース":"MI/s109","Gクラス":"ME/s029","N-BOX":"HO/s094","N-BOXカスタム":"HO/s094","N-ONE":"HO/s098","NBOX":"HO/s094","NWGN":"HO/s100","Nワゴン":"HO/s100","RAV4":"TO/s147","RC":"LE/s015","RX":"LE/s008","ZR-V":"HO/s114","ZRV":"HO/s114","アウトバック":"SB/s018","アクア":"TO/s228","アクア10中期":"TO/s228","アクア10前期":"TO/s228","アクア10後期":"TO/s228","アクア20現行":"TO/s228","アクア現行":"TO/s228","アルト":"SZ/s001","アルトラパン":"SZ/s002","アルファード30系":"TO/s009","インプレッサXV":"SB/s045","インプレッサスポーツ":"SB/s048","ウェイク":"DA/s069","エクストレイル":"NI/s020","エクストレイル32前期":"NI/s020","エクストレイル32後期":"NI/s020","エスクァイア":"TO/s234","エブリー":"SZ/s005","オーラ":"NI/s188","カローラクロス":"TO/s254","カローラスポーツ":"TO/s243","カローラツーリング":"TO/s245","キャスト":"DA/s071","キャリトラック":"SZ/s034","シエンタ":"TO/s077","ジムニーシエラ":"SZ/s011","ステップワゴン":"HO/s003","スペーシア":"SZ/s049","スペーシアカスタム":"SZ/s049","セレナ":"NI/s012","セレナ26系":"NI/s012","セレナ27前期":"NI/s012","セレナ27後期":"NI/s012","セレナ28現行":"NI/s012","ソリオバンディット":"SZ/s014","タフト":"DA/s055","タンク":"TO/s239","タント":"DA/s006","タントカスタム":"DA/s006","デイズ":"NI/s179","デイズルークス":"NI/s181","デリカD5":"MI/s089","トール":"DA/s074","ノア":"TO/s108","ノア80系":"TO/s108","ノア90系":"TO/s108","ノート":"NI/s008","ノートEpower":"NI/s008","ノートEpower現行":"NI/s008","ノート中期":"NI/s008","ノート前中期":"NI/s008","ノート前期":"NI/s008","ノート後期":"NI/s008","ハイゼット":"DA/s042","ハイゼットカーゴ":"DA/s032","ハスラー":"SZ/s050","ハリアー":"TO/s114","ハリアー80":"TO/s114","ハリアー80HV":"TO/s114","ハリアー80PHV":"TO/s114","パッソ":"TO/s109","ピクシスバン":"TO/s227","フォレスター":"SB/s011","フリード":"HO/s083","プラド":"TO/s152","プリウス":"TO/s122","プリウス30系":"TO/s122","プリウス50PHV":"TO/s122","プリウス50前期":"TO/s122","プリウス50後期":"TO/s122","プリウス60":"TO/s122","プリウス60PHEV":"TO/s122","ミライース":"DA/s065","ミラジーノ":"DA/s011","ミラージュ":"MI/s062","ムーヴ":"DA/s012","ヤリス":"TO/s249","ヤリスクロス":"TO/s251","ライズ":"TO/s247","ランクル250":"TO/s269","ルークス":"NI/s162","ルークスHW":"NI/s162","ルーミー":"TO/s240","ワゴンR":"SZ/s015","ワゴンＲ":"SZ/s015","ヴィッツ":"TO/s018","ヴェゼルHV前型":"HO/s101","ヴェゼルHV現行":"HO/s101","ヴェゼル前型":"HO/s101","ヴェルファイア30系":"TO/s200","ヴェルファイア40系":"TO/s200","ヴォクシー":"TO/s021","ヴォクシー70以前":"TO/s021","ヴォクシー80系":"TO/s021","ヴォクシー90系":"TO/s021","ｱｸｱ現行":"TO/s228","ｳﾞｨｯﾂ":"TO/s018","ｳﾞｪｾﾞﾙHV（前型）":"HO/s101","ｳﾞｪｾﾞﾙHV（現行）":"HO/s101","ｳﾞｪﾙﾌｧｲｱ 30系":"TO/s200","ｴｸｽﾄﾚｲﾙ32（前期）":"NI/s020","ｴｸｽﾄﾚｲﾙ32（後期）":"NI/s020","ｴｽｸｧｲｱ":"TO/s234","ｶﾛｰﾗｸﾛｽ":"TO/s254","ｶﾛｰﾗﾂｰﾘﾝｸﾞ":"TO/s245","ｷｬｽﾄ":"DA/s071","ｼｴﾝﾀ":"TO/s077","ｽﾍﾟｰｼｱ":"SZ/s049","ｾﾚﾅ 27後期":"NI/s012","ﾀﾝﾄ":"DA/s006","ﾃﾞｲｽﾞﾙｰｸｽ":"NI/s181","ﾉｰﾄEpower（現行）":"NI/s008","ﾉｰﾄ前期":"NI/s008","ﾉｱ90系":"TO/s108","ﾊﾘｱｰ80":"TO/s114","ﾌﾟﾘｳｽ 50前期":"TO/s122","ﾌﾟﾘｳｽ30系":"TO/s122","ﾐﾗｰｼﾞｭ":"MI/s062","ﾐﾗｲｰｽ":"DA/s065","ﾐﾗｼﾞｰﾉ":"DA/s011","ﾔﾘｽｸﾛｽ":"TO/s251","ﾜｺﾞﾝＲ":"SZ/s015"};
 const MK_RAMP=['#f4f5f6','#eaf1fd','#cfe0fa','#a9c9f4','#7fabec','#4a86e0','#1f6ad6','#0447a8'];
 let MKDATA=null, MKLOAD=null;
 const MKF={code:'',area:'all',pref:'all',pw:'all',wd:'all',pit:'auto',view:'live'};
@@ -5247,6 +5351,56 @@ async function mktBrief(d){
   L.push('▼市場全体の構成：HV '+Math.round(noFix.filter(r=>r[10]==='1').length/noFix.length*100)+'%／4WD '
     +Math.round(noFix.filter(r=>r[9]==='1').length/noFix.length*100)+'%');
   L.push('※上の数字はすべて実測です。ここに無い項目は「データなし」と答え、推測の数字を書かないこと。');
+  return L.join('\n');
+}
+
+
+/* ═══ 反響（C-match）から根拠ブロックを組み立てる ═══ */
+function cmHist(d){
+  try{
+    const raw=JSON.parse(localStorage.getItem('cmatch_v2'));
+    if(!raw||!raw.months||!d.cm||!d.cm.k)return [];
+    const k=d.cm.k;
+    return Object.keys(raw.months).sort().map(function(ym){
+      const rs=raw.months[ym].rows||[];
+      const r=rs.find(function(x){return x.k===k;});
+      if(!r)return null;
+      const m=r.m||{};
+      return {ym:ym, view:m.view||0, fav:m.fav||0, inq:m.inq||0,
+              tel:m.tel||0, visit:m.visit||0, days:r.activeDays||0};
+    }).filter(Boolean);
+  }catch(e){return [];}
+}
+function cmRate(x){ return (x.cm.m.view||0)/Math.max(1,x.cm.activeDays||1); }
+function cmRank(d){
+  const peers=STOCK.filter(function(x){return x.cm&&x.cm.m&&x.cat===d.cat;});
+  if(!peers.length||!d.cm)return null;
+  const mine=cmRate(d);
+  const arr=peers.map(cmRate).sort(function(a,b){return a-b;});
+  const below=arr.filter(function(v){return v<mine;}).length;
+  return {n:peers.length, rank:peers.length-below, pct:Math.round(below/peers.length*100),
+          med:arr[Math.floor(arr.length/2)]};
+}
+function cmBrief(d){
+  if(!d.cm||!d.cm.m)return '【反響（カーセンサー C-match）】この車両は反響データと突合できていません。閲覧数・問合せ数はデータなし。';
+  const m=d.cm.m, L=[];
+  const ad=d.cm.activeDays||0;
+  L.push('【反響（カーセンサー C-match '+(d.cm.last||'')+'）】');
+  L.push('当月：詳細閲覧 '+(m.view||0)+'／画像閲覧 '+(m.img||0)+'／お気に入り '+(m.fav||0)
+        +'／問合せ '+(m.inq||0)+'（メール'+(m.mail||0)+'・電話'+(m.tel||0)+'・来店'+(m.visit||0)+'）'
+        +'／値下げ待ち '+(m.pw||0)+'　掲載稼働 '+ad+'日');
+  if(ad>0)L.push('1日あたり詳細閲覧：'+(m.view/ad).toFixed(1)+'回');
+  if(m.view>0){
+    L.push('転換率：閲覧→お気に入り '+(m.fav/m.view*100).toFixed(1)+'%／閲覧→問合せ '+(m.inq/m.view*100).toFixed(2)+'%');
+  }
+  const r=cmRank(d);
+  if(r)L.push('同カテゴリ（'+d.cat+'）'+r.n+'台の中で、1日あたり閲覧数は上位'+(100-r.pct)+'%（'+r.rank+'/'+r.n+'位）。カテゴリ中央値は1日'+r.med.toFixed(1)+'回。');
+  const h=cmHist(d);
+  if(h.length>1){
+    L.push('月別推移（閲覧／お気に入り／問合せ／稼働日）：');
+    h.forEach(function(x){L.push('　'+x.ym+'：'+x.view+' / '+x.fav+' / '+x.inq+' / '+x.days+'日');});
+  }
+  L.push('※反響が0や欠測の月は、掲載していなかった可能性がある。稼働日数と併せて読むこと。');
   return L.join('\n');
 }
 
