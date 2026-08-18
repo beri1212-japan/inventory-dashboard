@@ -930,7 +930,7 @@ table.lst tbody tr.ul td:last-child{background:#fffaf3;}
     <div style="padding:9px 12px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:center;flex-wrap:wrap">
       <span style="font-size:11.5px;color:var(--text3);font-weight:600">打ち手で絞る</span>
       <div class="mkseg" id="paSeg"></div>
-      <button class="minibtn" style="margin-left:auto" onclick="paCopyList()">この一覧をコピー</button>
+      <span style="margin-left:auto;display:flex;gap:6px"><button class="minibtn" onclick="paCopyList()">この一覧をコピー</button><button class="minibtn" onclick="paExportPdf()">PDF出力</button></span>
     </div>
     <div class="sec-body" id="paBody"></div>
   </div>
@@ -2298,6 +2298,85 @@ function paCopyList(){
     const w=window.open('','_blank');
     w.document.write('<pre style="white-space:pre-wrap;font-family:sans-serif;padding:16px;font-size:13px">'+(head+t).replace(/[<>&]/g,m=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[m]))+'</pre>');
     w.document.close();});
+}
+
+/* 価格アラート：いまの絞り込みのままA4縦で印刷 */
+function paExportPdf(){
+  const rows=paVisible(paRows());
+  if(!rows.length){alert('出力する対象がありません。');return;}
+  const esc=v=>String(v==null?'':v).replace(/[<>&]/g,m=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[m]));
+  const now=new Date().toLocaleString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const title=PAF==='all'?'要対応リスト':PAF==='dead'?'原価が相場を超えている在庫':((PA_CAT[PAF]||{}).label||PAF)+'リスト';
+  const grouped={};
+  rows.forEach(function(r){const k=PAF==='all'?r.g.cat.label:title;(grouped[k]=grouped[k]||[]).push(r);});
+  const body=Object.keys(grouped).map(function(k){
+    const list=grouped[k];
+    return '<h2>'+esc(k)+'　<span class="n">'+list.length+'台</span></h2>'
+      +'<table><colgroup>'
+      +'<col style="width:5%"><col style="width:18%"><col style="width:5%"><col style="width:5%">'
+      +'<col style="width:5%"><col style="width:5%"><col style="width:4.5%"><col style="width:5.5%">'
+      +'<col style="width:5.5%"><col style="width:4.5%"><col style="width:5%"><col style="width:7%">'
+      +'<col style="width:18%"><col style="width:3.5%"></colgroup><thead><tr>'
+      +'<th class="c">車体</th><th>車名・グレード</th><th class="c">年式</th><th class="r">走行</th>'
+      +'<th class="r">本体</th><th class="r">原価</th><th class="c">掲載</th>'
+      +'<th class="c">順位</th><th class="r">中央値</th><th class="r">差</th><th class="c">閲覧/日</th>'
+      +'<th class="r">→ 推奨価格</th><th>打ち手</th><th class="chk">済</th></tr></thead><tbody>'
+      + list.map(function(r){
+          const c=r.car,m=r.m,cm=r.cm;
+          const gap=m&&c.price!=null?(c.price-m.med):null;
+          return '<tr>'
+           +'<td class="c mono">'+esc(c.lower4||'—')+'</td>'
+           +'<td><b>'+esc(c.name)+'</b>'+(c.grade?' <span class="g">'+esc(c.grade)+'</span>':'')
+             +(r.g.dead?' <span class="tag">原価超</span>':'')+'</td>'
+           +'<td class="c">'+esc(ymV4(c))+'</td>'
+           +'<td class="r mono">'+(c.km!=null?(c.km/10000).toFixed(1)+'万':'—')+'</td>'
+           +'<td class="r mono">'+paMoney(c.price)+'</td>'
+           +'<td class="r mono">'+paMoney(c.cost)+'</td>'
+           +'<td class="c mono'+((c.days||0)>=300?' bad':'')+'">'+(c.days!=null?c.days:'—')+'</td>'
+           +'<td class="c mono">'+(m&&m.rank?m.rank+'/'+(m.n+1):'—')+'</td>'
+           +'<td class="r mono">'+(m?paMoney(m.med):'—')+'</td>'
+           +'<td class="r mono'+(gap>0?' bad':'')+'">'+(gap==null?'—':(gap>0?'+':'')+gap.toFixed(1))+'</td>'
+           +'<td class="c mono">'+(cm?cm.perDay.toFixed(1):'—')+'</td>'
+           +'<td class="r mono big'+(r.g.cat.key==='A'?' dn':r.g.cat.key==='D'?' up':'')+'">'
+             +(((r.g.cat.key==='A'||r.g.cat.key==='D')&&m)?paMoney(Math.round(m.med*10)/10)+(r.g.cat.key==='A'?' ↓':' ↑'):'据置')+'</td>'
+           +'<td class="rec">'+esc(r.g.rec)+'</td>'
+           +'<td class="chk"></td></tr>';
+        }).join('')
+      +'</tbody></table>';
+  }).join('');
+  const w=window.open('','_blank');
+  w.document.write('<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><title>'+esc(title)+' '+now+'</title><style>'
+   +'@page{size:A4 landscape;margin:8mm}'
+   +'*{box-sizing:border-box}'
+   +"body{font-family:'Yu Gothic','Hiragino Sans',Meiryo,sans-serif;font-size:8pt;color:#111;margin:0}"
+   +'h1{font-size:13pt;margin:0 0 2px}'
+   +'h2{font-size:10pt;margin:12px 0 4px;padding:3px 6px;background:#eef2f7;border-left:4px solid #0559d2}'
+   +'h2 .n{font-size:8.5pt;color:#555;font-weight:400}'
+   +'.meta{font-size:7.5pt;color:#555;margin-bottom:8px;display:flex;gap:14px;flex-wrap:wrap}'
+   +'table{width:100%;border-collapse:collapse;margin-bottom:6px;table-layout:fixed}'
+   +'th{background:#f5f7fa;border:.5pt solid #c9d1da;padding:3px 4px;font-size:7.2pt;font-weight:600;text-align:left}'
+   +'td{border:.5pt solid #d7dee6;padding:3px 4px;font-size:7.6pt;vertical-align:top;overflow:hidden;word-break:break-all}'
+   +'.c{text-align:center}.r{text-align:right}'
+   +".mono{font-variant-numeric:tabular-nums}"
+   +'.g{color:#666;font-size:7pt}'
+   +'.rec{font-size:7.2pt;line-height:1.45}'
+   +'.bad{color:#b91c1c;font-weight:700}'
+   +'.tag{background:#fee2e2;color:#991b1b;padding:0 3px;border-radius:2px;font-size:6.8pt}'
+   +'.chk{width:22px;text-align:center}'
+   +'.big{font-size:8.6pt;font-weight:700}.dn{color:#b91c1c}.up{color:#047857}'
+   +'tbody tr:nth-child(even) td{background:#fbfcfd}'
+   +'tr{break-inside:avoid}'
+   +'</style></head><body>'
+   +'<h1>'+esc(title)+'</h1>'
+   +'<div class="meta"><span>株式会社インディオ富山</span><span>出力 '+now+'</span>'
+   +'<span>市場データ '+(MKDATA?MKDATA.collected:'—')+'取得（'+(MKDATA?MKDATA.areas.join('／'):'')+'・修復歴なし）</span>'
+   +'<span>反響 C-match '+((STOCK.find(function(d){return d.cm;})||{cm:{}}).cm.last||'—')+'</span>'
+   +'<span>対象 '+rows.length+'台</span></div>'
+   +body
+   +'<div class="meta" style="margin-top:10px">※「順位」は同条件の中で安い順。「差」は市場中央値との差（＋は自社が高い）。「閲覧/日」はC-matchの掲載稼働日あたり詳細閲覧数。</div>'
+   +'<script>window.onload=function(){setTimeout(function(){window.print();},400)};<\/script>'
+   +'</body></html>');
+  w.document.close();
 }
 function renderPriceAlert(){
   const box=document.getElementById('paBody');if(!box)return;
