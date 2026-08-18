@@ -1642,6 +1642,14 @@ function buySpec(cat,name){
   // 仕入上限は「想定小売 − 目標利益」。実績の原価中央値は参考として別に持つ
   o.costActual=o.cost.med;
   o.turn  =bqt(sd.map(s=>s.days),.5);
+  // 在庫と売約のグレード構成（同じグレードばかりだと回転が落ちるため）
+  const gStock={},gSold={};
+  st.forEach(d=>{const k=stockGradeKey(d)||'(不明)';gStock[k]=(gStock[k]||0)+1;});
+  sd.forEach(d=>{const k=stockGradeKey(d)||'(不明)';gSold[k]=(gSold[k]||0)+1;});
+  o.gStock=Object.entries(gStock).sort((a,b)=>b[1]-a[1]);
+  o.gSold =Object.entries(gSold).sort((a,b)=>b[1]-a[1]);
+  o.gTop  = o.gStock.length?o.gStock[0]:null;
+  o.gConc = (o.gTop&&st.length>=3)?Math.round(o.gTop[1]/st.length*100):null;
   const c={};sd.forEach(s=>{if(s.color)c[s.color]=(c[s.color]||0)+1;});
   o.colors=Object.entries(c).sort((a,b)=>b[1]-a[1]).map(x=>({c:x[0],n:x[1],p:Math.round(x[1]/sd.length*100)}));
   const sc={};st.forEach(d=>{if(d.color)sc[d.color]=(sc[d.color]||0)+1;});
@@ -1671,6 +1679,12 @@ function buySpec(cat,name){
     o.mktMed=bqt(p,.5);
     o.mktLo=bqt(p,.10);
     o.mktPct=bqt(p,buyCfg().pct/100);
+    // グレード別の中央値（どのグレードが高いか）
+    const gm={};
+    use.forEach(r=>{const k=mktGradeKey(r,MKDATA.cars[code].name)||'(不明)';const v=parseFloat(r[3]);if(v>0)(gm[k]=gm[k]||[]).push(v);});
+    o.mktGrades=Object.entries(gm).filter(x=>x[1].length>=5)
+      .map(x=>({g:x[0],n:x[1].length,med:bqt(x[1],.5),lo:bqt(x[1],buyCfg().pct/100)}))
+      .sort((a,b)=>b.n-a.n).slice(0,8);
     // 色ごとの分布（人気度の裏取り用）
     const byT=[[],[],[]];
     use.forEach(r=>{const v=parseFloat(r[3]);if(v>0)byT[colorTier(r[6])].push(v);});
@@ -1838,6 +1852,9 @@ function buyExportPdf(){
         +'<div><i>競合（北陸）</i><b class="big">'+(d.mktHoku!=null?d.mktHoku:'—')+'台</b><s>'+(d.mktAll!=null?'東海含め'+d.mktAll+'台':'')+'</s></div>'
         +'<div><i>市場（安値〜中央）</i><b class="big">'+f(d.mktLo)+'〜'+f(d.mktMed)+'</b><s>'+(d.mktScope||'')+'の掲載</s></div>'
       +'</div>'
+      +(d.mktGrades&&d.mktGrades.length?'<div class="grade">グレード別の相場（'+buyCfg().pct+'%点）：'
+          +d.mktGrades.slice(0,6).map(function(g){return esc(g.g||'—')+' <b>'+g.lo.toFixed(1)+'万</b><s>'+g.n+'台</s>';}).join('　')+'</div>':'')
+      +(d.gConc!=null&&d.gConc>=50?'<div class="warn">在庫の'+d.gConc+'%が「'+esc(d.gTop[0])+'」に偏っています。同じグレードばかりでは回転が落ちるため、別グレードで補うこと</div>':'')
       +(buyPlanText(d)?'<div class="plan">この'+d.need+'台の色の内訳：<b>'+esc(buyPlanText(d))+'</b></div>':'')
       +(d.missing&&d.missing.length?'<div class="miss">在庫に無い売れ色：<b>'+esc(d.missing.join('・'))+'</b></div>':'')
       +(d.colors&&d.colors.length?'<div class="cols">売れている色：'+d.colors.slice(0,5).map(c=>esc(c.c)+' '+c.p+'%').join('　')+'</div>':'')
@@ -1875,6 +1892,9 @@ function buyExportPdf(){
    +'.money .big{font-size:11pt}.money s{display:block;text-decoration:none;font-size:6.8pt;color:#888}'
    +'.miss{font-size:8.5pt;color:#b45309;margin-bottom:3px}'
    +'.plan{font-size:9.5pt;color:#0b3a86;background:#eff6ff;border-radius:3px;padding:3px 7px;margin-bottom:4px}'
+   +'.grade{font-size:8.6pt;color:#333;background:#f7f8fa;border-radius:3px;padding:3px 7px;margin-bottom:4px}'
+   +'.grade s{text-decoration:none;color:#888;font-size:7pt;margin-left:2px}'
+   +'.warn{font-size:8.6pt;color:#92400e;background:#fffbeb;border-left:2.5pt solid #d97706;padding:3px 7px;margin-bottom:4px}'
    +'.money .hl{border:1.2pt solid #b91c1c;background:#fff5f5}.money .hl .big{color:#b91c1c}'
    +'.cols{font-size:8pt;color:#555;margin-bottom:5px}'
    +'.memo{display:flex;align-items:flex-end;gap:6px;margin-bottom:5px}'
@@ -1888,7 +1908,7 @@ function buyExportPdf(){
    +'<span>市場データ '+(MKDATA?MKDATA.collected:'—')+'取得</span></div>'
    +'<div class="lead">「買う条件」は、実際に自社で売れた車（売約実績）の年式・走行・色の中央50%の範囲です。'
    +'「想定小売」は、その年式・走行でエリアに出ている掲載価格の安値圏（既定は下から25%）です。安値圏でないと動かないため、中央値ではなくここを基準にします。「想定利益」は実績利益の中央値、「仕入上限（税込原価）」はその差です。<b>「落札上限（税別）」は、そこから諸費用を引いて税を抜いた、会場でそのまま使える金額</b>です。台数は1台ずつ同じ条件という意味ではなく、上の年式・走行の範囲から色の内訳のとおり集める、という意味です。'
-   +'「競合」は、その条件に当てはまるカーセンサー掲載の台数（修復歴なし）です。</div>'
+   +'「競合」は、その条件に当てはまるカーセンサー掲載の台数（修復歴なし）です。<b>同じ車種・同じ年式でもグレードで数十万変わる</b>ため、グレード別の相場も併記しています。狙うグレードを決めてから応札してください。</div>'
    +(nowList.length?'<h2 class="n">① 即仕入　<small>いま規定台数を割っている車種。欠品が集客に響くので優先</small></h2>'+nowList.map(card).join(''):'')
    +(soonList.length?'<h2 class="s">② 先行仕入　<small>いまは足りているが、長期在庫を値下げ処分すると規定を割る車種。仕入から商品化まで2週間かかるため今から動く</small></h2>'+soonList.map(card).join(''):'')
    +'<script>window.onload=function(){setTimeout(function(){window.print();},400)};<\/script>'
@@ -2466,6 +2486,44 @@ function gvFilter(d){
   const any=new RegExp(GV_RULES.map(function(r){return r.mkt.source;}).join('|'));
   return {label:'標準グレード', f:function(g){return !any.test(g||'');}};
 }
+
+/* ═══ グレード照合 ═══
+   同じ車種・同じ年式でも、グレードで価格が大きく変わる（N-BOX H28〜H30 で
+   GLパッケージ65.9万 〜 カスタム/ターボ/GL 120万、その差54万）。
+   相場を比べるときは、まずグレードを揃える。 */
+const GK_EQUIP=/ホンダセンシング|セーフティサポート|スマートアシスト|プロパイロット|セーフティセンス|セーフティパッケージ|ナビゲーション|バックカメラ|全周囲カメラ|アラウンドビュー|ドライブレコーダー|ドラレコ|フルセグ|地デジ|Bluetooth|シートヒーター|コーナーセンサー|ソナー|スマートキー|プッシュスタート|クルーズコントロール|クルコン|レーダーブレーキ|衝突軽減|誤発進|LEDライト|LEDヘッド|アルミホイール|純正アルミ|エアロ|両側電動|片側電動|電動スライド|パワースライド|パワスラ|後席モニター|リアモニター|ワンオーナー|禁煙車?|届出済未使用車?|登録済未使用車?|未使用車|記録簿|整備付|保証付|新品タイヤ|車検[0-9R年月\/\.]*|ツートン|2トーン|ナビ|カメラ|ETC2?\.?0?|純正|社外|モニター|センサー|SDナビ|メモリーナビ|ワンセグ|スタイル|プラス/gi;
+function gradeKey(t,model){
+  if(!t)return '';
+  let s=String(t).normalize('NFKC').replace(/[（(].*?[）)]/g,' ').replace(/[･・]/g,' ');
+  if(model){
+    const m=String(model).normalize('NFKC').replace(/[-\s]/g,'');
+    try{s=s.replace(new RegExp(m.split('').map(c=>c.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('[-\\s]*'),'gi'),' ');}catch(e){}
+  }
+  s=s.replace(GK_EQUIP,' ').replace(/PKG/gi,'パッケージ').replace(/\b\d{3,4}(cc)?\b/gi,' ')
+     .replace(/\b[24]WD\b/gi,' ').replace(/\s+/g,' ').trim();
+  const key=[];
+  if(/カスタム/.test(s))key.push('カスタム');
+  if(/ターボ/.test(s))key.push('ターボ');
+  s=s.replace(/カスタム|ターボ/g,' ');
+  const toks=s.split(/\s+/).filter(Boolean).filter(w=>w.length<=10);
+  const core=toks.slice(0,2).join('');
+  if(core)key.push(core);
+  return key.join('/');
+}
+/* 在庫1台のグレードキー */
+function stockGradeKey(d){
+  const code=MK_CODE[d.name];
+  const model=(MKDATA&&code&&MKDATA.cars[code])?MKDATA.cars[code].name:d.name;
+  return gradeKey(d.grade,model);
+}
+/* 市場1行のグレードキー */
+function mktGradeKey(r,model){return gradeKey(r[11],model);}
+/* カスタム/ターボ だけを合わせる粗い照合（詳細グレードが一致しないとき用） */
+function gradeCoarse(k){
+  const p=String(k||'').split('/');
+  return p.filter(x=>x==='カスタム'||x==='ターボ').join('/')||'標準';
+}
+
 /* ═══ 価格アラート：実データから全在庫を判定する ═══ */
 const PA_TIERS=[
   {k:'h1',lbl:'北陸甲信越・同条件'},
@@ -2483,14 +2541,27 @@ function paMkt(d){
   const kOk=r=>{if(d.km==null)return true;const v=parseFloat(r[5])*10000;return v>=d.km-20000&&v<=d.km+20000;};
   const hoku=r=>r[0]==='北陸甲信越';
   const gv=gvFilter(d), gOk=gv?(r=>gv.f(r[11])):(()=>true);
-  const fs=[r=>hoku(r)&&yOk(r)&&kOk(r)&&spec(r)&&gOk(r), r=>yOk(r)&&kOk(r)&&spec(r)&&gOk(r), r=>yOk(r)&&spec(r)&&gOk(r), r=>yOk(r)&&gOk(r)];
+  const model=MKDATA.cars[code].name;
+  const gk=stockGradeKey(d);
+  const gExact=gk?(r=>mktGradeKey(r,model)===gk):null;
+  const gRough=gk?(r=>gradeCoarse(mktGradeKey(r,model))===gradeCoarse(gk)):null;
+  const G=[gExact,gExact,gExact,gRough,null];               // 段階ごとのグレード条件
+  const fs=[
+    r=>hoku(r)&&yOk(r)&&kOk(r)&&spec(r)&&gOk(r),
+    r=>yOk(r)&&kOk(r)&&spec(r)&&gOk(r),
+    r=>yOk(r)&&spec(r)&&gOk(r),
+    r=>hoku(r)&&yOk(r)&&kOk(r)&&spec(r)&&gOk(r),
+    r=>yOk(r)&&kOk(r)&&spec(r)&&gOk(r)];
+  const LBL=['北陸甲信越・同条件・同グレード','北陸甲信越＋東海・同条件・同グレード','走行不問・同グレード',
+             '北陸甲信越・同条件・カスタム/ターボのみ一致','北陸甲信越＋東海・同条件・グレード不問'];
   for(let i=0;i<fs.length;i++){
-    const rows=all.filter(fs[i]);
+    const gf=G[i];
+    const rows=all.filter(r=>fs[i](r)&&(!gf||gf(r)));
     const p=rows.map(r=>parseFloat(r[3])).filter(v=>v>0).sort((a,b)=>a-b);
     if(p.length>=8||i===fs.length-1){
       if(!p.length)return null;
       const q=f=>p[Math.min(p.length-1,Math.floor(p.length*f))];
-      return {scope:PA_TIERS[i].lbl+(gv?'・'+gv.label:''), n:p.length, low:p[0], q1:q(.25), med:q(.5), q3:q(.75),
+      return {scope:LBL[i]+(gk?'（'+gk+'）':''), gradeKey:gk, n:p.length, low:p[0], q1:q(.25), med:q(.5), q3:q(.75),
               high:p[p.length-1], fair:q(.5),
               rank:d.price!=null?p.filter(v=>v<d.price).length+1:null,
               url:(function(){const c=code.split('/');const qs=['AR='+(i===0?'7':'7*3'),'YMIN='+(y-1),'YMAX='+(y+1)];
@@ -5832,7 +5903,11 @@ async function mktBrief(d){
   const all=MKDATA.cars[code].rows.map(l=>l.split('\t'));
   const hv=d.hv==='〇', wd=d.fwd==='〇';
   const gv=gvFilter(d), gOk=gv?(r=>gv.f(r[11])):(()=>true);
-  const noFix=all.filter(r=>r[8]==='0'&&gOk(r));
+  const model=MKDATA.cars[code].name, gk=stockGradeKey(d);
+  const noFixAll=all.filter(r=>r[8]==='0'&&gOk(r));
+  const sameG=gk?noFixAll.filter(r=>mktGradeKey(r,model)===gk):[];
+  const useGrade=sameG.length>=8;
+  const noFix=useGrade?sameG:noFixAll;
   const yOk=r=>{const ry=+r[4];return ry>=y-1&&ry<=y+1;};
   const kOk=r=>{if(d.km==null)return true;const rk=parseFloat(r[5])*10000;return rk>=d.km-20000&&rk<=d.km+20000;};
   const pwOk=r=>(r[10]==='1')===hv;
@@ -5842,7 +5917,8 @@ async function mktBrief(d){
   const sameH=same.filter(hoku);
   const spec=(hv?'HV':'ガソリン')+'・'+(wd?'4WD':'2WD');
 
-  L.push('【掲載明細（カーセンサー '+MKDATA.collected+'取得、'+MKDATA.areas.join('＋')+'、修復歴なし'+(gv?'・'+gv.label+'のみ':'')+'）】');
+  L.push('【掲載明細（カーセンサー '+MKDATA.collected+'取得、'+MKDATA.areas.join('＋')+'、修復歴なし'+(gv?'・'+gv.label:'')+(useGrade?'・グレード「'+gk+'」に限定':'')+'）】');
+  if(gk&&!useGrade)L.push('※同グレード（'+gk+'）は'+sameG.length+'台しか無いため、グレードを問わず集計している。グレード差で数十万動く車種があるので、この点は割り引いて読むこと。');
   L.push('この車種の総掲載数：'+noFix.length+'台（北陸甲信越 '+noFix.filter(hoku).length+'台 / 東海 '+noFix.filter(r=>!hoku(r)).length+'台）');
   L.push(mkScope(sameH,'▼同条件・北陸甲信越（年式'+(y-1)+'〜'+(y+1)+'／走行±2万km／'+spec+'）',d.price));
   L.push(mkScope(same,'▼同条件・北陸甲信越＋東海',d.price));
