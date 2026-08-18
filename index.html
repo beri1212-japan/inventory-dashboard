@@ -178,6 +178,8 @@ body{font-family:var(--font);font-size:14.9px;letter-spacing:.01em;-webkit-font-
 .mkseg{display:flex;border:1px solid var(--border);border-radius:7px;overflow:hidden;}
 .mkseg button{font-family:var(--font);font-size:12px;padding:4px 11px;border:0;background:#fff;color:#6b7280;cursor:pointer;}
 .mkseg button.on{background:var(--accent);color:#fff;font-weight:600;}
+.mktbtn{color:var(--accent);}
+.mktbtn b{font-family:var(--mono);font-weight:700;}
 .mktlink{color:var(--accent);text-decoration:none;font-weight:600;}
 .mktlink:hover{text-decoration:underline;}
 .mklink{margin-left:auto;font-size:11.5px;color:var(--accent);text-decoration:none;font-weight:600;white-space:nowrap;}
@@ -1912,7 +1914,6 @@ const LS_COLS=[
   {k:'km',     l:'距離',     w:76,  a:'r', mono:1},
   {k:'shaken', l:'車検',     w:64,  a:'c'},
   {k:'days',   l:'掲載日数', w:66,  a:'r', mono:1},
-  {k:'mkt',    l:'市場',     w:52,  a:'r', mono:1},
   {k:'cost',   l:'原価',     w:70,  a:'r', mono:1},
   {k:'price',  l:'本体価格', w:76,  a:'r', mono:1},
   {k:'profit', l:'利益',     w:66,  a:'r', mono:1},
@@ -1964,7 +1965,6 @@ function lsFmt(d,c){
     case 'cost': case 'price': case 'gyohan': return v.toFixed(1);
     case 'profit': return `<span style="color:${v<0?'var(--red)':v<10?'var(--amber)':'var(--text)'}">${v.toFixed(1)}</span>`;
     case 'days':   {const cl=v>=300?'pill-r':v>=100?'pill-y':'pill-g';return `<span class="pill ${cl}">${v}</span>`;}
-    case 'mkt':    return d.mktU?`<a class="mktlink" href="${d.mktU}" target="_blank" rel="noopener" title="${PATROL?PATROL.cond+' / '+PATROL.area+'（'+PATROL.collected+'取得）':''}　クリックでカーセンサーの同条件検索を開く">${v}</a>`:String(v);
     case 'color':  return colorChip(v,11)+v;
     case 'rent':   return rentChip(v);
     case 'fwd':    return '<span class="mtag mtag-fwd">4WD</span>';
@@ -2022,10 +2022,11 @@ function renderList(){
   const body=rows.map(d=>`<tr${d.unlisted?' class="ul"':''}>`+LS_COLS.map(c=>
       `<td style="text-align:${c.a==='r'?'right':c.a==='c'?'center':'left'}" class="${c.mono?'num ':''}${c.tight?'tight':''}">${lsFmt(d,c)}</td>`).join('')
       +`<td>${d.lower4&&!d.unlisted?`<span style="display:flex;gap:4px;justify-content:flex-end">
+        ${d.mkt!=null?`<button class="minibtn mktbtn" title="${PATROL?PATROL.cond+' ／ '+PATROL.area+'（'+PATROL.collected+'取得）':''}　クリックでカーセンサーの同条件検索を開く" onclick="window.open('${d.mktU}','_blank','noopener')">市場 <b>${d.mkt}</b></button>`:`<button class="minibtn mktbtn" disabled style="opacity:.35">市場 —</button>`}
         <button class="minibtn" title="この車の閲覧数・問合せ数と価格アドバイス" onclick="openCmDetail('${encodeURIComponent(d.lower4)}','${encodeURIComponent(d.name)}','${encodeURIComponent(d.cat||'')}')" ${d.cm?'':'style="opacity:.55"'}>反響</button>
         <button class="minibtn" onclick="openPriceChange('${encodeURIComponent(d.lower4)}','${encodeURIComponent(d.name)}',${d.price!=null?d.price:0},'${encodeURIComponent(d.cat||'')}')">価格</button>
       </span>`:''}</td></tr>`).join('');
-  box.innerHTML=`<table class="lst"><thead><tr>${th}<th style="width:106px"></th></tr></thead><tbody>${body}</tbody></table>`;
+  box.innerHTML=`<table class="lst"><thead><tr>${th}<th style="width:180px"></th></tr></thead><tbody>${body}</tbody></table>`;
   const cost=rows.reduce((a,b)=>a+(b.cost||0),0), prof=rows.reduce((a,b)=>a+(b.profit||0),0);
   document.getElementById('lsCount').innerHTML=
     `<b style="color:var(--text);font-size:14.9px">${rows.length}</b>台 ・ 原価計 ${Math.round(cost).toLocaleString()}万 ・ 想定利益 ${Math.round(prof).toLocaleString()}万`;
