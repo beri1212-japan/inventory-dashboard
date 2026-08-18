@@ -4482,7 +4482,7 @@ async function runAiDiagnosis(vehicleData){
   document.getElementById('ai-modal-body').innerHTML=`
     <div style="display:flex;align-items:center;gap:10px;padding:20px;color:var(--text2)">
       <div class="spin" style="display:block;width:20px;height:20px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite"></div>
-      <span>カーセンサー等で相場を調査中...</span>
+      <span>収集済みの掲載データで診断中...</span>
     </div>`;
   document.getElementById('modal-ai').style.display='block';
   document.getElementById('ov-ai').style.display='block';
@@ -4502,47 +4502,29 @@ async function runAiDiagnosis(vehicleData){
   }
   const searchArea = getSearchArea(d.cat, d.days||0);
 
-  const prompt=`あなたは中古車価格の専門アドバイザーです。
-以下の車両について、カーセンサーやグーネット等の相場情報をweb検索で調べ、価格診断を行ってください。
+  const BRIEF = await mktBrief(d);
+  const prompt=`あなたは中古車の価格戦略アドバイザーです。
+下に当社が実際に収集したカーセンサー掲載データを渡します。**web検索はしないでください。**
+判断の根拠は、下のデータに書かれている数字だけを使ってください。書かれていない項目は「データなし」と明記してください。
 
-【対象車両】
-- 車種: ${d.name}
-- カテゴリ: ${d.cat}
+【対象車両（自社在庫）】
+- 車種: ${d.name}（${d.cat}）
 - 年式: ${d.year}
 - 走行距離: ${km}
-- 現在のプライス: ${d.price?d.price+'万円':'不明'}
-- 色: ${d.color||'不明'}
-- HV: ${d.hv==='〇'?'あり':'なし'}
-- 4WD: ${d.fwd==='〇'?'あり':'なし'}
+- 現在の本体価格: ${d.price?d.price+'万円':'不明'}
+- 原価: ${d.cost!=null?d.cost+'万円':'不明'} / 想定利益: ${d.profit!=null?d.profit+'万円':'不明'}
+- 色: ${d.color||'不明'} / HV: ${d.hv==='〇'?'あり':'なし'} / 4WD: ${d.fwd==='〇'?'あり':'なし'}
 - 掲載日数: ${d.days?d.days+'日':'不明'}
 
-【検索エリア】${searchArea}
-※このエリアの相場を優先的に調べてください。
+【市場の実測データ】
+${BRIEF}
 
-【エリア選定理由】
-${d.cat==='軽'?
-  (d.days>=150?'軽自動車・在庫150日以上のため北陸・甲信越・中部まで拡大':
-   d.days>=100?'軽自動車・在庫100日以上のため北陸・甲信越まで拡大':
-   '軽自動車・在庫99日以内のため石川県・富山県中心'):
-  (d.days>=180?'在庫180日以上のため北陸・甲信越・関東・中部まで拡大':
-   d.days>=100?'在庫100日以上のため北陸・甲信越・中部まで拡大':
-   '在庫99日以内のため北陸・甲信越エリア中心')}
-
-【検索条件の絞り込み】
-- 年式：${d.year}の前後1年以内
-- 走行距離：${d.km?(Math.max(0,d.km/10000-1).toFixed(0)+'万km〜'+(d.km/10000+1).toFixed(0)+'万km'):'不明'}
-- 色：${['白','パール','黒','ホワイト','ブラック','白パール'].some(c=>d.color&&d.color.includes(c))?'【人気色】白・パール・黒のみで検索（他の色と混合しないこと）':'【非人気色】全カラーで検索'}
-- 駆動方式：${d.fwd==='〇'?'4WDのみで検索（2WDと混合しないこと）':'2WD（FF/FR）のみで検索（4WDと混合しないこと）'}
-- 修復歴：【修復歴なし】のみで検索（カーセンサーの「修復歴なし」チェックを必ず入れること）
-
-【指示】
-1. web検索で上記エリア・条件のカーセンサー・グーネット等の相場を調べる
-2. 同条件（車種・年式±1年・走行距離±1万km）の相場価格帯を提示
-3. 現在価格との比較（高い/安い/適正）
-4. 具体的な推奨価格と理由（値上げ・値下げの根拠を明確に）
-5. 売却促進のためのアドバイス
-
-日本語で回答してください。`;
+【回答の形式】前置きなし、日本語、この順で簡潔に。
+1. 立ち位置（同条件の何台中何位か、中央値との差を数字で1〜2行）
+2. 価格の判定（高い／適正／安い）と、その根拠にした数字
+3. 推奨価格（1つの金額を出す）。原価と利益への影響も1行で。
+4. 価格以外に効く手（色・年式・走行・駆動の構成データから読める打ち手を1〜2点）
+5. 注意（データが薄い・偏っている場合はここで正直に指摘する）`;
 
   try{
     const cleanKey=apiKey.trim().replace(/[^a-zA-Z0-9\-_]/g,'');
@@ -4557,7 +4539,6 @@ ${d.cat==='軽'?
       body:JSON.stringify({
         model:aiModel(),
         max_tokens:2400,
-        tools:[{type:'web_search_20250305',name:'web_search'}],
         messages:[{role:'user',content:prompt}]
       })
     });
@@ -4793,6 +4774,35 @@ function closeMarketModal(){
   document.getElementById('ov-market').style.display='none';
 }
 
+/* 「R3〜R5」「2021-2023」などを西暦レンジに */
+function mkParseYears(t){
+  if(!t)return null;
+  const one=x=>{const m=String(x).match(/([HR])\s*(\d+)/i);if(m)return (m[1].toUpperCase()==='R'?2018:1988)+ +m[2];
+    const n=String(x).match(/(19|20)\d{2}/);return n?+n[0]:null;};
+  const parts=String(t).split(/[〜~\-–ー]/).map(one).filter(v=>v!=null);
+  if(!parts.length)return null;
+  return [Math.min(...parts),Math.max(...parts)];
+}
+function mkParseRange(t){
+  if(!t)return null;
+  const ns=String(t).match(/\d+(\.\d+)?/g);
+  if(!ns||!ns.length)return null;
+  const v=ns.map(Number);
+  return v.length>1?[Math.min(...v),Math.max(...v)]:[v[0],Infinity];
+}
+/* 在庫表の車名でも カーセンサーの車名でも引けるようにする */
+function mkResolve(name){
+  const n=String(name||'').trim();
+  if(!n||!MKDATA)return null;
+  if(MK_CODE[n]&&MKDATA.cars[MK_CODE[n]])return MK_CODE[n];
+  const norm=x=>String(x).replace(/[\s　・（）()]/g,'').toLowerCase();
+  const t=norm(n);
+  for(const [c,v] of Object.entries(MKDATA.cars)){if(norm(v.name)===t)return c;}
+  for(const [k,c] of Object.entries(MK_CODE)){if(norm(k)===t&&MKDATA.cars[c])return c;}
+  for(const [c,v] of Object.entries(MKDATA.cars)){if(norm(v.name).includes(t)||t.includes(norm(v.name)))return c;}
+  return null;
+}
+
 async function runMarketAnalysis(){
   const apiKey=localStorage.getItem('anthropic_api_key');
   if(!apiKey){alert('APIキーが設定されていません');return;}
@@ -4808,31 +4818,75 @@ async function runMarketAnalysis(){
   const resultEl=document.getElementById('market-result');
   resultEl.innerHTML=`<div style="display:flex;align-items:center;gap:10px;padding:16px;color:var(--text2)">
     <div class="spin" style="display:block;width:20px;height:20px;border:2px solid var(--border2);border-top-color:#065f46;border-radius:50%;animation:spin .7s linear infinite"></div>
-    <span>カーセンサーで${car}（${area}）を調査中...</span>
+    <span>収集済みの掲載データを集計中...</span>
   </div>`;
 
-  const yearCond  = year  ? `・年式: ${year}` : '';
-  const priceCond = price ? `・価格帯: ${price}` : '';
+  try{await mkLoad();}catch(e){}
+  const code=mkResolve(car);
+  if(!code){
+    const names=MKDATA?Object.values(MKDATA.cars).map(c=>c.name).join('、'):'（読込に失敗しました）';
+    resultEl.innerHTML=`<div class="errbox" style="margin:0">「${car}」の掲載明細はまだ収集していません。<br>
+      <span style="font-size:12.6px">収集済み：${names}</span></div>`;
+    return;
+  }
 
-  const prompt=`あなたは中古車市場の専門アナリストです。
-カーセンサーやグーネット等のweb検索を使って以下の条件で市場分析を行ってください。
+  const AR={'石川県・富山県':['石川県','富山県'],'北陸・甲信越':null,'東海':null,'全国':null};
+  const areaFilter=r=>{
+    if(area==='石川県・富山県')return r[7]==='石川県'||r[7]==='富山県';
+    if(area==='北陸・甲信越')return r[0]==='北陸甲信越';
+    if(area==='東海')return r[0]==='東海';
+    return true;   // 両方／関東等はデータ範囲（北陸甲信越＋東海）全体
+  };
+  const yr=mkParseYears(year), pr=mkParseRange(price);
+  let rows=MKDATA.cars[code].rows.map(l=>l.split('\t')).filter(areaFilter);
+  if(repair==='修復歴なしのみ')rows=rows.filter(r=>r[8]==='0');
+  if(yr)rows=rows.filter(r=>+r[4]>=yr[0]&&+r[4]<=yr[1]);
+  if(pr)rows=rows.filter(r=>{const v=parseFloat(r[3]);return v>=pr[0]&&v<=pr[1];});
 
-【分析対象】
-- 車種: ${car}
-- エリア: ${area}
-- ${repair}${yearCond}${priceCond}
+  if(!rows.length){
+    resultEl.innerHTML='<div class="errbox" style="margin:0">この条件に当てはまる掲載が0台でした。条件をゆるめてください。</div>';
+    return;
+  }
 
-【調査内容】
-1. 該当エリアの推定在庫台数（カーセンサー・グーネット等で検索して数える）
-2. 価格帯分布（どの価格帯に何台あるか）
-3. 年式分布（どの年式が多いか）
-4. 走行距離分布（走行距離帯別の台数）
-5. 色別分布（人気の色と台数）
-6. 平均価格・最安値・最高値
-7. 市場全体のコメント（供給過多・品薄・競合状況など）
-8. 仕入れ・販売戦略へのアドバイス
+  const carName=MKDATA.cars[code].name;
+  const p=rows.map(r=>parseFloat(r[3])).filter(v=>v>0).sort((a,b)=>a-b);
+  const own=STOCK.filter(d=>MK_CODE[d.name]===code);
+  const ownLine=own.length
+    ? own.map(d=>'　'+d.name+' '+(typeof ymV4==='function'?ymV4(d):d.year)+' '+(d.km!=null?(d.km/10000).toFixed(1)+'万km':'—')
+        +' '+(d.price!=null?d.price.toFixed(1)+'万':'—')+' 掲載'+(d.days||'—')+'日'
+        +(d.price!=null&&p.length?'（安い順'+(p.filter(v=>v<d.price).length+1)+'位/'+(p.length+1)+'台）':'')).join('\n')
+    : '　なし';
 
-必ず実際にweb検索を行い、具体的な数字を含めて回答してください。
+  const BRIEF=
+'【集計対象】'+carName+'／'+area+'／'+repair+(yr?'／年式 '+yr[0]+'〜'+yr[1]:'')+(pr?'／価格 '+pr[0]+'〜'+(pr[1]===Infinity?'上限なし':pr[1])+'万':'')+'\n'+
+'（出典：カーセンサー掲載 '+MKDATA.collected+'取得。収集範囲は'+MKDATA.areas.join('＋')+'。この範囲外の地域のデータは持っていません）\n'+
+'掲載台数：'+rows.length+'台\n'+
+'本体価格：最安'+p[0].toFixed(1)+'／25% '+mkQt(p,.25).toFixed(1)+'／中央 '+mkQt(p,.5).toFixed(1)+'／75% '+mkQt(p,.75).toFixed(1)+'／最高'+p[p.length-1].toFixed(1)+'万\n'+
+'地区別：'+mkCount(rows,r=>r[0])+'\n'+
+'県別：'+mkCount(rows,r=>r[7])+'\n'+
+'年式別：'+mkCount(rows,r=>r[4],[...new Set(rows.map(r=>r[4]))].sort())+'\n'+
+'走行別（万km）：'+mkCount(rows,r=>Math.min(10,Math.floor(parseFloat(r[5])))+'万台',['0万台','1万台','2万台','3万台','4万台','5万台','6万台','7万台','8万台','9万台','10万台'])+'\n'+
+'価格帯別（25万刻み）：'+mkCount(rows,r=>{const v=parseFloat(r[3]);return isNaN(v)?null:(Math.floor(v/25)*25)+'万〜';},
+   [...new Set(rows.map(r=>{const v=parseFloat(r[3]);return isNaN(v)?null:(Math.floor(v/25)*25)+'万〜';}))].filter(Boolean).sort((a,b)=>parseInt(a)-parseInt(b)))+'\n'+
+'色別：'+mkCount(rows,r=>r[6])+'\n'+
+'動力：HV '+rows.filter(r=>r[10]==='1').length+'台／ガソリン '+rows.filter(r=>r[10]!=='1').length+'台\n'+
+'駆動：4WD '+rows.filter(r=>r[9]==='1').length+'台／2WD '+rows.filter(r=>r[9]!=='1').length+'台\n'+
+'修復歴あり：'+rows.filter(r=>r[8]==='1').length+'台\n'+
+'【自社在庫（'+carName+'）'+own.length+'台】\n'+ownLine;
+
+  const prompt=`あなたは中古車市場のアナリストです。
+下は当社が実際に収集したカーセンサー掲載データの集計です。**web検索はしないでください。**
+下の数字だけを根拠にしてください。ここに無い項目は「データなし」と明記し、推測の数字を書かないこと。
+
+${BRIEF}
+
+【回答】前置きなし、日本語、この順で。
+1. この市場のひとことまとめ（供給過多か品薄か、根拠の数字つきで2行以内）
+2. 価格の山と谷（どの価格帯に何台か。薄い価格帯があればそこを指摘）
+3. 年式・走行・色・駆動の偏り（数字で。偏りが商機になるかも1行）
+4. 自社在庫の立ち位置（上の順位データを使って。在庫が無ければ「なし」）
+5. 仕入れの推奨条件（年式・走行・価格帯・駆動を具体的な数字で）
+6. このデータで言えないこと（収集範囲・時点の限界を正直に）
 日本語で回答してください。`;
 
   try{
@@ -4848,7 +4902,6 @@ async function runMarketAnalysis(){
       body:JSON.stringify({
         model:aiModel(),
         max_tokens:3000,
-        tools:[{type:'web_search_20250305',name:'web_search'}],
         messages:[{role:'user',content:prompt}]
       })
     });
@@ -5129,6 +5182,69 @@ function mkColorBar(mk){
   h+='</div><div class="mkclist">'+ord.map(c=>c+' '+t[c]+'台（'+(t[c]/n*100).toFixed(1)+'%）').join('　/　')+'</div></div>';
   return h;
 }
+
+/* ═══ 実測データから根拠ブロックを組み立てる（AIに渡す用） ═══ */
+function mkQt(sorted,f){return sorted[Math.min(sorted.length-1,Math.floor(sorted.length*f))];}
+function mkCount(rows,keyFn,order){
+  const t={};rows.forEach(r=>{const k=keyFn(r);if(k==null||k==='')return;t[k]=(t[k]||0)+1;});
+  const ks=order?order.filter(k=>t[k]):Object.keys(t).sort((a,b)=>t[b]-t[a]);
+  return ks.map(k=>k+' '+t[k]).join(' / ')||'—';
+}
+function mkScope(rows,label,price){
+  const p=rows.map(r=>parseFloat(r[3])).filter(v=>v>0).sort((a,b)=>a-b);
+  if(!p.length)return label+'：0台';
+  let s=label+'：'+rows.length+'台／本体価格 最安'+p[0].toFixed(1)+'・25%'+mkQt(p,.25).toFixed(1)
+      +'・中央'+mkQt(p,.5).toFixed(1)+'・75%'+mkQt(p,.75).toFixed(1)+'・最高'+p[p.length-1].toFixed(1)+'万';
+  if(price!=null){
+    const rk=p.filter(v=>v<price).length+1, md=mkQt(p,.5);
+    s+='／自社'+price.toFixed(1)+'万は安い順'+rk+'位（'+(p.length+1)+'台中）、中央値差'+(price-md>=0?'+':'')+(price-md).toFixed(1)+'万';
+  }
+  return s;
+}
+async function mktBrief(d){
+  try{await mkLoad();}catch(e){}
+  try{await pLoad();}catch(e){}
+  const L=[];
+  if(d.mkt!=null&&PATROL)
+    L.push('【巡回カウント（'+PATROL.collected+'取得）】'+PATROL.area+'／'+PATROL.cond+'　→　'+d.mkt+'台');
+  const code=MK_CODE[d.name], y=mkY(d.year);
+  if(!MKDATA||!code||!MKDATA.cars[code]||y==null){
+    L.push('【掲載明細】この車種は明細収集の対象外のため、価格分布・年式分布・色構成のデータはありません。');
+    L.push('※データが無い項目は「データなし」と答えること。推測の数字を書かないこと。');
+    return L.join('\n');
+  }
+  const all=MKDATA.cars[code].rows.map(l=>l.split('\t'));
+  const hv=d.hv==='〇', wd=d.fwd==='〇';
+  const noFix=all.filter(r=>r[8]==='0');
+  const yOk=r=>{const ry=+r[4];return ry>=y-1&&ry<=y+1;};
+  const kOk=r=>{if(d.km==null)return true;const rk=parseFloat(r[5])*10000;return rk>=d.km-20000&&rk<=d.km+20000;};
+  const pwOk=r=>(r[10]==='1')===hv;
+  const wdOk=r=>(r[9]==='1')===wd;
+  const hoku=r=>r[0]==='北陸甲信越';
+  const same=noFix.filter(r=>yOk(r)&&kOk(r)&&pwOk(r)&&wdOk(r));
+  const sameH=same.filter(hoku);
+  const spec=(hv?'HV':'ガソリン')+'・'+(wd?'4WD':'2WD');
+
+  L.push('【掲載明細（カーセンサー '+MKDATA.collected+'取得、'+MKDATA.areas.join('＋')+'、修復歴なしのみ）】');
+  L.push('この車種の総掲載数：'+noFix.length+'台（北陸甲信越 '+noFix.filter(hoku).length+'台 / 東海 '+noFix.filter(r=>!hoku(r)).length+'台）');
+  L.push(mkScope(sameH,'▼同条件・北陸甲信越（年式'+(y-1)+'〜'+(y+1)+'／走行±2万km／'+spec+'）',d.price));
+  L.push(mkScope(same,'▼同条件・北陸甲信越＋東海',d.price));
+  L.push(mkScope(noFix.filter(r=>yOk(r)&&pwOk(r)&&wdOk(r)),'▼走行不問（年式'+(y-1)+'〜'+(y+1)+'／'+spec+'）',d.price));
+  L.push(mkScope(noFix.filter(r=>yOk(r)),'▼年式のみ一致（動力・駆動不問）',d.price));
+  const ref=same.length>=8?same:noFix.filter(r=>yOk(r)&&pwOk(r)&&wdOk(r));
+  if(ref.length){
+    L.push('▼上記の内訳（'+(same.length>=8?'同条件':'走行不問')+' '+ref.length+'台）');
+    L.push('　県別：'+mkCount(ref,r=>r[7]));
+    L.push('　色別：'+mkCount(ref,r=>r[6]));
+    L.push('　年式別：'+mkCount(ref,r=>r[4],[String(y-1),String(y),String(y+1)]));
+    L.push('　走行別（万km）：'+mkCount(ref,r=>Math.floor(parseFloat(r[5]))+'万台'));
+  }
+  L.push('▼市場全体の構成：HV '+Math.round(noFix.filter(r=>r[10]==='1').length/noFix.length*100)+'%／4WD '
+    +Math.round(noFix.filter(r=>r[9]==='1').length/noFix.length*100)+'%');
+  L.push('※上の数字はすべて実測です。ここに無い項目は「データなし」と答え、推測の数字を書かないこと。');
+  return L.join('\n');
+}
+
 function mkSet(k,v){MKF[k]=v;renderMarket();}
 function renderMarket(){
   const bar=document.getElementById('mkBar'),body=document.getElementById('mkBody');
