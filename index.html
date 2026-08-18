@@ -171,6 +171,41 @@ body{font-family:var(--font);font-size:14.9px;letter-spacing:.01em;-webkit-font-
 .ic{width:19px;height:19px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
 .ic-s{width:16px;height:16px;}
 
+/* --- 市場マップ --- */
+.mkbar{display:flex;flex-wrap:wrap;gap:16px;align-items:center;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:14px;box-shadow:var(--sh);}
+.mkfg{display:flex;align-items:center;gap:7px;}
+.mkfg>label{font-size:11.5px;color:var(--mut,#6b7280);font-weight:600;white-space:nowrap;}
+.mkseg{display:flex;border:1px solid var(--border);border-radius:7px;overflow:hidden;}
+.mkseg button{font-family:var(--font);font-size:12px;padding:4px 11px;border:0;background:#fff;color:#6b7280;cursor:pointer;}
+.mkseg button.on{background:var(--accent);color:#fff;font-weight:600;}
+.mktlink{color:var(--accent);text-decoration:none;font-weight:600;}
+.mktlink:hover{text-decoration:underline;}
+.mklink{margin-left:auto;font-size:11.5px;color:var(--accent);text-decoration:none;font-weight:600;white-space:nowrap;}
+.mklink:hover{text-decoration:underline;}
+.mkcbar{display:flex;height:26px;border-radius:6px;overflow:hidden;border:1px solid var(--border);}
+.mkcseg{display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:600;gap:3px;overflow:hidden;white-space:nowrap;}
+.mkcseg small{font-weight:400;opacity:.85;}
+.mkclist{margin-top:7px;font-size:11px;color:var(--mut,#6b7280);font-family:var(--mono);}
+.mkkpis{display:grid;grid-template-columns:repeat(5,1fr);gap:11px;margin-bottom:14px;}
+.mkkpi{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 13px;box-shadow:var(--sh);}
+.mkkpi .l{font-size:10.5px;color:#6b7280;}
+.mkkpi .v{font-family:var(--mono);font-size:21px;font-weight:500;line-height:1.3;}
+.mkkpi .s{font-size:10.5px;color:#6b7280;}
+.mkcard{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;box-shadow:var(--sh);margin-bottom:14px;}
+.mkct{font-size:13px;font-weight:600;margin:0 0 3px;}
+.mkcs{font-size:11.5px;color:#6b7280;margin:0 0 9px;}
+table.mkg{border-collapse:collapse;width:100%;table-layout:fixed;font-family:var(--mono);font-size:11px;}
+table.mkg th{font-family:var(--font);font-size:10.5px;font-weight:600;color:#374151;background:var(--bg4);border:1px solid #fff;padding:4px 3px;text-align:center;}
+table.mkg th.rh{width:58px;font-family:var(--mono);text-align:right;}
+table.mkg td{border:1px solid #fff;padding:0;text-align:center;height:28px;position:relative;}
+table.mkg td span.v{display:block;line-height:28px;font-size:11.5px;}
+table.mkg td.own{outline:2px solid var(--text);outline-offset:-2px;}
+table.mkg td.own b{position:absolute;right:0;bottom:0;font-size:10px;background:var(--text);color:#fff;border-radius:4px 0 0 0;padding:0 4px;line-height:14px;font-family:var(--font);}
+table.mkg td.tt,table.mkg tr.ft td{background:var(--bg4);color:#374151;}
+table.mko{width:100%;border-collapse:collapse;font-size:12.5px;}
+table.mko th{background:var(--bg4);font-size:10.5px;padding:5px 7px;border-bottom:1px solid var(--border);}
+table.mko td{padding:5px 7px;border-bottom:1px solid var(--border);font-family:var(--mono);text-align:right;}
+table.mko td:first-child,table.mko th:first-child{text-align:left;font-family:var(--font);}
 /* --- sidebar --- */
 .side{position:fixed;top:0;left:0;bottom:0;width:var(--side);background:#fcfcfc;border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:80;transition:transform .25s ease;}
 .side-hd{height:60px;display:flex;align-items:center;gap:9px;padding:0 16px;flex-shrink:0;}
@@ -473,6 +508,7 @@ table.lst tbody tr.ul td:last-child{background:#fffaf3;}
     <button class="nav-item" onclick="showPage('consult')"><svg class="ic" aria-hidden="true"><use href="#i-bulb"></use></svg><span>車種コンサル</span></button>
     <button class="nav-item" onclick="showPage('pricealert')"><svg class="ic" aria-hidden="true"><use href="#i-alert"></use></svg><span>価格アラート</span><span class="nav-badge" id="navPa" style="display:none"></span></button>
     <button class="nav-item" onclick="showPage('cmatch')"><svg class="ic" aria-hidden="true"><use href="#i-chart"></use></svg><span>反響分析</span><span class="nav-badge" id="navCm" style="display:none"></span></button>
+    <button class="nav-item" onclick="showPage('market')"><svg class="ic" aria-hidden="true"><use href="#i-chart"></use></svg><span>市場マップ</span></button>
   </nav>
   <div class="side-ft">
     <button class="nav-item" onclick="openMarketModal()"><svg class="ic" aria-hidden="true"><use href="#i-line"></use></svg><span>市場分析</span></button>
@@ -895,6 +931,10 @@ table.lst tbody tr.ul td:last-child{background:#fffaf3;}
 </div>
 
 <!-- PAGE: 反響分析（Cマッチ） -->
+<div class="page" id="page-market">
+  <div class="mkbar" id="mkBar"></div>
+  <div id="mkBody"><div class="mut" style="padding:24px">読み込み中…</div></div>
+</div>
 <div class="page" id="page-cmatch">
   <div class="sec" style="margin-bottom:12px">
     <div class="sec-hdr" style="gap:10px;flex-wrap:wrap">
@@ -1867,6 +1907,7 @@ const LS_COLS=[
   {k:'km',     l:'距離',     w:76,  a:'r', mono:1},
   {k:'shaken', l:'車検',     w:64,  a:'c'},
   {k:'days',   l:'掲載日数', w:66,  a:'r', mono:1},
+  {k:'mkt',    l:'市場',     w:52,  a:'r', mono:1},
   {k:'cost',   l:'原価',     w:70,  a:'r', mono:1},
   {k:'price',  l:'本体価格', w:76,  a:'r', mono:1},
   {k:'profit', l:'利益',     w:66,  a:'r', mono:1},
@@ -1918,6 +1959,7 @@ function lsFmt(d,c){
     case 'cost': case 'price': case 'gyohan': return v.toFixed(1);
     case 'profit': return `<span style="color:${v<0?'var(--red)':v<10?'var(--amber)':'var(--text)'}">${v.toFixed(1)}</span>`;
     case 'days':   {const cl=v>=300?'pill-r':v>=100?'pill-y':'pill-g';return `<span class="pill ${cl}">${v}</span>`;}
+    case 'mkt':    return d.mktU?`<a class="mktlink" href="${d.mktU}" target="_blank" rel="noopener" title="${PATROL?PATROL.cond+' / '+PATROL.area+'（'+PATROL.collected+'取得）':''}　クリックでカーセンサーの同条件検索を開く">${v}</a>`:String(v);
     case 'color':  return colorChip(v,11)+v;
     case 'rent':   return rentChip(v);
     case 'fwd':    return '<span class="mtag mtag-fwd">4WD</span>';
@@ -1926,8 +1968,43 @@ function lsFmt(d,c){
     default:       return String(v);
   }
 }
+let PATROL=null,PLOAD=null;
+const P_STEPS=[5000,10000,20000,30000,40000,50000,60000,70000,80000,90000,100000,110000,120000,130000,140000,150000];
+function pSnapLo(v){if(v<=0)return 0;let b=0;for(const s of P_STEPS){if(s<=v)b=s;}return b;}
+function pSnapHi(v){for(const s of P_STEPS){if(s>=v)return s;}return 0;}
+function pKey(d){
+  const c=MK_CODE[d.name], y=mkY(d.year);
+  if(!c||y==null||d.km==null)return null;
+  return [c,y-1,y+1,pSnapLo(d.km-20000),pSnapHi(d.km+20000)].join('_');
+}
+function pUrl(k){
+  const p=k.split('_'), c=p[0].split('/');
+  const q=['AR='+((PATROL&&PATROL.ar)||'41*42*43'),'YMIN='+p[1],'YMAX='+p[2]];
+  if(+p[3])q.push('SMIN='+p[3]);
+  if(+p[4])q.push('SMAX='+p[4]);
+  return 'https://www.carsensor.net/usedcar/b'+c[0]+'/'+c[1]+'/index.html?'+q.join('&');
+}
+function pLoad(){
+  if(PLOAD)return PLOAD;
+  PLOAD=fetch('patrol_latest.json',{cache:'no-cache'})
+    .then(r=>r.ok?r.json():null)
+    .then(j=>{
+      PATROL=j;
+      if(j&&j.counts){
+        [...STOCK,...UNLISTED,...SOLD].forEach(d=>{
+          const k=pKey(d); if(!k)return;
+          const n=j.counts[k];
+          if(n==null||n<0)return;
+          d.mkt=n; d.mktU=pUrl(k);
+        });
+      }
+      return j;
+    }).catch(()=>null);
+  return PLOAD;
+}
 function renderList(){
   const box=document.getElementById('lsTable');if(!box)return;
+  if(!PATROL&&!PLOAD){pLoad().then(()=>renderList());}
   // 仕入先の選択肢を作る
   const sel=document.getElementById('lsSrc');
   if(sel&&sel.options.length<=1){
@@ -4286,7 +4363,8 @@ const PAGE_META={
   sold:['売約分析','売約実績の推移とランキング'],
   consult:['車種コンサル','1車種を選んで年式バランスと在庫戦略を診断'],
   pricealert:['価格アラート','市場相場と自社価格の乖離を検知して値付けを是正'],
-  cmatch:['反響分析（Cマッチ）','カーセンサーの閲覧・問合せを在庫と突合して打ち手に変える']
+  cmatch:['反響分析（Cマッチ）','カーセンサーの閲覧・問合せを在庫と突合して打ち手に変える'],
+  market:['市場マップ','カーセンサー掲載を価格帯×年式×走行で俯瞰し、自社在庫の位置を重ねる']
 };
 function toggleSide(force){
   const open=(force===undefined)?!document.body.classList.contains('side-open'):force;
@@ -4307,6 +4385,7 @@ function showPage(n){
   if(n==='list')renderList();
   if(n==='pricealert')renderPriceAlert();
   if(n==='cmatch')renderCmatch();
+  if(n==='market')renderMarket();
 }
 
 
@@ -4907,6 +4986,164 @@ function exportUnlistedPdf(){
 }
 
 loadAll();
+
+// ═══════════ 市場マップ ═══════════
+const MK_CODE={"AZワゴン":"MA/s003","AZﾜｺﾞﾝ":"MA/s003","CX-30":"MA/s101","CX-5":"MA/s087","EKスペース":"MI/s109","Gクラス":"ME/s029","N-BOX":"HO/s094","N-BOXカスタム":"HO/s094","N-ONE":"HO/s098","NWGN":"HO/s100","Nワゴン":"HO/s100","RAV4":"TO/s147","RC":"LE/s015","RX":"LE/s008","ZR-V":"HO/s114","ZRV":"HO/s114","アクア":"TO/s228","アクア10中期":"TO/s228","アクア10前期":"TO/s228","アクア10後期":"TO/s228","アクア20現行":"TO/s228","アクア現行":"TO/s228","アルト":"SZ/s001","アルトラパン":"SZ/s002","インプレッサXV":"SB/s045","インプレッサスポーツ":"SB/s048","ウェイク":"DA/s069","エクストレイル":"NI/s020","エクストレイル32前期":"NI/s020","エクストレイル32後期":"NI/s020","エスクァイア":"TO/s234","エブリー":"SZ/s005","オーラ":"NI/s188","カローラクロス":"TO/s254","カローラスポーツ":"TO/s243","カローラツーリング":"TO/s245","キャスト":"DA/s071","キャリトラック":"SZ/s034","シエンタ":"TO/s077","ジムニーシエラ":"SZ/s011","ステップワゴン":"HO/s003","スペーシア":"SZ/s049","スペーシアカスタム":"SZ/s049","セレナ":"NI/s012","セレナ27後期":"NI/s012","セレナ28現行":"NI/s012","ソリオバンディット":"SZ/s014","タフト":"DA/s055","タント":"DA/s006","タントカスタム":"DA/s006","デイズ":"NI/s179","デイズルークス":"NI/s181","デリカD5":"MI/s089","トール":"DA/s074","ノア":"TO/s108","ノア90系":"TO/s108","ノート":"NI/s008","ノートEpower現行":"NI/s008","ノート前中期":"NI/s008","ノート前期":"NI/s008","ノート後期":"NI/s008","ハイゼット":"DA/s042","ハイゼットカーゴ":"DA/s032","ハスラー":"SZ/s050","ハリアー":"TO/s114","ハリアー80":"TO/s114","ハリアー80HV":"TO/s114","パッソ":"TO/s109","ピクシスバン":"TO/s227","フォレスター":"SB/s011","フリード":"HO/s083","プリウス":"TO/s122","プリウス30系":"TO/s122","プリウス50PHV":"TO/s122","プリウス50前期":"TO/s122","プリウス50後期":"TO/s122","プリウス60":"TO/s122","プリウス60PHEV":"TO/s122","ミライース":"DA/s065","ミラジーノ":"DA/s011","ミラージュ":"MI/s062","ムーヴ":"DA/s012","ヤリス":"TO/s249","ヤリスクロス":"TO/s251","ライズ":"TO/s247","ルークス":"NI/s162","ルークスHW":"NI/s162","ルーミー":"TO/s240","ワゴンR":"SZ/s015","ワゴンＲ":"SZ/s015","ヴィッツ":"TO/s018","ヴェゼルHV前型":"HO/s101","ヴェゼルHV現行":"HO/s101","ヴェルファイア30系":"TO/s200","ヴェルファイア40系":"TO/s200","ヴォクシー":"TO/s021","ヴォクシー70以前":"TO/s021","ヴォクシー80系":"TO/s021","ヴォクシー90系":"TO/s021","ｱｸｱ現行":"TO/s228","ｳﾞｨｯﾂ":"TO/s018","ｳﾞｪｾﾞﾙHV（前型）":"HO/s101","ｳﾞｪｾﾞﾙHV（現行）":"HO/s101","ｳﾞｪﾙﾌｧｲｱ 30系":"TO/s200","ｴｸｽﾄﾚｲﾙ32（前期）":"NI/s020","ｴｸｽﾄﾚｲﾙ32（後期）":"NI/s020","ｴｽｸｧｲｱ":"TO/s234","ｶﾛｰﾗｸﾛｽ":"TO/s254","ｶﾛｰﾗﾂｰﾘﾝｸﾞ":"TO/s245","ｷｬｽﾄ":"DA/s071","ｼｴﾝﾀ":"TO/s077","ｽﾍﾟｰｼｱ":"SZ/s049","ｾﾚﾅ 27後期":"NI/s012","ﾀﾝﾄ":"DA/s006","ﾃﾞｲｽﾞﾙｰｸｽ":"NI/s181","ﾉｰﾄEpower（現行）":"NI/s008","ﾉｰﾄ前期":"NI/s008","ﾉｱ90系":"TO/s108","ﾊﾘｱｰ80":"TO/s114","ﾌﾟﾘｳｽ 50前期":"TO/s122","ﾌﾟﾘｳｽ30系":"TO/s122","ﾐﾗｰｼﾞｭ":"MI/s062","ﾐﾗｲｰｽ":"DA/s065","ﾐﾗｼﾞｰﾉ":"DA/s011","ﾔﾘｽｸﾛｽ":"TO/s251","ﾜｺﾞﾝＲ":"SZ/s015"};
+const MK_RAMP=['#f4f5f6','#eaf1fd','#cfe0fa','#a9c9f4','#7fabec','#4a86e0','#1f6ad6','#0447a8'];
+let MKDATA=null, MKLOAD=null;
+const MKF={code:'',area:'all',pref:'all',pw:'all',wd:'all',pit:'auto'};
+function mkY(v){
+  if(v==null)return null;
+  if(typeof v==='number')return v>1900?v:null;
+  const t=String(v);
+  let m=t.match(/R\s*(\d+)/); if(m)return 2018+Number(m[1]);
+  m=t.match(/H\s*(\d+)/); if(m)return 1988+Number(m[1]);
+  m=t.match(/(19|20)\d{2}/); if(m)return Number(m[0]);
+  return null;
+}
+
+function mkLoad(){
+  if(MKLOAD)return MKLOAD;
+  MKLOAD=fetch('market_2026-08-17.json',{cache:'force-cache'})
+    .then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+    .then(j=>{MKDATA=j;return j;});
+  return MKLOAD;
+}
+function mkOwn(code){
+  return STOCK.filter(d=>MK_CODE[d.name]===code && d.price!=null && mkY(d.year)!=null);
+}
+function mkRows(){
+  if(!MKDATA||!MKDATA.cars[MKF.code])return [];
+  return MKDATA.cars[MKF.code].rows.map(l=>l.split('\t')).filter(r=>{
+    if(MKF.area!=='all'&&r[0]!==MKF.area)return false;
+    if(MKF.pref!=='all'&&r[7]!==MKF.pref)return false;
+    if(MKF.pw==='hv'&&r[10]!=='1')return false;
+    if(MKF.pw==='gas'&&r[10]==='1')return false;
+    if(MKF.wd==='4'&&r[9]!=='1')return false;
+    if(MKF.wd==='2'&&r[9]==='1')return false;
+    return true;
+  });
+}
+function mkOwnF(){
+  return mkOwn(MKF.code).filter(d=>{
+    const hv=d.hv==='〇', wd=d.fwd==='〇';
+    if(MKF.pw==='hv'&&!hv)return false;
+    if(MKF.pw==='gas'&&hv)return false;
+    if(MKF.wd==='4'&&!wd)return false;
+    if(MKF.wd==='2'&&wd)return false;
+    return true;
+  });
+}
+function mkMed(a){a=a.slice().sort((x,y)=>x-y);return a.length?a[Math.floor(a.length/2)]:null;}
+function mkStep(min,max){
+  if(MKF.pit!=='auto')return Number(MKF.pit);for(const st of [5,10,20,25,50,100]){const k=Math.ceil((max+.001)/st)-Math.floor(min/st);if(k>=6&&k<=16)return st;}return (max-min)>400?50:20;}
+function mkGrid(mk,own,getC,getOC,cols,lab,title,sub){
+  const prices=mk.map(r=>parseFloat(r[3])).filter(v=>v>0);
+  if(!prices.length)return '<div class="mkcard"><div class="mkct">'+title+'</div><div class="mut">該当する掲載がありません</div></div>';
+  const PB=mkStep(Math.min(...prices),Math.max(...prices));
+  const m={},om={};
+  mk.forEach(r=>{const p=parseFloat(r[3]);const c=getC(r);if(!p||c==null||c==='')return;const b=Math.floor(p/PB)*PB;(m[b]=m[b]||{})[c]=(m[b][c]||0)+1;});
+  own.forEach(d=>{const c=getOC(d);if(c==null)return;const b=Math.floor(d.price/PB)*PB;(om[b]=om[b]||{})[c]=(om[b][c]||0)+1;});
+  const bands=[...new Set([...Object.keys(m),...Object.keys(om)])].map(Number).sort((a,b)=>a-b);
+  let mx=1;bands.forEach(b=>Object.values(m[b]||{}).forEach(v=>{if(v>mx)mx=v;}));
+  let h='<div class="mkcard"><div class="mkct">'+title+'</div><div class="mkcs">'+sub+'　価格帯は'+PB+'万円刻み</div><table class="mkg"><thead><tr><th class="rh">価格帯</th>';
+  cols.forEach(c=>h+='<th>'+lab(c)+'</th>');h+='<th class="tt">計</th></tr></thead><tbody>';
+  bands.forEach(b=>{
+    const row=m[b]||{},orow=om[b]||{};
+    h+='<tr><th class="rh">'+b+'〜</th>';
+    cols.forEach(c=>{
+      const v=row[c]||0,o=orow[c]||0;
+      const lv=v===0?0:Math.min(7,1+Math.floor(v/mx*6.99));
+      const fg=lv>=5?'#fff':(lv>=1?'#33507a':'#d5d8dc');
+      h+='<td class="'+(o?'own':'')+'" style="background:'+MK_RAMP[lv]+';color:'+fg+'"><span class="v">'+(v||'·')+'</span>'+(o?'<b>'+o+'</b>':'')+'</td>';
+    });
+    h+='<td class="tt">'+Object.values(row).reduce((a,b)=>a+b,0)+'</td></tr>';
+  });
+  h+='<tr class="ft"><th class="rh">計</th>';
+  cols.forEach(c=>h+='<td>'+bands.reduce((s,b)=>s+((m[b]||{})[c]||0),0)+'</td>');
+  h+='<td>'+mk.length+'</td></tr></tbody></table></div>';
+  return h;
+}
+const MK_AR={'北陸甲信越':'7','東海':'3'};
+const MK_PR={'新潟県':'40','富山県':'41','石川県':'42','福井県':'43','山梨県':'44','長野県':'45','岐阜県':'46','静岡県':'47'};
+function mkUrl(){
+  const c=MKF.code.split('/');
+  let q=[];
+  if(MKF.pref!=='all'&&MK_PR[MKF.pref])q.push('AR='+MK_PR[MKF.pref]);
+  else if(MKF.area!=='all'&&MK_AR[MKF.area])q.push('AR='+MK_AR[MKF.area]);
+  return 'https://www.carsensor.net/usedcar/b'+c[0]+'/'+c[1]+'/index.html'+(q.length?'?'+q.join('&'):'');
+}
+const MK_COLS=['白','黒','銀','灰','青','赤','茶','緑','黄','橙','紫','桃','他'];
+function mkColorBar(mk){
+  const t={};let n=0;
+  mk.forEach(r=>{const c=(r[6]||'').trim();if(!c)return;t[c]=(t[c]||0)+1;n++;});
+  if(!n)return '';
+  const ord=MK_COLS.filter(c=>t[c]).concat(Object.keys(t).filter(c=>MK_COLS.indexOf(c)<0));
+  const sw={'白':'#f2f3f5','黒':'#2b2f36','銀':'#c9ced6','灰':'#8b9099','青':'#2f6ad0','赤':'#cf3b3b','茶':'#7a5334','緑':'#2f7d4f','黄':'#e0b510','橙':'#e2802a','紫':'#7a4fa8','桃':'#dd7fa5'};
+  let h='<div class="mkcard"><div class="mkct">色の構成</div><div class="mkcs">市場'+n+'台の掲載色（ツートンは主色）</div><div class="mkcbar">';
+  ord.forEach(c=>{const w=t[c]/n*100;if(w<0.8)return;const bg=sw[c]||'#b9bec6';
+    h+='<div class="mkcseg" style="width:'+w.toFixed(2)+'%;background:'+bg+';color:'+(['白','銀','灰','黄'].indexOf(c)>=0?'#333':'#fff')+'" title="'+c+' '+t[c]+'台">'+(w>=4?c+'<small>'+Math.round(w)+'%</small>':'')+'</div>';});
+  h+='</div><div class="mkclist">'+ord.map(c=>c+' '+t[c]+'台（'+(t[c]/n*100).toFixed(1)+'%）').join('　/　')+'</div></div>';
+  return h;
+}
+function mkSet(k,v){MKF[k]=v;renderMarket();}
+function renderMarket(){
+  const bar=document.getElementById('mkBar'),body=document.getElementById('mkBody');
+  if(!bar||!body)return;
+  if(!MKDATA){
+    body.innerHTML='<div class="mut" style="padding:24px">市場データを読み込んでいます…</div>';
+    mkLoad().then(()=>renderMarket()).catch(e=>{
+      body.innerHTML='<div class="mut" style="padding:24px">市場データを読み込めませんでした（'+e.message+'）。<br>market_2026-08-17.json がリポジトリにあるか確認してください。</div>';});
+    return;
+  }
+  const codes=Object.keys(MKDATA.cars);
+  if(!MKF.code||!MKDATA.cars[MKF.code]){
+    let best=codes[0],bn=-1;
+    codes.forEach(c=>{const n=mkOwn(c).length;if(n>bn){bn=n;best=c;}});
+    MKF.code=best;
+  }
+  const all=MKDATA.cars[MKF.code].rows.map(l=>l.split('\t'));
+  const prefs=[...new Set(all.map(r=>r[7]))].filter(Boolean).sort();
+  const opts=codes.map(c=>{const n=mkOwn(c).length;return '<option value="'+c+'"'+(c===MKF.code?' selected':'')+'>'+MKDATA.cars[c].name+(n?'（自社'+n+'台）':'')+'</option>';}).join('');
+  const seg=(k,arr)=>'<div class="mkseg">'+arr.map(a=>'<button class="'+(MKF[k]===a[0]?'on':'')+'" onclick="mkSet(\''+k+'\',\''+a[0]+'\')">'+a[1]+'</button>').join('')+'</div>';
+  bar.innerHTML='<div class="mkfg"><label>車種</label><select class="sel" onchange="MKF.pref=\'all\';mkSet(\'code\',this.value)">'+opts+'</select></div>'
+   +'<div class="mkfg"><label>地区</label>'+seg('area',[['all','両方'],['北陸甲信越','北陸甲信越'],['東海','東海']])+'</div>'
+   +'<div class="mkfg"><label>県</label><select class="sel" onchange="mkSet(\'pref\',this.value)"><option value="all">すべて</option>'+prefs.map(p=>'<option value="'+p+'"'+(MKF.pref===p?' selected':'')+'>'+p+'</option>').join('')+'</select></div>'
+   +'<div class="mkfg"><label>動力</label>'+seg('pw',[['all','すべて'],['hv','HV'],['gas','ガソリン']])+'</div>'
+   +'<div class="mkfg"><label>駆動</label>'+seg('wd',[['all','すべて'],['4','4WD'],['2','2WD']])+'</div>'
+   +'<div class="mkfg"><label>刻み</label>'+seg('pit',[['auto','自動'],['10','10万'],['20','20万'],['50','50万']])+'</div>'
+   +'<a class="mklink" href="'+mkUrl()+'" target="_blank" rel="noopener">カーセンサーで開く ↗</a>';
+  const mk=mkRows(),own=mkOwnF();
+  const mp=mk.map(r=>parseFloat(r[3])).filter(v=>v>0);
+  const mmed=mkMed(mp),omed=mkMed(own.map(d=>d.price));
+  const hvr=mk.length?Math.round(mk.filter(r=>r[10]==='1').length/mk.length*100):0;
+  const wdr=mk.length?Math.round(mk.filter(r=>r[9]==='1').length/mk.length*100):0;
+  const years=[];for(let y=2013;y<=2026;y++)years.push(y);
+  const kms=[];for(let k=0;k<=10;k++)kms.push(k);
+  const ownRows=own.slice().sort((a,b)=>(b.days||0)-(a.days||0)).map(d=>{
+    const rk=mp.filter(x=>x<d.price).length+1;
+    const diff=mmed!=null?d.price-mmed:null;
+    return '<tr><td>'+(d.grade||'—')+'</td><td>'+d.year+'</td><td>'+(d.km!=null?(d.km/10000).toFixed(1):'—')+'</td>'
+      +'<td>'+d.price.toFixed(1)+'</td><td>'+(d.hv==='〇'?'HV':'ガ')+(d.fwd==='〇'?'/4WD':'/2WD')+'</td>'
+      +'<td>'+(d.days!=null?d.days:'—')+'</td><td>'+(mp.length?rk+'/'+(mp.length+1):'—')+'</td>'
+      +'<td style="color:'+(diff>0?'var(--red)':'var(--green)')+';font-weight:600">'+(diff==null?'—':(diff>0?'+':'')+diff.toFixed(1))+'</td></tr>';
+  }).join('');
+  body.innerHTML='<div class="mkkpis">'
+   +'<div class="mkkpi"><div class="l">市場台数</div><div class="v">'+mk.length+'</div><div class="s">該当する掲載</div></div>'
+   +'<div class="mkkpi"><div class="l">市場の中央値</div><div class="v">'+(mmed!=null?mmed.toFixed(1):'—')+'</div><div class="s">万円（本体）</div></div>'
+   +'<div class="mkkpi"><div class="l">自社在庫</div><div class="v">'+own.length+'</div><div class="s">台</div></div>'
+   +'<div class="mkkpi"><div class="l">自社の中央値</div><div class="v" style="color:'+(omed!=null&&mmed!=null&&omed>mmed?'var(--red)':'var(--green)')+'">'+(omed!=null?omed.toFixed(1):'—')+'</div><div class="s">'+(omed!=null&&mmed!=null?((omed-mmed>0?'+':'')+(omed-mmed).toFixed(1)+'万'):'')+'</div></div>'
+   +'<div class="mkkpi"><div class="l">市場の構成</div><div class="v" style="font-size:17px">HV '+hvr+'% / 4WD '+wdr+'%</div><div class="s">該当セグメント内</div></div>'
+   +'</div>'
+   +mkGrid(mk,own,r=>parseInt(r[4]),d=>mkY(d.year),years,y=>String(y).slice(2),'価格帯 × 年式','横=年式（西暦下2桁）／黒枠は自社在庫のいる位置')
+   +mkGrid(mk,own,r=>Math.min(10,Math.floor(parseFloat(r[5]))),d=>d.km!=null?Math.min(10,Math.floor(d.km/10000)):null,kms,k=>k===10?'10+':String(k),'価格帯 × 走行距離','横=走行（万km）／10+は10万km以上')
+   +mkColorBar(mk)
+   +'<div class="mkcard"><div class="mkct">自社在庫 '+own.length+'台</div><div class="mkcs">順位と中央値差は、上の絞り込みで得られた市場に対するものです</div>'
+   +(own.length?'<table class="mko"><thead><tr><th>グレード</th><th>年式</th><th>走行</th><th>価格</th><th>仕様</th><th>掲載日数</th><th>順位</th><th>中央値差</th></tr></thead><tbody>'+ownRows+'</tbody></table>':'<div class="mut">この条件に該当する自社在庫はありません</div>')
+   +'</div>'
+   +'<div class="mut" style="font-size:11.5px;padding:2px 2px 20px">出典：カーセンサー掲載（'+MKDATA.collected+'取得）　'+MKDATA.areas.join(' / ')+'</div>';
+}
+
 </script>
 
 <!-- API設定モーダル -->
