@@ -927,6 +927,11 @@ table.lst tbody tr.ul td:last-child{background:#fffaf3;}
       <span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-alert"></use></svg>価格アラート</span>
       <span style="font-size:12.6px;color:var(--text3)" id="pa-note"></span>
     </div>
+    <div style="padding:9px 12px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <span style="font-size:11.5px;color:var(--text3);font-weight:600">打ち手で絞る</span>
+      <div class="mkseg" id="paSeg"></div>
+      <button class="minibtn" style="margin-left:auto" onclick="paCopyList()">この一覧をコピー</button>
+    </div>
     <div class="sec-body" id="paBody"></div>
   </div>
 
@@ -2148,6 +2153,25 @@ function paLevel(price,fair){
   if(r<=0.96)return {lvl:1,label:'割安',      c:'#047857',bg:'#ecfdf5'};
   return {lvl:0,label:'相場内',c:'#0559d2',bg:'#eff6ff'};
 }
+
+/* グレード違い（カスタム／ハイウェイスター／バンディット）を相場から混ぜない。
+   在庫側の 車名＋グレード から自車がどれかを判定し、市場側の掲載グレード文字列で揃える。
+   グレードを持たない旧データでは何もしない。 */
+function gvHasGrade(){return !!(MKDATA&&MKDATA.fields&&MKDATA.fields.indexOf('grade')>=0);}
+const GV_RULES=[
+  {name:'カスタム',   own:/カスタム|ｶｽﾀﾑ/,                     mkt:/カスタム/},
+  {name:'ハイウェイスター',own:/ハイウ[ェエ]イスター|ﾊｲｳｪｲｽﾀ|(^|[^A-Za-z])HW([^A-Za-z]|$)/, mkt:/ハイウ[ェエ]イスター/},
+  {name:'バンディット', own:/バンディット|ﾊﾞﾝﾃﾞｨｯﾄ/,             mkt:/バンディット/}
+];
+function gvFilter(d){
+  if(!gvHasGrade())return null;
+  const t=String(d.name||'')+' '+String(d.grade||'');
+  const hit=GV_RULES.filter(function(r){return r.own.test(t);});
+  if(hit.length)return {label:hit.map(function(r){return r.name;}).join('・'),
+                        f:function(g){return hit.every(function(r){return r.mkt.test(g||'');});}};
+  const any=new RegExp(GV_RULES.map(function(r){return r.mkt.source;}).join('|'));
+  return {label:'標準グレード', f:function(g){return !any.test(g||'');}};
+}
 /* ═══ 価格アラート：実データから全在庫を判定する ═══ */
 const PA_TIERS=[
   {k:'h1',lbl:'北陸甲信越・同条件'},
@@ -2164,14 +2188,15 @@ function paMkt(d){
   const yOk=r=>{const v=+r[4];return v>=y-1&&v<=y+1;};
   const kOk=r=>{if(d.km==null)return true;const v=parseFloat(r[5])*10000;return v>=d.km-20000&&v<=d.km+20000;};
   const hoku=r=>r[0]==='北陸甲信越';
-  const fs=[r=>hoku(r)&&yOk(r)&&kOk(r)&&spec(r), r=>yOk(r)&&kOk(r)&&spec(r), r=>yOk(r)&&spec(r), r=>yOk(r)];
+  const gv=gvFilter(d), gOk=gv?(r=>gv.f(r[11])):(()=>true);
+  const fs=[r=>hoku(r)&&yOk(r)&&kOk(r)&&spec(r)&&gOk(r), r=>yOk(r)&&kOk(r)&&spec(r)&&gOk(r), r=>yOk(r)&&spec(r)&&gOk(r), r=>yOk(r)&&gOk(r)];
   for(let i=0;i<fs.length;i++){
     const rows=all.filter(fs[i]);
     const p=rows.map(r=>parseFloat(r[3])).filter(v=>v>0).sort((a,b)=>a-b);
     if(p.length>=8||i===fs.length-1){
       if(!p.length)return null;
       const q=f=>p[Math.min(p.length-1,Math.floor(p.length*f))];
-      return {scope:PA_TIERS[i].lbl, n:p.length, low:p[0], q1:q(.25), med:q(.5), q3:q(.75),
+      return {scope:PA_TIERS[i].lbl+(gv?'・'+gv.label:''), n:p.length, low:p[0], q1:q(.25), med:q(.5), q3:q(.75),
               high:p[p.length-1], fair:q(.5),
               rank:d.price!=null?p.filter(v=>v<d.price).length+1:null,
               url:(function(){const c=code.split('/');const qs=['AR='+(i===0?'7':'7*3'),'YMIN='+(y-1),'YMAX='+(y+1)];
@@ -2213,7 +2238,9 @@ function paDiag(d,m,cm){
     rec=(Math.round(m.med*10)/10).toFixed(1)+'万まで下げる（同条件'+m.n+'台の中央値）';
   }else if(viewLow===true && long){
     cat=PA_CAT.B;
-    rec='価格は据え置き。掲載をやり直して露出を戻す（写真・タイトル・装備表記）';
+    const tr=paTrend(d);
+    rec='価格は据え置き。掲載をやり直して露出を戻す'
+       +(tr&&tr.drop>0?'（閲覧が'+tr.peakYm+'の1日'+tr.peak.toFixed(1)+'回から'+tr.cur.toFixed(1)+'回へ'+tr.drop+'%減）':'（写真・タイトル・装備表記）');
   }else if(cm && cm.view>0 && cm.fav>0 && cm.inq===0 && long){
     cat=PA_CAT.C;
     rec='見られてお気に入りも付いている。総額表示・保証・車検残の見せ方を直す';
@@ -2233,8 +2260,45 @@ function paRows(){
     return {car:d,m,cm,g,gap:(m&&d.price!=null)?Math.round((d.price-m.med)*10)/10:null};
   }).sort((a,b)=>b.g.score-a.g.score);
 }
+
+/* 閲覧数の落ち幅。ピーク月の1日あたり閲覧に対して直近月が何%か */
+function paTrend(d){
+  const h=cmHist(d);
+  if(h.length<2)return null;
+  const rate=x=>x.days>0?x.view/x.days:0;
+  const cur=rate(h[h.length-1]);
+  let peak=0,peakYm='';
+  h.slice(0,-1).forEach(function(x){const r=rate(x);if(r>peak){peak=r;peakYm=x.ym;}});
+  if(!peak)return null;
+  return {cur:cur, peak:peak, peakYm:peakYm, drop:Math.round((1-cur/peak)*100), months:h.length};
+}
 function paMoney(v){return v==null?'—':Number(v).toFixed(1);}
 function paAi(sid){const d=STOCK.find(x=>String(x.sid)===String(sid));if(d)runAiDiagnosis(d);}
+let PAF='all';
+function paSet(v){PAF=v;renderPriceAlert();}
+function paVisible(rows){
+  if(PAF==='all')return rows.filter(r=>r.g.cat.key!=='X'&&r.g.cat.key!=='F');
+  if(PAF==='dead')return rows.filter(r=>r.g.dead&&(r.car.days||0)>=120);
+  return rows.filter(r=>r.g.cat.key===PAF);
+}
+function paCopyList(){
+  const rows=paVisible(paRows());
+  if(!rows.length){alert('コピーする対象がありません。');return;}
+  const t=rows.map((r,i)=>{
+    const c=r.car,m=r.m;
+    return (i+1)+'. 車体'+(c.lower4||'—')+' / '+c.name+' '+(c.grade||'')+' / '+ymV4(c)+' / '
+      +(c.km!=null?(c.km/10000).toFixed(1)+'万km':'—')+' / 本体'+paMoney(c.price)+'万'
+      +' / 掲載'+(c.days||'—')+'日'
+      +(m?' / 同条件'+m.n+'台中'+(m.rank||'—')+'位・中央値'+paMoney(m.med)+'万':'')
+      +(r.cm?' / 閲覧'+r.cm.perDay.toFixed(1)+'回/日（上位'+(100-r.cm.pct)+'%）お気に入り'+r.cm.fav+'・問合せ'+r.cm.inq:'')
+      +'\n    → '+r.g.rec;
+  }).join('\n');
+  const head='【'+(PAF==='all'?'要対応':PAF==='dead'?'原価が相場超え':(PA_CAT[PAF]||{label:PAF}).label)+'】'+rows.length+'台　'+(MKDATA?MKDATA.collected:'')+'時点\n\n';
+  navigator.clipboard.writeText(head+t).then(()=>alert(rows.length+'台ぶんをコピーしました。'),()=>{
+    const w=window.open('','_blank');
+    w.document.write('<pre style="white-space:pre-wrap;font-family:sans-serif;padding:16px;font-size:13px">'+(head+t).replace(/[<>&]/g,m=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[m]))+'</pre>');
+    w.document.close();});
+}
 function renderPriceAlert(){
   const box=document.getElementById('paBody');if(!box)return;
   if(!MKDATA){
@@ -2259,7 +2323,17 @@ function renderPriceAlert(){
     '出典：カーセンサー掲載 '+MKDATA.collected+'取得（'+MKDATA.areas.join('／')+'・修復歴なし）'
     +'／反響は C-match '+(rows.find(r=>r.cm)?(STOCK.find(d=>d.cm)||{cm:{}}).cm.last||'':'未取込');
 
-  box.innerHTML=rows.filter(r=>r.g.cat.key!=='X'&&r.g.cat.key!=='F').slice(0,60).map(r=>{
+  const seg=document.getElementById('paSeg');
+  if(seg){
+    const defs=[['all','要対応'],['A','値下げ'],['B','再掲載'],['C','問合せ導線'],['D','値上げ余地'],['dead','原価超え'],['F','経過観察']];
+    seg.innerHTML=defs.map(function(x){
+      const n=x[0]==='all'?ok.filter(r=>r.g.cat.key!=='F').length
+             :x[0]==='dead'?ok.filter(r=>r.g.dead&&(r.car.days||0)>=120).length
+             :cnt(x[0]);
+      return '<button class="'+(PAF===x[0]?'on':'')+'" onclick="paSet(\''+x[0]+'\')">'+x[1]+' <b>'+n+'</b></button>';
+    }).join('');
+  }
+  box.innerHTML=paVisible(rows).slice(0,80).map(r=>{
     const c=r.car,m=r.m,cm=r.cm,g=r.g;
     const span=Math.max(m.high-m.low,1), pos=v=>Math.max(0,Math.min(100,(v-m.low)/span*100));
     const lossFair=c.cost!=null?Math.round((m.med-c.cost)*10)/10:null;
@@ -5324,7 +5398,8 @@ async function mktBrief(d){
   }
   const all=MKDATA.cars[code].rows.map(l=>l.split('\t'));
   const hv=d.hv==='〇', wd=d.fwd==='〇';
-  const noFix=all.filter(r=>r[8]==='0');
+  const gv=gvFilter(d), gOk=gv?(r=>gv.f(r[11])):(()=>true);
+  const noFix=all.filter(r=>r[8]==='0'&&gOk(r));
   const yOk=r=>{const ry=+r[4];return ry>=y-1&&ry<=y+1;};
   const kOk=r=>{if(d.km==null)return true;const rk=parseFloat(r[5])*10000;return rk>=d.km-20000&&rk<=d.km+20000;};
   const pwOk=r=>(r[10]==='1')===hv;
@@ -5334,7 +5409,7 @@ async function mktBrief(d){
   const sameH=same.filter(hoku);
   const spec=(hv?'HV':'ガソリン')+'・'+(wd?'4WD':'2WD');
 
-  L.push('【掲載明細（カーセンサー '+MKDATA.collected+'取得、'+MKDATA.areas.join('＋')+'、修復歴なしのみ）】');
+  L.push('【掲載明細（カーセンサー '+MKDATA.collected+'取得、'+MKDATA.areas.join('＋')+'、修復歴なし'+(gv?'・'+gv.label+'のみ':'')+'）】');
   L.push('この車種の総掲載数：'+noFix.length+'台（北陸甲信越 '+noFix.filter(hoku).length+'台 / 東海 '+noFix.filter(r=>!hoku(r)).length+'台）');
   L.push(mkScope(sameH,'▼同条件・北陸甲信越（年式'+(y-1)+'〜'+(y+1)+'／走行±2万km／'+spec+'）',d.price));
   L.push(mkScope(same,'▼同条件・北陸甲信越＋東海',d.price));
