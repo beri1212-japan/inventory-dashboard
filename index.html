@@ -1641,6 +1641,7 @@ function posOfSold(s){
   return 75+25*(p-m.q3)/((m.high-m.q3)||1);
 }
 function retailPos(name){
+  if(!MKDATA||!SOLD.length)return null;          // データが揃う前は計算しない（誤ってnullを覚えない）
   if(_POS[name]!==undefined)return _POS[name];
   const sd=SOLD.filter(x=>x.name===name&&x.price!=null&&x.days!=null);
   const ps=[];
@@ -1652,6 +1653,7 @@ function retailPos(name){
   return _POS[name];
 }
 function retailPosAll(){
+  if(!MKDATA||!SOLD.length)return buyCfg().pct;
   if(_POS.__all!==undefined)return _POS.__all;
   const ps=[];
   SOLD.forEach(x=>{if(x.price==null||x.days==null||x.days>90)return;const v=posOfSold(x);if(v!=null)ps.push(v);});
@@ -1776,11 +1778,19 @@ function buyRows(){
   });
   return out.sort((a,b)=>b.score-a.score);
 }
+/* 買うべき色。人気度（白黒＝人気）を優先し、いまの在庫に無い色を先に埋める。
+   売約実績の色構成は「仕入れた色の偏り」なので、推奨には使わない。 */
+function buyWantColors(o){
+  const p=buyColorPlan(o);
+  if(p.length)return p.map(x=>x.c);
+  return String(buyCfg().hot||'').split(/[,、\s]+/).filter(Boolean).slice(0,3);
+}
 function buyCond(o){
   const L=[];
   if(o.yr&&o.yr[0])L.push('年式 '+o.yr[0]+'〜'+o.yr[1]+'年');
   if(o.km&&o.km[0]!=null)L.push('走行 '+(o.km[0]/10000).toFixed(1)+'〜'+(o.km[1]/10000).toFixed(1)+'万km');
-  if(o.want&&o.want.length)L.push('色 '+o.want.join('・'));
+  const wc=buyWantColors(o);
+  if(wc.length)L.push('色 '+wc.join('・'));
   if(o.hv&&o.n&&o.hv/o.n>=0.6)L.push('HV優先');
   if(o.fwd&&o.n&&o.fwd/o.n>=0.5)L.push('4WD優先');
   return L.join(' / ');
@@ -1888,7 +1898,8 @@ function buyExportPdf(){
     const cond=[];
     if(d.yr&&d.yr[0])cond.push('<span class="cd"><i>年式</i>'+d.yr[0]+'〜'+d.yr[1]+'年</span>');
     if(d.km&&d.km[0]!=null)cond.push('<span class="cd"><i>走行</i>'+(d.km[0]/10000).toFixed(1)+'〜'+(d.km[1]/10000).toFixed(1)+'万km</span>');
-    if(d.want&&d.want.length)cond.push('<span class="cd"><i>色</i>'+esc(d.want.join('・'))+'</span>');
+    const _wc=buyWantColors(d);
+    if(_wc.length)cond.push('<span class="cd"><i>色</i>'+esc(_wc.join('・'))+'</span>');
     if(d.hv&&d.n&&d.hv/d.n>=0.6)cond.push('<span class="cd"><i>仕様</i>HV優先</span>');
     if(d.fwd&&d.n&&d.fwd/d.n>=0.5)cond.push('<span class="cd"><i>駆動</i>4WD優先</span>');
     return '<div class="card">'
@@ -2222,6 +2233,7 @@ async function loadSoldV4(){
     const month=sd?`${sd.getFullYear()}-${String(sd.getMonth()+1).padStart(2,'0')}`:null;
     res.push({
       cat,name,year:normYV4(parseYearV4(r[18])),
+      mon:parseMonV4(r[19]), grade:String(r[16]||'').trim(),
       lower4:lower4V4(r[23]), pchg:parsePriceLog(r),
       km:(km&&km<500000)?km:null,
       price:(price&&price>0&&price<2000)?price:null,
@@ -5864,7 +5876,7 @@ function mkLoad(){
   if(MKLOAD)return MKLOAD;
   MKLOAD=fetch('market_latest.json',{cache:'no-cache'})
     .then(r=>r.ok?r.json():fetch('market_2026-08-17.json').then(x=>x.json()))
-    .then(j=>{MKDATA=j;return j;});
+    .then(j=>{MKDATA=j;_POS={};return j;});
   return MKLOAD;
 }
 function mkOwn(code){
