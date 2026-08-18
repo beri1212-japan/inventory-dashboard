@@ -5087,7 +5087,7 @@ loadAll();
 const MK_CODE={"AZワゴン":"MA/s003","AZﾜｺﾞﾝ":"MA/s003","CX-30":"MA/s101","CX-5":"MA/s087","EKスペース":"MI/s109","Gクラス":"ME/s029","N-BOX":"HO/s094","N-BOXカスタム":"HO/s094","N-ONE":"HO/s098","NWGN":"HO/s100","Nワゴン":"HO/s100","RAV4":"TO/s147","RC":"LE/s015","RX":"LE/s008","ZR-V":"HO/s114","ZRV":"HO/s114","アクア":"TO/s228","アクア10中期":"TO/s228","アクア10前期":"TO/s228","アクア10後期":"TO/s228","アクア20現行":"TO/s228","アクア現行":"TO/s228","アルト":"SZ/s001","アルトラパン":"SZ/s002","インプレッサXV":"SB/s045","インプレッサスポーツ":"SB/s048","ウェイク":"DA/s069","エクストレイル":"NI/s020","エクストレイル32前期":"NI/s020","エクストレイル32後期":"NI/s020","エスクァイア":"TO/s234","エブリー":"SZ/s005","オーラ":"NI/s188","カローラクロス":"TO/s254","カローラスポーツ":"TO/s243","カローラツーリング":"TO/s245","キャスト":"DA/s071","キャリトラック":"SZ/s034","シエンタ":"TO/s077","ジムニーシエラ":"SZ/s011","ステップワゴン":"HO/s003","スペーシア":"SZ/s049","スペーシアカスタム":"SZ/s049","セレナ":"NI/s012","セレナ27後期":"NI/s012","セレナ28現行":"NI/s012","ソリオバンディット":"SZ/s014","タフト":"DA/s055","タント":"DA/s006","タントカスタム":"DA/s006","デイズ":"NI/s179","デイズルークス":"NI/s181","デリカD5":"MI/s089","トール":"DA/s074","ノア":"TO/s108","ノア90系":"TO/s108","ノート":"NI/s008","ノートEpower現行":"NI/s008","ノート前中期":"NI/s008","ノート前期":"NI/s008","ノート後期":"NI/s008","ハイゼット":"DA/s042","ハイゼットカーゴ":"DA/s032","ハスラー":"SZ/s050","ハリアー":"TO/s114","ハリアー80":"TO/s114","ハリアー80HV":"TO/s114","パッソ":"TO/s109","ピクシスバン":"TO/s227","フォレスター":"SB/s011","フリード":"HO/s083","プリウス":"TO/s122","プリウス30系":"TO/s122","プリウス50PHV":"TO/s122","プリウス50前期":"TO/s122","プリウス50後期":"TO/s122","プリウス60":"TO/s122","プリウス60PHEV":"TO/s122","ミライース":"DA/s065","ミラジーノ":"DA/s011","ミラージュ":"MI/s062","ムーヴ":"DA/s012","ヤリス":"TO/s249","ヤリスクロス":"TO/s251","ライズ":"TO/s247","ルークス":"NI/s162","ルークスHW":"NI/s162","ルーミー":"TO/s240","ワゴンR":"SZ/s015","ワゴンＲ":"SZ/s015","ヴィッツ":"TO/s018","ヴェゼルHV前型":"HO/s101","ヴェゼルHV現行":"HO/s101","ヴェルファイア30系":"TO/s200","ヴェルファイア40系":"TO/s200","ヴォクシー":"TO/s021","ヴォクシー70以前":"TO/s021","ヴォクシー80系":"TO/s021","ヴォクシー90系":"TO/s021","ｱｸｱ現行":"TO/s228","ｳﾞｨｯﾂ":"TO/s018","ｳﾞｪｾﾞﾙHV（前型）":"HO/s101","ｳﾞｪｾﾞﾙHV（現行）":"HO/s101","ｳﾞｪﾙﾌｧｲｱ 30系":"TO/s200","ｴｸｽﾄﾚｲﾙ32（前期）":"NI/s020","ｴｸｽﾄﾚｲﾙ32（後期）":"NI/s020","ｴｽｸｧｲｱ":"TO/s234","ｶﾛｰﾗｸﾛｽ":"TO/s254","ｶﾛｰﾗﾂｰﾘﾝｸﾞ":"TO/s245","ｷｬｽﾄ":"DA/s071","ｼｴﾝﾀ":"TO/s077","ｽﾍﾟｰｼｱ":"SZ/s049","ｾﾚﾅ 27後期":"NI/s012","ﾀﾝﾄ":"DA/s006","ﾃﾞｲｽﾞﾙｰｸｽ":"NI/s181","ﾉｰﾄEpower（現行）":"NI/s008","ﾉｰﾄ前期":"NI/s008","ﾉｱ90系":"TO/s108","ﾊﾘｱｰ80":"TO/s114","ﾌﾟﾘｳｽ 50前期":"TO/s122","ﾌﾟﾘｳｽ30系":"TO/s122","ﾐﾗｰｼﾞｭ":"MI/s062","ﾐﾗｲｰｽ":"DA/s065","ﾐﾗｼﾞｰﾉ":"DA/s011","ﾔﾘｽｸﾛｽ":"TO/s251","ﾜｺﾞﾝＲ":"SZ/s015"};
 const MK_RAMP=['#f4f5f6','#eaf1fd','#cfe0fa','#a9c9f4','#7fabec','#4a86e0','#1f6ad6','#0447a8'];
 let MKDATA=null, MKLOAD=null;
-const MKF={code:'',area:'all',pref:'all',pw:'all',wd:'all',pit:'auto'};
+const MKF={code:'',area:'all',pref:'all',pw:'all',wd:'all',pit:'auto',view:'live'};
 function mkY(v){
   if(v==null)return null;
   if(typeof v==='number')return v>1900?v:null;
@@ -5100,17 +5100,22 @@ function mkY(v){
 
 function mkLoad(){
   if(MKLOAD)return MKLOAD;
-  MKLOAD=fetch('market_2026-08-17.json',{cache:'force-cache'})
-    .then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+  MKLOAD=fetch('market_latest.json',{cache:'no-cache'})
+    .then(r=>r.ok?r.json():fetch('market_2026-08-17.json').then(x=>x.json()))
     .then(j=>{MKDATA=j;return j;});
   return MKLOAD;
 }
 function mkOwn(code){
   return STOCK.filter(d=>MK_CODE[d.name]===code && d.price!=null && mkY(d.year)!=null);
 }
+function mkSrc(){
+  const c=MKDATA&&MKDATA.cars[MKF.code];
+  if(!c)return [];
+  return (MKF.view==='gone'?(c.gone||[]):c.rows);
+}
 function mkRows(){
   if(!MKDATA||!MKDATA.cars[MKF.code])return [];
-  return MKDATA.cars[MKF.code].rows.map(l=>l.split('\t')).filter(r=>{
+  return mkSrc().map(l=>l.split('\t')).filter(r=>{
     if(MKF.area!=='all'&&r[0]!==MKF.area)return false;
     if(MKF.pref!=='all'&&r[7]!==MKF.pref)return false;
     if(MKF.pw==='hv'&&r[10]!=='1')return false;
@@ -5256,6 +5261,9 @@ function renderMarket(){
     return;
   }
   const codes=Object.keys(MKDATA.cars);
+  const carObj=()=>MKDATA.cars[MKF.code]||{};
+  const hasGone=!!(MKDATA.prev&&carObj().gone);
+  if(!hasGone&&MKF.view==='gone')MKF.view='live';
   if(!MKF.code||!MKDATA.cars[MKF.code]){
     let best=codes[0],bn=-1;
     codes.forEach(c=>{const n=mkOwn(c).length;if(n>bn){bn=n;best=c;}});
@@ -5271,6 +5279,7 @@ function renderMarket(){
    +'<div class="mkfg"><label>動力</label>'+seg('pw',[['all','すべて'],['hv','HV'],['gas','ガソリン']])+'</div>'
    +'<div class="mkfg"><label>駆動</label>'+seg('wd',[['all','すべて'],['4','4WD'],['2','2WD']])+'</div>'
    +'<div class="mkfg"><label>刻み</label>'+seg('pit',[['auto','自動'],['10','10万'],['20','20万'],['50','50万']])+'</div>'
+   +(hasGone?'<div class="mkfg"><label>表示</label>'+seg('view',[['live','掲載中'],['gone','消えた']])+'</div>':'')
    +'<a class="mklink" href="'+mkUrl()+'" target="_blank" rel="noopener">カーセンサーで開く ↗</a>';
   const mk=mkRows(),own=mkOwnF();
   const mp=mk.map(r=>parseFloat(r[3])).filter(v=>v>0);
@@ -5288,14 +5297,27 @@ function renderMarket(){
       +'<td style="color:'+(diff>0?'var(--red)':'var(--green)')+';font-weight:600">'+(diff==null?'—':(diff>0?'+':'')+diff.toFixed(1))+'</td></tr>';
   }).join('');
   body.innerHTML='<div class="mkkpis">'
-   +'<div class="mkkpi"><div class="l">市場台数</div><div class="v">'+mk.length+'</div><div class="s">該当する掲載</div></div>'
-   +'<div class="mkkpi"><div class="l">市場の中央値</div><div class="v">'+(mmed!=null?mmed.toFixed(1):'—')+'</div><div class="s">万円（本体）</div></div>'
+   +'<div class="mkkpi"><div class="l">'+(MKF.view==='gone'?'消えた台数':'市場台数')+'</div><div class="v">'+mk.length+'</div><div class="s">'+(MKF.view==='gone'?'前回あって今回無い':'該当する掲載')+'</div></div>'
+   +'<div class="mkkpi"><div class="l">'+(MKF.view==='gone'?'消えた物件の中央値':'市場の中央値')+'</div><div class="v">'+(mmed!=null?mmed.toFixed(1):'—')+'</div><div class="s">万円（本体）</div></div>'
    +'<div class="mkkpi"><div class="l">自社在庫</div><div class="v">'+own.length+'</div><div class="s">台</div></div>'
    +'<div class="mkkpi"><div class="l">自社の中央値</div><div class="v" style="color:'+(omed!=null&&mmed!=null&&omed>mmed?'var(--red)':'var(--green)')+'">'+(omed!=null?omed.toFixed(1):'—')+'</div><div class="s">'+(omed!=null&&mmed!=null?((omed-mmed>0?'+':'')+(omed-mmed).toFixed(1)+'万'):'')+'</div></div>'
    +'<div class="mkkpi"><div class="l">市場の構成</div><div class="v" style="font-size:17px">HV '+hvr+'% / 4WD '+wdr+'%</div><div class="s">該当セグメント内</div></div>'
+   +(hasGone?(function(){
+       const f=arr=>(arr||[]).map(l=>l.split('\t')).filter(r=>{
+         if(MKF.area!=='all'&&r[0]!==MKF.area)return false;
+         if(MKF.pref!=='all'&&r[7]!==MKF.pref)return false;
+         if(MKF.pw==='hv'&&r[10]!=='1')return false;
+         if(MKF.pw==='gas'&&r[10]==='1')return false;
+         if(MKF.wd==='4'&&r[9]!=='1')return false;
+         if(MKF.wd==='2'&&r[9]==='1')return false;
+         return true;}).length;
+       const g=f(carObj().gone), live=f(carObj().rows);
+       const rate=(live+g)?Math.round(g/(live+g)*100):0;
+       return '<div class="mkkpi"><div class="l">前回から消えた</div><div class="v" style="color:var(--green)">'+g+'</div>'
+         +'<div class="s">'+MKDATA.prev+'→'+MKDATA.collected+'　前回'+(live+g)+'台の'+rate+'%</div></div>';})():'')
    +'</div>'
-   +mkGrid(mk,own,r=>parseInt(r[4]),d=>mkY(d.year),years,y=>String(y).slice(2),'価格帯 × 年式','横=年式（西暦下2桁）／黒枠は自社在庫のいる位置')
-   +mkGrid(mk,own,r=>Math.min(10,Math.floor(parseFloat(r[5]))),d=>d.km!=null?Math.min(10,Math.floor(d.km/10000)):null,kms,k=>k===10?'10+':String(k),'価格帯 × 走行距離','横=走行（万km）／10+は10万km以上')
+   +mkGrid(mk,own,r=>parseInt(r[4]),d=>mkY(d.year),years,y=>String(y).slice(2),(MKF.view==='gone'?'消えた物件：価格帯 × 年式':'価格帯 × 年式'),(MKF.view==='gone'?'前回あって今回消えた物件だけを集計しています':'横=年式（西暦下2桁）／黒枠は自社在庫のいる位置'))
+   +mkGrid(mk,own,r=>Math.min(10,Math.floor(parseFloat(r[5]))),d=>d.km!=null?Math.min(10,Math.floor(d.km/10000)):null,kms,k=>k===10?'10+':String(k),(MKF.view==='gone'?'消えた物件：価格帯 × 走行距離':'価格帯 × 走行距離'),'横=走行（万km）／10+は10万km以上')
    +mkColorBar(mk)
    +'<div class="mkcard"><div class="mkct">自社在庫 '+own.length+'台</div><div class="mkcs">順位と中央値差は、上の絞り込みで得られた市場に対するものです</div>'
    +(own.length?'<table class="mko"><thead><tr><th>グレード</th><th>年式</th><th>走行</th><th>価格</th><th>仕様</th><th>掲載日数</th><th>順位</th><th>中央値差</th></tr></thead><tbody>'+ownRows+'</tbody></table>':'<div class="mut">この条件に該当する自社在庫はありません</div>')
