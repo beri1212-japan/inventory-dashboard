@@ -406,18 +406,23 @@ table.dtl tbody tr:hover td{background:#f7fafe!important;}
 /* --- 在庫一覧 --- */
 .tblwrap2{overflow:auto;max-height:calc(100vh - 210px);border-radius:0 0 14px 14px;}
 table.lst{width:100%;border-collapse:collapse;white-space:nowrap;min-width:1400px;}
-table.lst thead th{position:sticky;top:0;z-index:10;background:var(--bg4);color:var(--text2);font-size:11.5px;font-weight:600;
-  padding:9px 8px;border:none;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;font-family:var(--font);
+table.lst thead th{position:sticky;top:0;z-index:10;background:var(--bg4);color:var(--text2);font-size:10.6px;font-weight:600;
+  padding:6px 7px;border:none;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;font-family:var(--font);
   width:auto;min-width:0;max-width:none;white-space:nowrap;}
 table.lst thead th:first-child{position:sticky;top:0;left:auto;background:var(--bg4);width:auto;min-width:0;max-width:none;}
 table.lst thead th:hover{color:var(--accent);}
-table.lst tbody td{padding:8px 8px;border:none;border-bottom:1px solid var(--border);font-size:13.2px;
+table.lst tbody td{padding:3px 7px;border:none;border-bottom:1px solid var(--border);font-size:12.2px;line-height:1.35;
   width:auto;min-width:0;max-width:none;text-align:left;overflow:hidden;text-overflow:ellipsis;}
-table.lst tbody td:first-child{position:static;background:transparent;width:auto;min-width:0;max-width:none;border-right:none;padding:8px 8px;font-size:13.2px;}
+table.lst tbody td:first-child{position:static;background:transparent;width:auto;min-width:0;max-width:none;border-right:none;padding:3px 7px;font-size:12.2px;}
+/* 向きを整える：本文セルはすべて左揃え（操作ボタン列だけ中央） */
+table.lst thead th:not(:last-child),table.lst tbody td:not(:last-child){text-align:left!important;}
+table.lst tbody td .pill{padding:1px 6px;font-size:11px;}
+table.lst tbody td .mtag{padding:0 4px;font-size:10.5px;}
+table.lst tbody td .minibtn{padding:2px 7px;font-size:11px;}
 table.lst tbody td.num{font-family:var(--mono);}
 /* 評点・レンタは幅を詰める（左端が間延びしないように） */
 table.lst thead th.tight,table.lst tbody td.tight,table.lst tbody td.tight:first-child{padding-left:4px;padding-right:4px;}
-table.lst tbody td.tight .mtag{padding:1px 4px;font-size:11px;}
+table.lst tbody td.tight .mtag{padding:0 4px;font-size:10.5px;}
 table.lst tbody tr:hover td{background:#f4f8fe!important;}
 table.lst tbody tr.ul td{background:#fffaf3;}
 table.lst tbody tr.ul:hover td{background:#fff4e6!important;}
