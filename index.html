@@ -1693,7 +1693,8 @@ function buySpec(cat,name){
   // 想定小売：市場の安値圏（既定25%点）。市場データが無ければ売約実績の中央値
   o.retailBase = o.mktPct!=null ? o.mktPct : o.retail.med;
   o.retailSrc  = o.mktPct!=null ? ('市場'+buyCfg().pct+'%点') : '売約実績の中央値';
-  o.buyMax=(o.retailBase!=null&&o.profit!=null)?Math.round((o.retailBase-o.profit)*10)/10:o.cost.med;
+  o.target=buyTargetProfit(cat);
+  o.buyMax=(o.retailBase!=null)?Math.round((o.retailBase-o.target)*10)/10:o.cost.med;
   return o;
 }
 /* 処分予定＝値下げ or 原価超えで、120日以上たっている在庫 */
@@ -1744,6 +1745,7 @@ function buyCfg(){
   let c={};
   try{c=JSON.parse(localStorage.getItem('buy_cfg')||'{}');}catch(e){}
   return {tax:c.tax!=null?Number(c.tax):10, kei:c.kei!=null?Number(c.kei):0, futsu:c.futsu!=null?Number(c.futsu):0,
+          pKei:c.pKei!=null?Number(c.pKei):10, pFutsu:c.pFutsu!=null?Number(c.pFutsu):15,
           pct:c.pct!=null?Number(c.pct):25,
           hot:c.hot||COLOR_TIER_DEFAULT.hot, mid:c.mid||COLOR_TIER_DEFAULT.mid, cold:c.cold||COLOR_TIER_DEFAULT.cold};
 }
@@ -1762,12 +1764,14 @@ function buySaveCfg(){
   const g=id=>{const e=document.getElementById(id);return e?Number(e.value):0;};
   const t=id=>{const e=document.getElementById(id);return e?e.value.trim():'';};
   localStorage.setItem('buy_cfg',JSON.stringify({tax:g('cfgTax'),kei:g('cfgKei'),futsu:g('cfgFutsu'),
-    pct:g('cfgPct')||25, hot:t('cfgHot')||COLOR_TIER_DEFAULT.hot, mid:t('cfgMid')||COLOR_TIER_DEFAULT.mid, cold:t('cfgCold')||COLOR_TIER_DEFAULT.cold}));
+    pct:g('cfgPct')||25, pKei:g('cfgPKei')||10, pFutsu:g('cfgPFutsu')||15, hot:t('cfgHot')||COLOR_TIER_DEFAULT.hot, mid:t('cfgMid')||COLOR_TIER_DEFAULT.mid, cold:t('cfgCold')||COLOR_TIER_DEFAULT.cold}));
   const st=document.getElementById('cfgStatus');
   if(st){st.textContent='✅ 保存しました';st.style.color='var(--green)';}
   if(document.getElementById('page-action')&&document.getElementById('page-action').classList.contains('active'))renderAction();
 }
 function buyFee(cat){const c=buyCfg();return cat==='軽'?c.kei:c.futsu;}
+/* 目標利益（AA仕入れの基準）。軽は10万、普通車は10〜20万というのが実務の線 */
+function buyTargetProfit(cat){const c=buyCfg();return cat==='軽'?c.pKei:c.pFutsu;}
 /* 税込の仕入上限 → 会場で使う税別の落札上限 */
 function buyBidMax(o){
   if(o.buyMax==null)return null;
@@ -1848,7 +1852,7 @@ function buyExportPdf(){
         +'<div class="hl"><i>落札上限（税別）</i><b class="big">'+f(buyBidMax(d))+'万</b><s>諸費用'+buyFee(d.cat)+'万・税'+buyCfg().tax+'%で逆算</s></div>'
         +'<div><i>仕入上限（税込原価）</i><b class="big">'+f(d.buyMax)+'万</b><s>実績原価は'+f(d.costActual)+'万</s></div>'
         +'<div><i>想定小売</i><b class="big">'+f(d.retailBase)+'万</b><s>'+esc(d.retailSrc||'')+'</s></div>'
-        +'<div><i>想定利益</i><b class="big">'+f(d.profit)+'万</b><s>実績の中央値</s></div>'
+        +'<div><i>目標利益</i><b class="big">'+f(d.target,0)+'万</b><s>実績は'+f(d.profit)+'万</s></div>'
         +'<div><i>競合（北陸）</i><b class="big">'+(d.mktHoku!=null?d.mktHoku:'—')+'台</b><s>'+(d.mktAll!=null?'東海含め'+d.mktAll+'台':'')+'</s></div>'
         +'<div><i>市場（安値〜中央）</i><b class="big">'+f(d.mktLo)+'〜'+f(d.mktMed)+'</b><s>'+(d.mktScope||'')+'の掲載</s></div>'
       +'</div>'
@@ -1907,7 +1911,7 @@ function buyExportPdf(){
    +'<span>売約実績 '+SOLD.length+'台から算出</span>'
    +'<span>市場データ '+(MKDATA?MKDATA.collected:'—')+'取得</span></div>'
    +'<div class="lead">「買う条件」は、実際に自社で売れた車（売約実績）の年式・走行・色の中央50%の範囲です。'
-   +'「想定小売」は、その年式・走行でエリアに出ている掲載価格の安値圏（既定は下から25%）です。安値圏でないと動かないため、中央値ではなくここを基準にします。「想定利益」は実績利益の中央値、「仕入上限（税込原価）」はその差です。<b>「落札上限（税別）」は、そこから諸費用を引いて税を抜いた、会場でそのまま使える金額</b>です。台数は1台ずつ同じ条件という意味ではなく、上の年式・走行の範囲から色の内訳のとおり集める、という意味です。'
+   +'「想定小売」は、その年式・走行でエリアに出ている掲載価格の安値圏（既定は下から25%）です。安値圏でないと動かないため、中央値ではなくここを基準にします。「目標利益」は設定値（軽・普通車それぞれ）、「仕入上限（税込原価）」はその差です。<b>「落札上限（税別）」は、そこから諸費用を引いて税を抜いた、会場でそのまま使える金額</b>です。台数は1台ずつ同じ条件という意味ではなく、上の年式・走行の範囲から色の内訳のとおり集める、という意味です。'
    +'「競合」は、その条件に当てはまるカーセンサー掲載の台数（修復歴なし）です。<b>同じ車種・同じ年式でもグレードで数十万変わる</b>ため、グレード別の相場も併記しています。狙うグレードを決めてから応札してください。</div>'
    +(nowList.length?'<h2 class="n">① 即仕入　<small>いま規定台数を割っている車種。欠品が集客に響くので優先</small></h2>'+nowList.map(card).join(''):'')
    +(soonList.length?'<h2 class="s">② 先行仕入　<small>いまは足りているが、長期在庫を値下げ処分すると規定を割る車種。仕入から商品化まで2週間かかるため今から動く</small></h2>'+soonList.map(card).join(''):'')
@@ -1941,7 +1945,7 @@ function renderAction(){
         <div class="adet">${d.cat} / 規定${d.teisu}台 → 在庫${d.stock}台${d.kind==='soon'?`（処分予定${d.disp}台を引くと${d.after}台）`:''} / 売約実績${d.n}台${d.turn!=null?`・回転中央${d.turn}日`:''}</div>
         ${cond?`<div class="adet" style="color:var(--text);font-weight:600;margin-top:3px">買う条件：${cond}</div>`:'<div class="adet" style="color:var(--text3);margin-top:3px">売約実績が無いため条件を出せません</div>'}
         ${buyPlanText(d)?`<div class="adet" style="margin-top:2px">色の内訳：<b>${buyPlanText(d)}</b>${buyColorNote(d)?`<span style="color:#b45309"> ／ ${buyColorNote(d)}</span>`:''}</div>`:''}
-        ${d.buyMax!=null?`<div class="adet" style="margin-top:2px">落札上限（税別）<b style="color:#b91c1c;font-size:14px">${buyBidMax(d)!=null?buyBidMax(d).toFixed(1):'—'}万</b>　／　仕入上限（税込原価）${d.buyMax.toFixed(1)}万 → 想定小売 ${d.retailBase!=null?d.retailBase.toFixed(1):'—'}万（${d.retailSrc}） / 利益 ${d.profit!=null?d.profit.toFixed(1):'—'}万</div>`:''}
+        ${d.buyMax!=null?`<div class="adet" style="margin-top:2px">落札上限（税別）<b style="color:#b91c1c;font-size:14px">${buyBidMax(d)!=null?buyBidMax(d).toFixed(1):'—'}万</b>　／　仕入上限（税込原価）${d.buyMax.toFixed(1)}万 → 想定小売 ${d.retailBase!=null?d.retailBase.toFixed(1):'—'}万（${d.retailSrc}） / 目標利益 ${d.target}万（実績${d.profit!=null?d.profit.toFixed(1):'—'}万）</div>`:''}
         ${d.mktHoku!=null?`<div class="adet" style="margin-top:2px;color:var(--text3)">この条件の競合：北陸甲信越 ${d.mktHoku}台 / 東海含め ${d.mktAll}台${d.mktMed!=null?`・市場は安値${d.mktLo.toFixed(1)}／${buyCfg().pct}%点${d.mktPct.toFixed(1)}／中央${d.mktMed.toFixed(1)}万`:''}</div>`:''}
         ${d.missing&&d.missing.length?`<div class="adet" style="margin-top:2px;color:#b45309">在庫に無い売れ色：${d.missing.join('・')}</div>`:''}
       </div>
@@ -5045,8 +5049,8 @@ function openApiModal(){
     sel.value=aiModel(); setAiModel(sel.value);
   }
   const c=buyCfg();
-  ['cfgTax','cfgKei','cfgFutsu','cfgPct','cfgHot','cfgMid','cfgCold'].forEach(function(id,i){
-    const e=document.getElementById(id); if(e)e.value=[c.tax,c.kei,c.futsu,c.pct,c.hot,c.mid,c.cold][i];
+  ['cfgTax','cfgKei','cfgFutsu','cfgPct','cfgHot','cfgMid','cfgCold','cfgPKei','cfgPFutsu'].forEach(function(id,i){
+    const e=document.getElementById(id); if(e)e.value=[c.tax,c.kei,c.futsu,c.pct,c.hot,c.mid,c.cold,c.pKei,c.pFutsu][i];
   });
   document.getElementById('modal-api').style.display='block';
   document.getElementById('ov-api').style.display='block';
@@ -6119,6 +6123,12 @@ function renderMarket(){
       <input type="number" id="cfgKei" step="0.5" style="width:100%;padding:7px 9px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--mono);background:var(--bg3);color:var(--text);box-sizing:border-box"></div>
     <div><div style="font-size:11.5px;color:var(--text3);margin-bottom:3px">諸費用 普通車(万)</div>
       <input type="number" id="cfgFutsu" step="0.5" style="width:100%;padding:7px 9px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--mono);background:var(--bg3);color:var(--text);box-sizing:border-box"></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+    <div><div style="font-size:11.5px;color:var(--text3);margin-bottom:3px">目標利益 軽(万)</div>
+      <input type="number" id="cfgPKei" step="1" style="width:100%;padding:7px 9px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--mono);background:var(--bg3);color:var(--text);box-sizing:border-box"></div>
+    <div><div style="font-size:11.5px;color:var(--text3);margin-bottom:3px">目標利益 普通車(万)</div>
+      <input type="number" id="cfgPFutsu" step="1" style="width:100%;padding:7px 9px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--mono);background:var(--bg3);color:var(--text);box-sizing:border-box"></div>
   </div>
   <div style="font-size:11.5px;color:var(--text3);margin:4px 0 3px">想定小売の位置（市場分布の下から何%か。安値圏でないと動かないため既定25%）</div>
   <input type="number" id="cfgPct" step="5" min="5" max="60" style="width:100%;padding:7px 9px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--mono);background:var(--bg3);color:var(--text);margin-bottom:8px;box-sizing:border-box">
