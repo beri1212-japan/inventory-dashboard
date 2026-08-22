@@ -255,6 +255,29 @@ body{font-family:var(--font);font-size:14.9px;letter-spacing:.01em;-webkit-font-
   display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:11.5px;color:var(--g-ink3);}
 .ga-ft b{color:var(--g-ink2);font-weight:500;font-variant-numeric:tabular-nums;}
 .ga-ft .src{color:var(--g-blue-d);font-weight:500;}
+
+/* 比較の4段階 */
+.ga-lv{border:1px solid var(--g-line);border-radius:6px;margin-bottom:12px;overflow:hidden;}
+.ga-lv>.h{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--g-soft);
+  font-size:11.5px;color:var(--g-ink2);border-bottom:1px solid var(--g-line);flex-wrap:wrap;}
+.ga-lv table{width:100%;border-collapse:collapse;font-size:12.5px;}
+.ga-lv th{font-weight:400;font-size:10.5px;color:var(--g-ink3);text-align:right;padding:4px 12px 3px;}
+.ga-lv th:first-child,.ga-lv td:first-child{text-align:left;}
+.ga-lv td{padding:5px 12px;border-top:1px solid var(--g-line);font-variant-numeric:tabular-nums;text-align:right;color:var(--g-ink);}
+.ga-lv tr.use td{background:#f6faff;}
+.ga-lv tr.thin td{color:var(--g-ink3);}
+.ga-lv .nm{font-weight:500;}
+.ga-lv .nm s{display:block;text-decoration:none;font-size:10.5px;color:var(--g-ink3);font-weight:400;}
+.ga-lv .use-tag{font-size:10px;color:var(--g-blue-d);margin-left:6px;}
+.ga-lv .posc{display:flex;align-items:center;gap:7px;justify-content:flex-end;}
+.ga-lv .bar{position:relative;width:74px;height:5px;border-radius:3px;background:#e8eaed;flex:none;}
+.ga-lv .bar i{position:absolute;top:-3px;width:2.5px;height:11px;border-radius:1px;background:#174ea6;}
+.ga-read{font-size:12.5px;line-height:1.7;padding:9px 12px;border-radius:6px;margin-bottom:12px;}
+.ga-read b{font-weight:500;}
+.ga-read.good{background:var(--g-grn-t);color:var(--g-grn-d);}
+.ga-read.warn{background:var(--g-amb-t);color:var(--g-amb-d);}
+.ga-read.bad{background:var(--g-red-t);color:var(--g-red-d);}
+.ga-read.mid{background:var(--g-soft);color:var(--g-ink2);}
 @media(max-width:1100px){.ga-metrics{grid-template-columns:repeat(3,1fr);gap:12px 4px;}}
 
 .mktbtn{color:var(--accent);}
@@ -3125,63 +3148,98 @@ function paColAdj(price,fromCol,toIdx){
   if(!(p>0))return p;
   return Math.round((p+(toIdx-paColIdx(fromCol))*paColPrem(p))*10)/10;
 }
-function paSim(d){
+/* ═══ 比較の4段階 ═══
+   1つの答えを選ぶのではなく、条件を緩めながら4段階すべてを出す。
+   条件を外したときに中央値がどう動くかが見えないと、その数字を信じてよいか判断できない。
+
+     ① 超類似  同年式・同グレード・同色
+     ② 類似    同年式・同グレード（全色）
+     ③ 年式±1年・同グレード（全色）
+     ④ 年式±1年・全グレード（全色）
+
+   全段階に共通で揃えるもの：変速機（AT / MT・AGS）、駆動（2WD / 4WD）、
+   動力（HV / ガソリン）、修復歴なし、世代、走行±2万km。
+   ②〜④は色が混ざるため、各車を「自社と同じ色だったらいくらか」に直してから集計する。 */
+function paLevels(d){
   const code=MK_CODE[d.name], y=mkY(d.year);
   if(!MKDATA||!code||!MKDATA.cars[code]||y==null)return null;
   const model=MKDATA.cars[code].name;
   const all=MKDATA.cars[code].rows.map(l=>l.split('\t')).filter(r=>r[8]==='0');
-  const hv=d.hv==='〇', wd=d.fwd==='〇';
-  const myMt=mktMt(d.grade);
-  const spec=r=>(mktHv(r)===hv)&&((r[9]==='1')===wd)&&(mktMt(r[11])===myMt);
-  const kOk=r=>{if(d.km==null)return true;const v=parseFloat(r[5])*10000;
-                return v>=d.km-20000&&v<=d.km+20000;};
+  const hv=d.hv==='〇', wd=d.fwd==='〇', myMt=mktMt(d.grade);
+  const gen=genOfStock(d);
+  const gv=gvFilter(d);
+  const myI=paColIdx(d.color);
+  const kF=gradeKey(d.grade,model);
+  /* 共通条件 */
+  const base=r=>(mktHv(r)===hv)&&((r[9]==='1')===wd)&&(mktMt(r[11])===myMt)
+              &&(!gv||gv.f(r[11]))&&(!gen||genYearOk(gen,+r[4]))
+              &&(d.km==null||(function(){const v=parseFloat(r[5])*10000;
+                   return !isNaN(v)&&v>=d.km-20000&&v<=d.km+20000;})());
   const yEq=r=>+r[4]===y;
   const yNear=r=>{const v=+r[4];return v>=y-1&&v<=y+1;};
-  const hoku=r=>r[0]==='北陸甲信越';
-  const gv=gvFilter(d), gOk=gv?(r=>gv.f(r[11])):(()=>true);
-  const gen=genOfStock(d);
-  const genOk=gen?(r=>genYearOk(gen,+r[4])):(()=>true);
-  const kF=gradeKey(d.grade,model);          // グレード名（2語）
-  const kC=gradeCode(d.grade,model);         // グレード記号（Z / ZS / S-Z …）
-  const gF=kF?(r=>gradeKey(r[11],model)===kF):null;
-  const gC=kC?(r=>gradeCode(r[11],model)===kC):null;
-  const myI=paColIdx(d.color);
-  const sameCol=r=>paColIdx(r[6])===myI;
-  /* 段階は「グレードを最後まで守る」順。年式より先にグレードを緩めない。
-     グレード違いは相場が数十万動くが、年式±1年のズレは数万で収まるため。 */
-  const T=[
-   {l:'北陸甲信越・同年式・同グレード・同系色',        ar:hoku, y:yEq,  g:gF, col:sameCol, c:false},
-   {l:'北陸甲信越＋東海・同年式・同グレード・同系色',   ar:null, y:yEq,  g:gF, col:sameCol, c:false},
-   {l:'北陸甲信越＋東海・同年式・同グレード',           ar:null, y:yEq,  g:gF, col:null,    c:true},
-   {l:'北陸甲信越＋東海・同年式・同型グレード',         ar:null, y:yEq,  g:gC, col:null,    c:true},
-   {l:'北陸甲信越＋東海・年式±1年・同グレード',         ar:null, y:yNear,g:gF, col:null,    c:true},
-   {l:'北陸甲信越＋東海・年式±1年・同型グレード',       ar:null, y:yNear,g:gC, col:null,    c:true},
-   /* ここから先は走行の条件を外す。台数が足りないときに
-      グレードを崩すより、走行を諦めた方がズレが小さいため。 */
-   {l:'北陸甲信越＋東海・同年式・同型グレード・走行不問',   ar:null, y:yEq,  g:gC, col:null,    c:true, nokm:true},
-   {l:'北陸甲信越＋東海・年式±1年・同型グレード・走行不問', ar:null, y:yNear,g:gC, col:null,    c:true, nokm:true}];
-  for(let i=0;i<T.length;i++){
-    const t=T[i];
-    const rs=all.filter(r=>(!t.ar||t.ar(r))&&t.y(r)&&(t.nokm||kOk(r))&&spec(r)&&gOk(r)&&genOk(r)
-                        &&(!t.g||t.g(r))&&(!t.col||t.col(r)));
-    const p=rs.map(r=>t.c?paColAdj(r[3],r[6],myI):parseFloat(r[3]))
-             .filter(v=>v>0).sort((x,z)=>x-z);
-    if(p.length>=PA_SIM_MIN){
-      const q=f=>p[Math.min(p.length-1,Math.floor(p.length*f))];
-      return {sim:true, tier:i, adj:t.c,
-        scope:t.l+(gen?'・'+genLabel(gen):'')+((i>=3&&i!==4)?(kC?'（'+kC+'）':''):(kF?'（'+kF+'）':'')),
-        gradeKey:kF, gradeCode:kC, gen:gen, n:p.length,
-        low:p[0], q1:q(.25), med:q(.5), q3:q(.75), high:p[p.length-1], fair:q(.5),
-        rank:d.price!=null?p.filter(v=>v<d.price).length+1:null,
-        url:(function(){const c=code.split('/');
-             const wide=(i===4||i===5||i===7);
-             const qs=['AR='+(i===0?'7':'7*3'),'YMIN='+(wide?y-1:y),'YMAX='+(wide?y+1:y)];
-             if(d.km!=null&&!t.nokm){const lo=pSnapLo(d.km-20000),hi=pSnapHi(d.km+20000);
-               if(lo)qs.push('SMIN='+lo); if(hi)qs.push('SMAX='+hi);}
-             return 'https://www.carsensor.net/usedcar/b'+c[0]+'/'+c[1]+'/index.html?'+qs.join('&');})()};
+  const gSame=kF?(r=>gradeKey(r[11],model)===kF):(()=>true);
+  const cSame=r=>paColIdx(r[6])===myI;
+  const DEF=[
+    {k:'s1', t:'超類似', sub:'同年式・同グレード・同色',      y:yEq,   g:gSame,     col:cSame, adj:false},
+    {k:'s2', t:'類似',   sub:'同年式・同グレード（全色）',    y:yEq,   g:gSame,     col:null,  adj:true},
+    {k:'s3', t:'年式±1', sub:'年式±1年・同グレード（全色）',  y:yNear, g:gSame,     col:null,  adj:true},
+    {k:'s4', t:'全体',   sub:'年式±1年・全グレード（全色）',  y:yNear, g:()=>true,  col:null,  adj:true}];
+  const out=DEF.map(function(L,i){
+    const rs=all.filter(r=>base(r)&&L.y(r)&&L.g(r)&&(!L.col||L.col(r)));
+    const p=rs.map(r=>L.adj?paColAdj(r[3],r[6],myI):parseFloat(r[3]))
+              .filter(v=>v>0).sort((x,z)=>x-z);
+    const hoku=rs.filter(r=>r[0]==='北陸甲信越').length;
+    const q=f=>p.length?p[Math.min(p.length-1,Math.floor(p.length*f))]:null;
+    return {key:L.k, label:L.t, sub:L.sub, adj:L.adj, n:p.length, hoku:hoku,
+      low:p.length?p[0]:null, q1:q(.25), med:q(.5), q3:q(.75),
+      high:p.length?p[p.length-1]:null,
+      rank:(p.length&&d.price!=null)?p.filter(v=>v<d.price).length+1:null,
+      url:(function(){const c=code.split('/');
+        const wide=(i>=2);
+        const qs=['AR=7*3','YMIN='+(wide?y-1:y),'YMAX='+(wide?y+1:y)];
+        if(d.km!=null){const lo=pSnapLo(d.km-20000),hi=pSnapHi(d.km+20000);
+          if(lo)qs.push('SMIN='+lo); if(hi)qs.push('SMAX='+hi);}
+        return 'https://www.carsensor.net/usedcar/b'+c[0]+'/'+c[1]+'/index.html?'+qs.join('&');})()};
+  });
+  return {levels:out, gradeKey:kF, gen:gen, mt:myMt, color:d.color,
+          spec:(hv?'HV':'ガソリン')+'・'+(wd?'4WD':'2WD')+'・'+(myMt?'MT/AGS':'AT')};
+}
+/* ═══ ミクロとマクロの優位性 ═══
+   ①超類似＝まったく同じ仕様の直接競合の中での位置（ミクロ）
+   ④全体  ＝その車種・その年式帯全体の中での位置（マクロ）
+   この2つがずれているときに、打ち手が変わる。 */
+function paPos(v){   // 自社より安い掲載の割合。低いほど安い＝強い
+  if(!v||!v.n||v.rank==null)return null;
+  return Math.round((v.rank-1)/v.n*100);
+}
+function paEdge(L){
+  if(!L)return null;
+  const mi=paPos(L.levels[0])!=null?paPos(L.levels[0]):paPos(L.levels[1]);
+  const ma=paPos(L.levels[3]);
+  if(mi==null||ma==null)return null;
+  const nMi=L.levels[0].n>=3?L.levels[0].n:L.levels[1].n;
+  let msg,tone;
+  if(mi<=35&&ma<=35){msg='同じ仕様の直接競合でも、車種全体でも安値圏。価格では負けていません。';tone='good';}
+  else if(mi<=35&&ma>=60){msg='同じ仕様の中では安いのに、車種全体では高い方。装備や年式にこだわらない客は、より安いグレードへ流れます。掲載で「この仕様である理由」を出すのが先です。';tone='warn';}
+  else if(mi>=60&&ma<=35){msg='車種全体では安く見えますが、同じ仕様の直接競合には負けています。比較検討に入ると弱いので、価格を詰めるのが効きます。';tone='bad';}
+  else if(mi>=60&&ma>=60){msg='同じ仕様でも車種全体でも高い方。値下げの余地があります。';tone='bad';}
+  else {msg='同じ仕様でも車種全体でも中位。価格以外（写真・掲載順・装備の見せ方）で差をつける場面です。';tone='mid';}
+  return {micro:mi,macro:ma,nMicro:nMi,msg:msg,tone:tone};
+}
+
+/* 判定に使う段階。厳しい方から見て、母数が足りた最初の段階を採用する。 */
+function paSim(d){
+  const L=paLevels(d);
+  if(!L)return null;
+  for(let i=0;i<L.levels.length;i++){
+    const v=L.levels[i];
+    if(v.n>=PA_SIM_MIN){
+      return Object.assign({},v,{sim:true, tier:i, all:L,
+        scope:v.sub+(L.gen?'・'+genLabel(L.gen):'')+(i<3&&L.gradeKey?'（'+L.gradeKey+'）':''),
+        fair:v.med});
     }
   }
-  return null;   // 同型で8台に届かない＝類似品では判断しない
+  return null;
 }
 function paCm(d){
   if(!d.cm||!d.cm.m)return null;
@@ -3241,7 +3299,8 @@ function paRows(){
     const sm=paSim(d);                // 類似品＝同年式・走行±2万km（判断の根拠）
     const m=sm||w;                    // 判断は類似品を優先し、足りなければ従来に戻す
     const cm=paCm(d), g=paDiag(d,m,cm);
-    return {car:d,m,w,sim:sm,cm,g,gap:(m&&d.price!=null)?Math.round((d.price-m.med)*10)/10:null};
+    const lv=paLevels(d), ed=paEdge(lv);
+    return {car:d,m,w,sim:sm,cm,g,lv,ed,gap:(m&&d.price!=null)?Math.round((d.price-m.med)*10)/10:null};
   }).sort((a,b)=>b.g.score-a.g.score);
 }
 
@@ -3453,6 +3512,27 @@ function renderPriceAlert(){
         <span>最高 ${paMoney(m.high)}万</span>
       </div>
 
+      ${(()=>{ if(!r.lv)return '';
+        const L=r.lv.levels, use=r.sim?r.m.tier:-1;
+        const row=(v,i)=>{
+          const pos=paPos(v);
+          return `<tr class="${i===use?'use':''} ${v.n<5?'thin':''}">
+            <td class="nm">${['①','②','③','④'][i]} ${v.label}${i===use?'<span class="use-tag">← 採用</span>':''}<s>${v.sub}</s></td>
+            <td>${v.n}<span style="color:var(--g-ink3);font-size:10.5px"> 台</span>${v.hoku?`<s style="display:block;font-size:10px;color:var(--g-ink3)">北陸 ${v.hoku}</s>`:''}</td>
+            <td>${v.med!=null?v.med.toFixed(1)+'万':'—'}</td>
+            <td>${v.q1!=null?v.q1.toFixed(1)+'〜'+v.q3.toFixed(1):'—'}</td>
+            <td><div class="posc">${pos!=null?`<span>${pos}%</span><span class="bar"><i style="left:calc(${pos}% - 1px)"></i></span>`:'<span>—</span>'}</div></td></tr>`;};
+        return `<div class="ga-lv">
+          <div class="h"><b style="font-weight:500;color:var(--g-ink)">比較の4段階</b>
+            <span>${r.lv.spec}で固定</span>
+            ${c.km!=null?`<span>走行 ${((c.km-20000)/10000<0?0:(c.km-20000)/10000).toFixed(1)}〜${((c.km+20000)/10000).toFixed(1)}万km</span>`:''}
+            <span>修復歴なし</span>
+            ${r.lv.gen?`<span>${genLabel(r.lv.gen)}</span>`:''}
+            <span style="margin-left:auto">②〜④は色の価値差を補正</span></div>
+          <table><thead><tr><th>段階</th><th>台数</th><th>中央値</th><th>25〜75%</th><th>自社の位置</th></tr></thead>
+          <tbody>${L.map(row).join('')}</tbody></table></div>
+        ${r.ed?`<div class="ga-read ${r.ed.tone}"><b>ミクロ ${r.ed.micro}% ／ マクロ ${r.ed.macro}%</b>　${r.ed.msg}</div>`:''}`;
+      })()}
       <div class="ga-rec" style="box-shadow:inset 3px 0 0 ${g.cat.c}">
         <div class="t">推奨アクション</div>
         <div class="b">${g.rec}</div>
