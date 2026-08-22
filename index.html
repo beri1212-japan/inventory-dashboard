@@ -2651,7 +2651,9 @@ async function loadAll(){
     buildYrData();
     fillConsultCats();
     if(document.getElementById('page-list').classList.contains('active'))renderList();
-    cmRestore();cmAttach();
+    cmRestore();
+    await cmLoadShared();          // リポジトリ側に新しい月があれば取り込む
+    cmAttach();
     updateSummary();renderMatrix();renderProfitCards();renderUnlisted();renderLong();renderAction();renderSold();renderPriceAlert();renderCmatch();
     if(document.getElementById('page-balance').classList.contains('active'))renderBalance();
     document.getElementById('upd').textContent='更新: '+new Date().toLocaleString('ja-JP',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
@@ -3766,6 +3768,45 @@ function cmReadOne(file){
   });
 }
 /* 複数ファイルをまとめて読める。2年分を一度に投入する想定 */
+/* ═══ 反響CSVをテキストから直接取り込む（自動更新用） ═══
+   C-match のCSVは同一オリジンから fetch で読めるため、ファイルを落とさずに渡せる。
+   定期タスクが取得したテキストをここに流し込む。当月分は毎回上書きする。
+   戻り値は取り込み結果（呼び出し側が記録できるように）。 */
+function cmIngestText(text){
+  if(!text||!/メーカー/.test(text.slice(0,4000)))throw new Error('反響CSVの形式ではありません');
+  const one=cmParse(text);
+  if(!CM)CM={months:{},cur:one.ym};
+  const before=CM.months[one.ym];
+  CM.months[one.ym]=one;
+  CM.cur=cmMonths()[cmMonths().length-1];
+  cmSave();
+  if(typeof renderCmatch==='function'){try{renderCmatch();}catch(e){}}
+  return {ym:one.ym, rows:(one.rows||[]).length, exported:one.exported,
+          updated:!!before, months:cmMonths()};
+}
+window.cmIngestText=cmIngestText;
+/* C-match の反響CSVを取得して取り込むところまで一気にやる。
+   ※ c-match.carsensor.net のタブ上でのみ動く（ログイン済みのCookieが要るため） */
+async function cmFetchFromCmatch(ym){
+  if(!/c-match\.carsensor\.net$/.test(location.hostname))
+    throw new Error('C-matchのタブで実行してください');
+  const base='/counter/byVehicle/doDownloadCsv';
+  const qs=['frmByVehicleDto.isVehicleGraphTab=false','frmByVehicleDto.madoguchiCd=003',
+            'frmByVehicleDto.searchType=0','frmByVehicleDto.typeDateFlg=true',
+            'frmByVehicleDto.periodTime=01','frmByVehicleDto.barometerTopKbn=00',
+            'frmByVehicleDto.barometerMiddleKbn=31','frmByVehicleDto.barometerBottomKbn=17',
+            'frmByVehicleDto.hankyoYM='+(ym||'')];
+  const res=await fetch(base+'?'+qs.join('&'),{credentials:'include'});
+  if(!res.ok)throw new Error('CSVを取得できませんでした（HTTP '+res.status+'）');
+  const buf=new Uint8Array(await res.arrayBuffer());
+  let text;
+  try{ text=new TextDecoder('shift_jis',{fatal:false}).decode(buf); }
+  catch(e){ text=new TextDecoder('utf-8').decode(buf); }
+  if(!/メーカー/.test(text.slice(0,4000)))text=new TextDecoder('utf-8').decode(buf);
+  return text;
+}
+window.cmFetchFromCmatch=cmFetchFromCmatch;
+
 async function cmLoadFile(input){
   const files=[...(input.files||[])];
   input.value='';
@@ -3858,6 +3899,38 @@ function cmRestore(){
     const o=localStorage.getItem(CM_KEY_OLD);
     if(o){const one=JSON.parse(o);if(one&&one.rows){CM={months:{[one.ym]:one},cur:one.ym};cmSave();localStorage.removeItem(CM_KEY_OLD);}}
   }catch(e){console.warn('反響データの読み出しに失敗:',e.message);}
+}
+/* ═══ 反響データを端末間で共有する ═══
+   localStorage はそのブラウザの中だけなので、Windows機で自動取込しても
+   Macでは古いままになる。取り込んだ内容をリポジトリにも置き、
+   起動時に「月ごとに新しい方」を採用することで、どちらの端末でも同じ数字にする。 */
+const CM_FILE='cmatch_latest.json';
+function cmExportJson(){
+  if(!CM)return null;
+  return JSON.stringify(cmPack(CM,CM_FULL_MONTHS));
+}
+window.cmExportJson=cmExportJson;
+async function cmLoadShared(){
+  try{
+    const res=await fetch(CM_FILE+'?t='+Date.now(),{cache:'no-store'});
+    if(!res.ok)return false;                      // まだ置いていない＝従来どおり
+    const shared=cmUnpack(await res.json());
+    if(!shared||!shared.months)return false;
+    if(!CM){CM=shared;}
+    else{
+      // 月ごとに保存日時が新しい方を採る
+      Object.keys(shared.months).forEach(function(k){
+        const a=CM.months[k], b=shared.months[k];
+        if(!a){CM.months[k]=b;return;}
+        const ta=Date.parse(a.savedAt||0)||0, tb=Date.parse(b.savedAt||0)||0;
+        // 中身が畳まれている方（slim）は、日別が残っている方に負ける
+        if(tb>ta || (tb===ta && a.slim && !b.slim))CM.months[k]=b;
+      });
+    }
+    const a=cmMonths();
+    if(a.length)CM.cur=a[a.length-1];
+    return true;
+  }catch(e){ return false; }
 }
 function cmSetMonth(k){if(CM&&CM.months[k]){CM.cur=k;cmSave();renderCmatch();}}
 function cmDropMonth(){
