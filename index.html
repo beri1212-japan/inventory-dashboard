@@ -2908,6 +2908,13 @@ function paLevel(price,fair){
    在庫側の 車名＋グレード から自車がどれかを判定し、市場側の掲載グレード文字列で揃える。
    グレードを持たない旧データでは何もしない。 */
 function gvHasGrade(){return !!(MKDATA&&MKDATA.fields&&MKDATA.fields.indexOf('grade')>=0);}
+/* ═══ 市場データのハイブリッド判定を補う ═══
+   収集時のフラグが「e:HEV」（ホンダ）を拾えておらず、
+   ヴェゼル・ZR-V・ステップワゴン・フリードの計2,052行がガソリン扱いになっていた。
+   グレード本文にHV表記があればハイブリッドとみなす。 */
+const MK_HVRE=/e\s*[:：-]?\s*HEV|e\s*-?\s*POWER|ハイブリッド|HYBRID|PHEV|プラグイン|E-Four/i;
+function mktHv(r){return r[10]==='1'||MK_HVRE.test(r[11]||'');}
+
 const GV_RULES=[
   {name:'カスタム',   own:/カスタム|ｶｽﾀﾑ/,                     mkt:/カスタム/},
   {name:'ハイウェイスター',own:/ハイウ[ェエ]イ?スタ|ﾊｲｳｪｲ?ｽﾀ|(^|[^A-Za-z])HW([^A-Za-z]|$)/, mkt:/ハイウ[ェエ]イ?スタ/},
@@ -3029,7 +3036,7 @@ function paMkt(d){
   if(!MKDATA||!code||!MKDATA.cars[code]||y==null)return null;
   const all=MKDATA.cars[code].rows.map(l=>l.split('\t')).filter(r=>r[8]==='0');
   const hv=d.hv==='〇', wd=d.fwd==='〇';
-  const spec=r=>((r[10]==='1')===hv)&&((r[9]==='1')===wd);
+  const spec=r=>(mktHv(r)===hv)&&((r[9]==='1')===wd);
   const yOk=r=>{const v=+r[4];return v>=y-1&&v<=y+1;};
   const kOk=r=>{if(d.km==null)return true;const v=parseFloat(r[5])*10000;return v>=d.km-20000&&v<=d.km+20000;};
   const hoku=r=>r[0]==='北陸甲信越';
@@ -3101,7 +3108,7 @@ function paSim(d){
   const model=MKDATA.cars[code].name;
   const all=MKDATA.cars[code].rows.map(l=>l.split('\t')).filter(r=>r[8]==='0');
   const hv=d.hv==='〇', wd=d.fwd==='〇';
-  const spec=r=>((r[10]==='1')===hv)&&((r[9]==='1')===wd);
+  const spec=r=>(mktHv(r)===hv)&&((r[9]==='1')===wd);
   const kOk=r=>{if(d.km==null)return true;const v=parseFloat(r[5])*10000;
                 return v>=d.km-20000&&v<=d.km+20000;};
   const yEq=r=>+r[4]===y;
@@ -6185,7 +6192,7 @@ async function runMarketAnalysis(){
 '価格帯別（25万刻み）：'+mkCount(rows,r=>{const v=parseFloat(r[3]);return isNaN(v)?null:(Math.floor(v/25)*25)+'万〜';},
    [...new Set(rows.map(r=>{const v=parseFloat(r[3]);return isNaN(v)?null:(Math.floor(v/25)*25)+'万〜';}))].filter(Boolean).sort((a,b)=>parseInt(a)-parseInt(b)))+'\n'+
 '色別：'+mkCount(rows,r=>r[6])+'\n'+
-'動力：HV '+rows.filter(r=>r[10]==='1').length+'台／ガソリン '+rows.filter(r=>r[10]!=='1').length+'台\n'+
+'動力：HV '+rows.filter(mktHv).length+'台／ガソリン '+rows.filter(r=>!mktHv(r)).length+'台\n'+
 '駆動：4WD '+rows.filter(r=>r[9]==='1').length+'台／2WD '+rows.filter(r=>r[9]!=='1').length+'台\n'+
 '修復歴あり：'+rows.filter(r=>r[8]==='1').length+'台\n'+
 '【自社在庫（'+carName+'）'+own.length+'台】\n'+ownLine;
@@ -6415,8 +6422,8 @@ function mkRows(){
   return mkSrc().map(l=>l.split('\t')).filter(r=>{
     if(MKF.area!=='all'&&r[0]!==MKF.area)return false;
     if(MKF.pref!=='all'&&r[7]!==MKF.pref)return false;
-    if(MKF.pw==='hv'&&r[10]!=='1')return false;
-    if(MKF.pw==='gas'&&r[10]==='1')return false;
+    if(MKF.pw==='hv'&&!mktHv(r))return false;
+    if(MKF.pw==='gas'&&mktHv(r))return false;
     if(MKF.wd==='4'&&r[9]!=='1')return false;
     if(MKF.wd==='2'&&r[9]==='1')return false;
     return true;
@@ -6526,7 +6533,7 @@ async function mktBrief(d){
   const noFix=useGrade?sameG:noFixAll;
   const yOk=r=>{const ry=+r[4];return ry>=y-1&&ry<=y+1;};
   const kOk=r=>{if(d.km==null)return true;const rk=parseFloat(r[5])*10000;return rk>=d.km-20000&&rk<=d.km+20000;};
-  const pwOk=r=>(r[10]==='1')===hv;
+  const pwOk=r=>mktHv(r)===hv;
   const wdOk=r=>(r[9]==='1')===wd;
   const hoku=r=>r[0]==='北陸甲信越';
   const same=noFix.filter(r=>yOk(r)&&kOk(r)&&pwOk(r)&&wdOk(r));
@@ -6548,7 +6555,7 @@ async function mktBrief(d){
     L.push('　年式別：'+mkCount(ref,r=>r[4],[String(y-1),String(y),String(y+1)]));
     L.push('　走行別（万km）：'+mkCount(ref,r=>Math.floor(parseFloat(r[5]))+'万台'));
   }
-  L.push('▼市場全体の構成：HV '+Math.round(noFix.filter(r=>r[10]==='1').length/noFix.length*100)+'%／4WD '
+  L.push('▼市場全体の構成：HV '+Math.round(noFix.filter(mktHv).length/noFix.length*100)+'%／4WD '
     +Math.round(noFix.filter(r=>r[9]==='1').length/noFix.length*100)+'%');
   L.push('※上の数字はすべて実測です。ここに無い項目は「データなし」と答え、推測の数字を書かないこと。');
   return L.join('\n');
@@ -6638,7 +6645,7 @@ function renderMarket(){
   const mk=mkRows(),own=mkOwnF();
   const mp=mk.map(r=>parseFloat(r[3])).filter(v=>v>0);
   const mmed=mkMed(mp),omed=mkMed(own.map(d=>d.price));
-  const hvr=mk.length?Math.round(mk.filter(r=>r[10]==='1').length/mk.length*100):0;
+  const hvr=mk.length?Math.round(mk.filter(mktHv).length/mk.length*100):0;
   const wdr=mk.length?Math.round(mk.filter(r=>r[9]==='1').length/mk.length*100):0;
   const years=[];for(let y=2013;y<=2026;y++)years.push(y);
   const kms=[];for(let k=0;k<=10;k++)kms.push(k);
@@ -6660,8 +6667,8 @@ function renderMarket(){
        const f=arr=>(arr||[]).map(l=>l.split('\t')).filter(r=>{
          if(MKF.area!=='all'&&r[0]!==MKF.area)return false;
          if(MKF.pref!=='all'&&r[7]!==MKF.pref)return false;
-         if(MKF.pw==='hv'&&r[10]!=='1')return false;
-         if(MKF.pw==='gas'&&r[10]==='1')return false;
+         if(MKF.pw==='hv'&&!mktHv(r))return false;
+         if(MKF.pw==='gas'&&mktHv(r))return false;
          if(MKF.wd==='4'&&r[9]!=='1')return false;
          if(MKF.wd==='2'&&r[9]==='1')return false;
          return true;}).length;
