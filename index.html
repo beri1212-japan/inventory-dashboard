@@ -1896,6 +1896,8 @@ function buyCfg(){
           pKei:c.pKei!=null?Number(c.pKei):10, pFutsu:c.pFutsu!=null?Number(c.pFutsu):15,
           rLow:c.rLow!=null?Number(c.rLow):10, rHigh:c.rHigh!=null?Number(c.rHigh):20,
           lowCut:c.lowCut!=null?Number(c.lowCut):50,
+          colYen:c.colYen!=null?Number(c.colYen):8, colPct:c.colPct!=null?Number(c.colPct):10,
+          colCut:c.colCut!=null?Number(c.colCut):100,
           posMax:c.posMax!=null?Number(c.posMax):25,
           pct:c.pct!=null?Number(c.pct):25,
           hot:c.hot||COLOR_TIER_DEFAULT.hot, mid:c.mid||COLOR_TIER_DEFAULT.mid, cold:c.cold||COLOR_TIER_DEFAULT.cold};
@@ -1922,7 +1924,8 @@ function buySaveCfg(){
   _CT={}; _POS={};
   localStorage.setItem('buy_cfg',JSON.stringify({tax:g('cfgTax'),kei:g('cfgKei'),futsu:g('cfgFutsu'),
     pct:g('cfgPct')||25, posMax:g('cfgPosMax')||25, pKei:g('cfgPKei')||10, pFutsu:g('cfgPFutsu')||15,
-    rLow:g('cfgRLow')||10, rHigh:g('cfgRHigh')||20, lowCut:g('cfgLowCut')||50, hot:t('cfgHot')||COLOR_TIER_DEFAULT.hot, mid:t('cfgMid')||COLOR_TIER_DEFAULT.mid, cold:t('cfgCold')||COLOR_TIER_DEFAULT.cold}));
+    rLow:g('cfgRLow')||10, rHigh:g('cfgRHigh')||20, lowCut:g('cfgLowCut')||50,
+    colYen:g('cfgColYen')||8, colPct:g('cfgColPct')||10, colCut:g('cfgColCut')||100, hot:t('cfgHot')||COLOR_TIER_DEFAULT.hot, mid:t('cfgMid')||COLOR_TIER_DEFAULT.mid, cold:t('cfgCold')||COLOR_TIER_DEFAULT.cold}));
   const st=document.getElementById('cfgStatus');
   if(st){st.textContent='✅ 保存しました';st.style.color='var(--green)';}
   if(document.getElementById('page-action')&&document.getElementById('page-action').classList.contains('active'))renderAction();
@@ -2946,23 +2949,59 @@ function genLabel(g){ if(!g)return ''; const a=Math.floor(g.from/100),b=Math.flo
    GLパッケージ65.9万 〜 カスタム/ターボ/GL 120万、その差54万）。
    相場を比べるときは、まずグレードを揃える。 */
 const GK_EQUIP=/ホンダセンシング|セーフティサポート|スマートアシスト|プロパイロット|セーフティセンス|セーフティパッケージ|ナビゲーション|バックカメラ|全周囲カメラ|アラウンドビュー|ドライブレコーダー|ドラレコ|フルセグ|地デジ|Bluetooth|シートヒーター|コーナーセンサー|ソナー|スマートキー|プッシュスタート|クルーズコントロール|クルコン|レーダーブレーキ|衝突軽減|誤発進|LEDライト|LEDヘッド|アルミホイール|純正アルミ|エアロ|両側電動|片側電動|電動スライド|パワースライド|パワスラ|後席モニター|リアモニター|ワンオーナー|禁煙車?|届出済未使用車?|登録済未使用車?|未使用車|記録簿|整備付|保証付|新品タイヤ|車検[0-9R年月\/\.]*|ツートン|2トーン|ナビ|カメラ|ETC2?\.?0?|純正|社外|モニター|センサー|SDナビ|メモリーナビ|ワンセグ|スタイル|プラス/gi;
-function gradeKey(t,model){
+/* グレード文字列の下ごしらえ。
+   在庫表と市場で書き方が違う部分を先に落とす。ここを外すと一致しなくなる：
+     ・排気量「1.5」「2.0」「660」  → 市場側だけ先頭に付く
+     ・動力「HV」「e:HEV」「e-POWER」→ 在庫表だけ付ける癖がある（動力は別に照合済み）
+     ・「※軽修復」などの備考、「7人」などの乗車定員 */
+function gradeClean(t,model){
   if(!t)return '';
-  let s=String(t).normalize('NFKC').replace(/[（(].*?[）)]/g,' ').replace(/[･・]/g,' ');
+  let s=String(t).normalize('NFKC')
+    .replace(/[※*].*$/,' ')
+    .replace(/[（(].*?[）)]/g,' ').replace(/[･・]/g,' ');
   if(model){
     const m=String(model).normalize('NFKC').replace(/[-\s]/g,'');
     try{s=s.replace(new RegExp(m.split('').map(c=>c.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('[-\\s]*'),'gi'),' ');}catch(e){}
   }
-  s=s.replace(GK_EQUIP,' ').replace(/PKG/gi,'パッケージ').replace(/\b\d{3,4}(cc)?\b/gi,' ')
-     .replace(/\b[24]WD\b/gi,' ').replace(/\s+/g,' ').trim();
+  return s.replace(GK_EQUIP,' ').replace(/PKG/gi,'パッケージ')
+    .replace(/e\s*[:：-]?\s*HEV|e\s*-?\s*POWER|ハイブリッド|(^|[^A-Za-z])(HV|PHEV|PHV)([^A-Za-z]|$)/gi,' ')
+    .replace(/\d+\s*人乗?り?/g,' ')
+    .replace(/(^|\s)\d+\.\d+(\s|$)/g,' ')
+    .replace(/\b\d{3,4}(cc)?\b/gi,' ')
+    .replace(/\b[24]WD\b/gi,' ').replace(/\s+/g,' ').trim();
+}
+function gradeKeyN(t,model,n){
+  let s=gradeClean(t,model);
+  if(!s)return '';
   const key=[];
   if(/カスタム/.test(s))key.push('カスタム');
   if(/ターボ/.test(s))key.push('ターボ');
   s=s.replace(/カスタム|ターボ/g,' ');
   const toks=s.split(/\s+/).filter(Boolean).filter(w=>w.length<=10);
-  const core=toks.slice(0,2).join('');
+  const core=toks.slice(0,n||2).join('');
   if(core)key.push(core);
   return key.join('/');
+}
+function gradeKey(t,model){return gradeKeyN(t,model,2);}
+/* グレード記号だけを取り出して束ねる（Z / ZS / S-Z / Xi …）。
+   市場側は「ZS煌II」「S-Z10.5型」のように装備で枝分かれしていて、
+   そのままでは同じグレードが別物として散らばるため。 */
+function gradeCode(t,model){
+  let s=gradeClean(t,model);
+  if(!s)return '';
+  const pre=[];
+  if(/カスタム/.test(s))pre.push('カスタム');
+  if(/ターボ/.test(s))pre.push('ターボ');
+  s=s.replace(/カスタム|ターボ/g,' ').trim();
+  const m=s.match(/^([A-Za-z]+(?:\s*-\s*[A-Za-z]+)?)/);
+  if(m)pre.push(m[1].replace(/\s+/g,'').toUpperCase());
+  else{const j=s.match(/^([぀-ヿ一-鿿]{1,4})/); if(j)pre.push(j[1]);}
+  return pre.join('/');
+}
+function stockGradeCode(d){
+  const code=MK_CODE[d.name];
+  const model=(MKDATA&&code&&MKDATA.cars[code])?MKDATA.cars[code].name:d.name;
+  return gradeCode(d.grade,model);
 }
 /* 在庫1台のグレードキー */
 function stockGradeKey(d){
@@ -3033,47 +3072,81 @@ function paMkt(d){
    走行の許容は±2万kmを上限とし、足りない場合はエリアとグレードの粒度だけを緩める。
    8台に届かない場合は「類似品なし」とし、従来の広い条件に判断を戻す（少数で決めない）。 */
 const PA_SIM_MIN=8;
+/* ═══ 色の価値差を揃えてから比べる ═══
+   人気色（白・パール・黒）と不人気色（シルバー系）では同じ車でも値段が違う。
+   自社が黒で市場がシルバーばかりだと、相場が実際より安く見えて余計に下げてしまう。
+   そこで市場の1台ずつを「自社と同じ色だったらいくらか」に直してから中央値を取る。
+   目安：本体100万円以下は8万、それを超える分は10%（設定で変更可）。 */
+function paColCfg(){
+  const c=buyCfg();
+  return {yen:c.colYen!=null?Number(c.colYen):8,
+          pct:c.colPct!=null?Number(c.colPct):10,
+          cut:c.colCut!=null?Number(c.colCut):100};
+}
+/* 人気=1.0 ／ 普通=0.5 ／ 不人気=0 */
+function paColIdx(col){const t=colorTier(col);return t===2?1:t===1?0.5:0;}
+function paColPrem(p){
+  const c=paColCfg();
+  if(!(p>0))return 0;
+  return p<=c.cut ? Math.min(c.yen, p*0.20) : p*(c.pct/100);
+}
+function paColAdj(price,fromCol,toIdx){
+  const p=Number(price);
+  if(!(p>0))return p;
+  return Math.round((p+(toIdx-paColIdx(fromCol))*paColPrem(p))*10)/10;
+}
 function paSim(d){
   const code=MK_CODE[d.name], y=mkY(d.year);
   if(!MKDATA||!code||!MKDATA.cars[code]||y==null)return null;
+  const model=MKDATA.cars[code].name;
   const all=MKDATA.cars[code].rows.map(l=>l.split('\t')).filter(r=>r[8]==='0');
   const hv=d.hv==='〇', wd=d.fwd==='〇';
   const spec=r=>((r[10]==='1')===hv)&&((r[9]==='1')===wd);
   const kOk=r=>{if(d.km==null)return true;const v=parseFloat(r[5])*10000;
                 return v>=d.km-20000&&v<=d.km+20000;};
   const yEq=r=>+r[4]===y;
+  const yNear=r=>{const v=+r[4];return v>=y-1&&v<=y+1;};
   const hoku=r=>r[0]==='北陸甲信越';
   const gv=gvFilter(d), gOk=gv?(r=>gv.f(r[11])):(()=>true);
-  const model=MKDATA.cars[code].name;
   const gen=genOfStock(d);
   const genOk=gen?(r=>genYearOk(gen,+r[4])):(()=>true);
-  const gk=stockGradeKey(d);
-  const gEx=gk?(r=>mktGradeKey(r,model)===gk):null;
-  const gRo=gk?(r=>gradeCoarse(mktGradeKey(r,model))===gradeCoarse(gk)):null;
+  const kF=gradeKey(d.grade,model);          // グレード名（2語）
+  const kC=gradeCode(d.grade,model);         // グレード記号（Z / ZS / S-Z …）
+  const gF=kF?(r=>gradeKey(r[11],model)===kF):null;
+  const gC=kC?(r=>gradeCode(r[11],model)===kC):null;
+  const myI=paColIdx(d.color);
+  const sameCol=r=>paColIdx(r[6])===myI;
+  /* 段階は「グレードを最後まで守る」順。年式より先にグレードを緩めない。
+     グレード違いは相場が数十万動くが、年式±1年のズレは数万で収まるため。 */
   const T=[
-    {lbl:'北陸甲信越・同年式・走行±2万km・同グレード',        ar:hoku,      g:gEx},
-    {lbl:'北陸甲信越＋東海・同年式・走行±2万km・同グレード',   ar:null,      g:gEx},
-    {lbl:'北陸甲信越＋東海・同年式・走行±2万km・カスタム/ターボのみ一致', ar:null, g:gRo},
-    {lbl:'北陸甲信越＋東海・同年式・走行±2万km・グレード不問', ar:null,      g:null}];
+   {l:'北陸甲信越・同年式・同グレード・同系色',        ar:hoku, y:yEq,  g:gF, col:sameCol, c:false},
+   {l:'北陸甲信越＋東海・同年式・同グレード・同系色',   ar:null, y:yEq,  g:gF, col:sameCol, c:false},
+   {l:'北陸甲信越＋東海・同年式・同グレード',           ar:null, y:yEq,  g:gF, col:null,    c:true},
+   {l:'北陸甲信越＋東海・同年式・同型グレード',         ar:null, y:yEq,  g:gC, col:null,    c:true},
+   {l:'北陸甲信越＋東海・年式±1年・同グレード',         ar:null, y:yNear,g:gF, col:null,    c:true},
+   {l:'北陸甲信越＋東海・年式±1年・同型グレード',       ar:null, y:yNear,g:gC, col:null,    c:true}];
   for(let i=0;i<T.length;i++){
     const t=T[i];
-    const rows=all.filter(r=>(!t.ar||t.ar(r))&&yEq(r)&&kOk(r)&&spec(r)&&gOk(r)&&genOk(r)&&(!t.g||t.g(r)));
-    const p=rows.map(r=>parseFloat(r[3])).filter(v=>v>0).sort((a,b)=>a-b);
+    const rs=all.filter(r=>(!t.ar||t.ar(r))&&t.y(r)&&kOk(r)&&spec(r)&&gOk(r)&&genOk(r)
+                        &&(!t.g||t.g(r))&&(!t.col||t.col(r)));
+    const p=rs.map(r=>t.c?paColAdj(r[3],r[6],myI):parseFloat(r[3]))
+             .filter(v=>v>0).sort((x,z)=>x-z);
     if(p.length>=PA_SIM_MIN){
       const q=f=>p[Math.min(p.length-1,Math.floor(p.length*f))];
-      return {sim:true, tier:i,
-        scope:t.lbl+(gen?'・'+genLabel(gen):'')+(gk&&i<2?'（'+gk+'）':''),
-        gradeKey:gk, gen:gen, n:p.length, low:p[0], q1:q(.25), med:q(.5), q3:q(.75),
-        high:p[p.length-1], fair:q(.5),
+      return {sim:true, tier:i, adj:t.c,
+        scope:t.l+(gen?'・'+genLabel(gen):'')+((i===3||i===5)?(kC?'（'+kC+'）':''):(kF?'（'+kF+'）':'')),
+        gradeKey:kF, gradeCode:kC, gen:gen, n:p.length,
+        low:p[0], q1:q(.25), med:q(.5), q3:q(.75), high:p[p.length-1], fair:q(.5),
         rank:d.price!=null?p.filter(v=>v<d.price).length+1:null,
         url:(function(){const c=code.split('/');
-             const qs=['AR='+(i===0?'7':'7*3'),'YMIN='+y,'YMAX='+y];
+             const wide=(i===4||i===5);
+             const qs=['AR='+(i===0?'7':'7*3'),'YMIN='+(wide?y-1:y),'YMAX='+(wide?y+1:y)];
              if(d.km!=null){const lo=pSnapLo(d.km-20000),hi=pSnapHi(d.km+20000);
                if(lo)qs.push('SMIN='+lo); if(hi)qs.push('SMAX='+hi);}
              return 'https://www.carsensor.net/usedcar/b'+c[0]+'/'+c[1]+'/index.html?'+qs.join('&');})()};
     }
   }
-  return null;   // 8台に届かない＝類似品では判断しない
+  return null;   // 同型で8台に届かない＝類似品では判断しない
 }
 function paCm(d){
   if(!d.cm||!d.cm.m)return null;
@@ -3097,7 +3170,9 @@ const PA_CAT={
 function paDiag(d,m,cm){
   if(!m||d.price==null)return {cat:PA_CAT.X,rec:'市場の明細データがないため判定できません',score:0,dead:false};
   const dead = d.cost!=null && d.cost > m.med;              // 原価が相場中央値を超える＝価格政策では回収不能
-  const hi   = d.price >= m.med*1.04;
+  /* 同型グレードで比較できていないときは、相場そのものが当てにならない。
+     グレード違いは数十万動くので、値下げと言い切る前に余裕を持たせる。 */
+  const hi   = d.price >= m.med*(m.sim?1.04:1.10);
   const lo   = d.price <= m.q1;
   const viewLow = cm && cm.pct!=null ? cm.pct < 50 : null;
   const long = (d.days||0) >= 120;
@@ -3105,7 +3180,7 @@ function paDiag(d,m,cm){
   if(hi){
     cat=PA_CAT.A;
     rec=(Math.round(m.med*10)/10).toFixed(1)+'万まで下げる（'
-       +(m.sim?'類似品':'同条件')+m.n+'台の中央値）';
+       +(m.sim?'同型'+m.n+'台の中央値':'参考値・同型で比較できていません')+'）';
   }else if(viewLow===true && long){
     cat=PA_CAT.B;
     const tr=paTrend(d);
@@ -3117,7 +3192,7 @@ function paDiag(d,m,cm){
   }else if(lo && viewLow===false){
     cat=PA_CAT.D;
     rec=(Math.round(m.med*10)/10).toFixed(1)+'万まで戻せる（'
-       +(m.sim?'類似品':'同条件')+m.n+'台の中央値・反響は上位）';
+       +(m.sim?'同型'+m.n+'台の中央値':'参考値・同型で比較できていません')+'・反響は上位）';
   }else{
     cat=PA_CAT.F; rec='現状維持。次の巡回で再判定';
   }
@@ -3309,6 +3384,7 @@ function renderPriceAlert(){
       <div class="ga-hd">
         <span class="ga-chip" style="background:var(${'--g-'+({A:'red',B:'amb',C:'pur',D:'grn',F:'blue',X:'gry'}[g.cat.key])}-t);color:${g.cat.t||g.cat.c}">${g.cat.label}</span>
         ${g.dead?'<span class="ga-chip" style="background:var(--g-red-t);color:var(--g-red-d)">原価が相場超え</span>':''}
+        ${!r.sim?'<span class="ga-chip" style="background:var(--g-amb-t);color:var(--g-amb-d)" title="同型グレードで8台以上の比較ができていません">参考値</span>':''}
         <span class="ga-name">${c.name}</span>
         <span class="ga-grade">${c.grade||''}</span>
         ${c.fwd==='〇'?'<span class="ga-chip" style="background:var(--g-gry-t);color:var(--g-ink2)">4WD</span>':''}
@@ -3351,9 +3427,10 @@ function renderPriceAlert(){
       ${g.dead?`<div class="ga-warn">原価 ${paMoney(c.cost)}万 が市場中央値 ${paMoney(m.med)}万 を ${(c.cost-m.med).toFixed(1)}万 上回っています。価格政策では回収できません。</div>`:''}
 
       <div class="ga-ft">
-        <span>${r.sim?'<span class="src">類似品</span>で判断：':'照合：'}${m.scope}　競合 <b>${m.n}台</b></span>
-        ${r.sim&&r.w?`<span>参考：年式±1年の広い条件は ${r.w.n}台・中央値 ${paMoney(r.w.med)}万</span>`:''}
-        ${!r.sim?'<span style="color:var(--g-amb-d)">類似品が8台に届かないため、従来の条件で判断しています</span>':''}
+        <span>${r.sim?'<span class="src">同型比較</span>：':'照合：'}${m.scope}　${m.n}台</span>
+        ${r.sim&&m.adj?`<span title="市場の各車を「自社と同じ色だったらいくらか」に直してから中央値を取っています">色の価値差を補正済み（自社 ${c.color||'—'}）</span>`:''}
+        ${r.sim&&r.w?`<span>参考：絞らない条件なら ${r.w.n}台・中央値 ${paMoney(r.w.med)}万</span>`:''}
+        ${!r.sim?'<span style="color:var(--g-amb-d)">同型グレードで8台に届かないため参考値です。実際の掲載を見て判断してください</span>':''}
         <span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">
           ${r.sim?`<a class="minibtn" href="${m.url}" target="_blank" rel="noopener">類似品を見る</a>`:''}
           <a class="minibtn plain" href="${(r.w||m).url}" target="_blank" rel="noopener">${r.sim?'広い条件で見る':'カーセンサーで見る'}</a>
@@ -5560,8 +5637,8 @@ function openApiModal(){
     sel.value=aiModel(); setAiModel(sel.value);
   }
   const c=buyCfg();
-  ['cfgTax','cfgKei','cfgFutsu','cfgPct','cfgHot','cfgMid','cfgCold','cfgPKei','cfgPFutsu','cfgPosMax','cfgRLow','cfgRHigh','cfgLowCut'].forEach(function(id,i){
-    const e=document.getElementById(id); if(e)e.value=[c.tax,c.kei,c.futsu,c.pct,c.hot,c.mid,c.cold,c.pKei,c.pFutsu,c.posMax,c.rLow,c.rHigh,c.lowCut][i];
+  ['cfgTax','cfgKei','cfgFutsu','cfgPct','cfgHot','cfgMid','cfgCold','cfgPKei','cfgPFutsu','cfgPosMax','cfgRLow','cfgRHigh','cfgLowCut','cfgColYen','cfgColPct','cfgColCut'].forEach(function(id,i){
+    const e=document.getElementById(id); if(e)e.value=[c.tax,c.kei,c.futsu,c.pct,c.hot,c.mid,c.cold,c.pKei,c.pFutsu,c.posMax,c.rLow,c.rHigh,c.lowCut,c.colYen,c.colPct,c.colCut][i];
   });
   document.getElementById('modal-api').style.display='block';
   document.getElementById('ov-api').style.display='block';
@@ -6649,6 +6726,15 @@ function renderMarket(){
       <input type="number" id="cfgRHigh" step="1" min="1" max="60" style="width:100%;padding:7px 9px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--mono);background:var(--bg3);color:var(--text);box-sizing:border-box"></div>
     <div><div style="font-size:11px;color:var(--text3);margin-bottom:2px">低価格帯の上限(万)</div>
       <input type="number" id="cfgLowCut" step="5" min="10" max="200" style="width:100%;padding:7px 9px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--mono);background:var(--bg3);color:var(--text);box-sizing:border-box"></div>
+  </div>
+  <div style="font-size:11.5px;color:var(--text3);margin:4px 0 3px">色の価値差（人気色と不人気色の差。相場を比べるときに揃える）</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
+    <div><div style="font-size:11px;color:var(--text3);margin-bottom:2px">境界額まで(万)</div>
+      <input type="number" id="cfgColYen" step="1" min="0" max="50" style="width:100%;padding:7px 9px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--mono);background:var(--bg3);color:var(--text);box-sizing:border-box"></div>
+    <div><div style="font-size:11px;color:var(--text3);margin-bottom:2px">境界超は(%)</div>
+      <input type="number" id="cfgColPct" step="1" min="0" max="30" style="width:100%;padding:7px 9px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--mono);background:var(--bg3);color:var(--text);box-sizing:border-box"></div>
+    <div><div style="font-size:11px;color:var(--text3);margin-bottom:2px">境界額(万)</div>
+      <input type="number" id="cfgColCut" step="10" min="10" max="500" style="width:100%;padding:7px 9px;border:1px solid var(--border2);border-radius:6px;font-size:13.8px;font-family:var(--mono);background:var(--bg3);color:var(--text);box-sizing:border-box"></div>
   </div>
   <div style="font-size:11.5px;color:var(--text3);margin:4px 0 3px">想定小売の位置（市場分布の下から何%に出すか）</div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
