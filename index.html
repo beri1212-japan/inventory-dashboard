@@ -2950,6 +2950,54 @@ function paMkt(d){
   }
   return null;
 }
+/* ═══ 類似品：同年式・走行±2万km に絞った比較群 ═══
+   値下げの判断はここを根拠にする。年式を±1年に広げると台数が倍近くになり、
+   1つ新しい年式が混ざって中央値が上振れするため、下げ幅の判断が鈍る。
+   走行の許容は±2万kmを上限とし、足りない場合はエリアとグレードの粒度だけを緩める。
+   8台に届かない場合は「類似品なし」とし、従来の広い条件に判断を戻す（少数で決めない）。 */
+const PA_SIM_MIN=8;
+function paSim(d){
+  const code=MK_CODE[d.name], y=mkY(d.year);
+  if(!MKDATA||!code||!MKDATA.cars[code]||y==null)return null;
+  const all=MKDATA.cars[code].rows.map(l=>l.split('\t')).filter(r=>r[8]==='0');
+  const hv=d.hv==='〇', wd=d.fwd==='〇';
+  const spec=r=>((r[10]==='1')===hv)&&((r[9]==='1')===wd);
+  const kOk=r=>{if(d.km==null)return true;const v=parseFloat(r[5])*10000;
+                return v>=d.km-20000&&v<=d.km+20000;};
+  const yEq=r=>+r[4]===y;
+  const hoku=r=>r[0]==='北陸甲信越';
+  const gv=gvFilter(d), gOk=gv?(r=>gv.f(r[11])):(()=>true);
+  const model=MKDATA.cars[code].name;
+  const gen=genOfStock(d);
+  const genOk=gen?(r=>genYearOk(gen,+r[4])):(()=>true);
+  const gk=stockGradeKey(d);
+  const gEx=gk?(r=>mktGradeKey(r,model)===gk):null;
+  const gRo=gk?(r=>gradeCoarse(mktGradeKey(r,model))===gradeCoarse(gk)):null;
+  const T=[
+    {lbl:'北陸甲信越・同年式・走行±2万km・同グレード',        ar:hoku,      g:gEx},
+    {lbl:'北陸甲信越＋東海・同年式・走行±2万km・同グレード',   ar:null,      g:gEx},
+    {lbl:'北陸甲信越＋東海・同年式・走行±2万km・カスタム/ターボのみ一致', ar:null, g:gRo},
+    {lbl:'北陸甲信越＋東海・同年式・走行±2万km・グレード不問', ar:null,      g:null}];
+  for(let i=0;i<T.length;i++){
+    const t=T[i];
+    const rows=all.filter(r=>(!t.ar||t.ar(r))&&yEq(r)&&kOk(r)&&spec(r)&&gOk(r)&&genOk(r)&&(!t.g||t.g(r)));
+    const p=rows.map(r=>parseFloat(r[3])).filter(v=>v>0).sort((a,b)=>a-b);
+    if(p.length>=PA_SIM_MIN){
+      const q=f=>p[Math.min(p.length-1,Math.floor(p.length*f))];
+      return {sim:true, tier:i,
+        scope:t.lbl+(gen?'・'+genLabel(gen):'')+(gk&&i<2?'（'+gk+'）':''),
+        gradeKey:gk, gen:gen, n:p.length, low:p[0], q1:q(.25), med:q(.5), q3:q(.75),
+        high:p[p.length-1], fair:q(.5),
+        rank:d.price!=null?p.filter(v=>v<d.price).length+1:null,
+        url:(function(){const c=code.split('/');
+             const qs=['AR='+(i===0?'7':'7*3'),'YMIN='+y,'YMAX='+y];
+             if(d.km!=null){const lo=pSnapLo(d.km-20000),hi=pSnapHi(d.km+20000);
+               if(lo)qs.push('SMIN='+lo); if(hi)qs.push('SMAX='+hi);}
+             return 'https://www.carsensor.net/usedcar/b'+c[0]+'/'+c[1]+'/index.html?'+qs.join('&');})()};
+    }
+  }
+  return null;   // 8台に届かない＝類似品では判断しない
+}
 function paCm(d){
   if(!d.cm||!d.cm.m)return null;
   const m=d.cm.m, ad=Math.max(1,d.cm.activeDays||1);
@@ -2979,7 +3027,8 @@ function paDiag(d,m,cm){
   let cat, rec;
   if(hi){
     cat=PA_CAT.A;
-    rec=(Math.round(m.med*10)/10).toFixed(1)+'万まで下げる（同条件'+m.n+'台の中央値）';
+    rec=(Math.round(m.med*10)/10).toFixed(1)+'万まで下げる（'
+       +(m.sim?'類似品':'同条件')+m.n+'台の中央値）';
   }else if(viewLow===true && long){
     cat=PA_CAT.B;
     const tr=paTrend(d);
@@ -2990,7 +3039,8 @@ function paDiag(d,m,cm){
     rec='見られてお気に入りも付いている。総額表示・保証・車検残の見せ方を直す';
   }else if(lo && viewLow===false){
     cat=PA_CAT.D;
-    rec=(Math.round(m.med*10)/10).toFixed(1)+'万まで戻せる（反響は上位）';
+    rec=(Math.round(m.med*10)/10).toFixed(1)+'万まで戻せる（'
+       +(m.sim?'類似品':'同条件')+m.n+'台の中央値・反響は上位）';
   }else{
     cat=PA_CAT.F; rec='現状維持。次の巡回で再判定';
   }
@@ -3000,8 +3050,11 @@ function paDiag(d,m,cm){
 }
 function paRows(){
   return STOCK.map(d=>{
-    const m=paMkt(d), cm=paCm(d), g=paDiag(d,m,cm);
-    return {car:d,m,cm,g,gap:(m&&d.price!=null)?Math.round((d.price-m.med)*10)/10:null};
+    const w=paMkt(d);                 // 従来＝年式±1年の広い条件（参考）
+    const sm=paSim(d);                // 類似品＝同年式・走行±2万km（判断の根拠）
+    const m=sm||w;                    // 判断は類似品を優先し、足りなければ従来に戻す
+    const cm=paCm(d), g=paDiag(d,m,cm);
+    return {car:d,m,w,sim:sm,cm,g,gap:(m&&d.price!=null)?Math.round((d.price-m.med)*10)/10:null};
   }).sort((a,b)=>b.g.score-a.g.score);
 }
 
@@ -3077,7 +3130,8 @@ function paExportPdf(){
            +'<td class="r mono">'+paMoney(c.price)+'</td>'
            +'<td class="r mono">'+paMoney(c.cost)+'</td>'
            +'<td class="c mono'+((c.days||0)>=300?' bad':'')+'">'+(c.days!=null?c.days:'—')+'</td>'
-           +'<td class="c mono">'+(m&&m.rank?m.rank+'/'+(m.n+1):'—')+'</td>'
+           +'<td class="c mono">'+(m&&m.rank?m.rank+'/'+(m.n+1):'—')
+             +(m?'<br><span class="src'+(r.sim?' sim':'')+'">'+(r.sim?'類似品':'広め')+'</span>':'')+'</td>'
            +'<td class="r mono">'+(m?paMoney(m.med):'—')+'</td>'
            +'<td class="r mono'+(gap>0?' bad':'')+'">'+(gap==null?'—':(gap>0?'+':'')+gap.toFixed(1))+'</td>'
            +'<td class="c mono">'+(cm?cm.perDay.toFixed(1):'—')+'</td>'
@@ -3101,6 +3155,7 @@ function paExportPdf(){
    +'th{background:#f5f7fa;border:.5pt solid #c9d1da;padding:3px 4px;font-size:7.2pt;font-weight:600;text-align:left}'
    +'td{border:.5pt solid #d7dee6;padding:3px 4px;font-size:7.6pt;vertical-align:top;overflow:hidden;word-break:break-all}'
    +'.c{text-align:center}.r{text-align:right}'
+   +'.src{font-size:6pt;color:#888}.src.sim{color:#0559d2;font-weight:700}'
    +".mono{font-variant-numeric:tabular-nums}"
    +'.g{color:#666;font-size:7pt}'
    +'.rec{font-size:7.2pt;line-height:1.45}'
@@ -3117,7 +3172,9 @@ function paExportPdf(){
    +'<span>反響 C-match '+((STOCK.find(function(d){return d.cm;})||{cm:{}}).cm.last||'—')+'</span>'
    +'<span>対象 '+rows.length+'台</span></div>'
    +body
-   +'<div class="meta" style="margin-top:10px">※「順位」は同条件の中で安い順。「差」は市場中央値との差（＋は自社が高い）。「閲覧/日」はC-matchの掲載稼働日あたり詳細閲覧数。</div>'
+   +'<div class="meta" style="margin-top:10px">※「順位」は比較群の中で安い順。「差」は中央値との差（＋は自社が高い）。「閲覧/日」はC-matchの掲載稼働日あたり詳細閲覧数。<br>'
+   +'※<b style="color:#0559d2">類似品</b>＝<b>同年式・走行±2万km</b>に絞った比較群。値下げ・値上げの推奨価格はここの中央値です。年式を±1年に広げると台数が倍近くになり、'
+   +'1つ新しい年式が混ざって中央値が上振れするため、下げ幅の判断が鈍ります。<b>広め</b>＝類似品が8台に届かず、年式±1年の従来条件で判断した車両です。</div>'
    +'<script>window.onload=function(){setTimeout(function(){window.print();},400)};<\/script>'
    +'</body></html>');
   w.document.close();
@@ -3195,9 +3252,12 @@ function renderPriceAlert(){
         ${g.dead?`<br><span style="color:#991b1b">原価${paMoney(c.cost)}万が市場中央値${paMoney(m.med)}万を${(c.cost-m.med).toFixed(1)}万上回っています。価格政策では回収できません。</span>`:''}
       </div>
       <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:11.5px;color:var(--text3)">
-        <span>照合：${m.scope}</span><span>競合 ${m.n}台</span>
+        <span>${r.sim?'<b style="color:#0559d2">類似品</b>で判断：':'照合：'}${m.scope}</span><span>競合 <b>${m.n}台</b></span>
+        ${r.sim&&r.w?`<span style="color:var(--text3)">／ 参考：従来の広い条件（年式±1年）は ${r.w.scope} で ${r.w.n}台・中央値 ${paMoney(r.w.med)}万</span>`:''}
+        ${!r.sim?'<span style="color:#b45309">類似品が8台に届かないため、従来の条件で判断しています</span>':''}
         <span style="margin-left:auto;display:flex;gap:6px">
-          <a class="minibtn" href="${m.url}" target="_blank" rel="noopener">カーセンサーで見る</a>
+          ${r.sim?`<a class="minibtn" style="border-color:#0559d2;color:#0559d2" href="${m.url}" target="_blank" rel="noopener">類似品を見る（同年式・±2万km）</a>`:''}
+          <a class="minibtn" href="${(r.w||m).url}" target="_blank" rel="noopener">${r.sim?'広い条件で見る':'カーセンサーで見る'}</a>
           <button class="minibtn" onclick="paAi('${c.sid}')">AI診断</button>
           <button class="minibtn" onclick="runComment('${c.sid}')">コメント案</button>
           <button class="minibtn" onclick="openPriceChange('${encodeURIComponent(c.lower4)}','${encodeURIComponent(c.name)}',${c.price!=null?c.price:0},'${encodeURIComponent(c.cat||'')}')">価格を変更</button>
