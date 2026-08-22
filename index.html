@@ -2912,6 +2912,11 @@ function gvHasGrade(){return !!(MKDATA&&MKDATA.fields&&MKDATA.fields.indexOf('gr
    収集時のフラグが「e:HEV」（ホンダ）を拾えておらず、
    ヴェゼル・ZR-V・ステップワゴン・フリードの計2,052行がガソリン扱いになっていた。
    グレード本文にHV表記があればハイブリッドとみなす。 */
+/* MT・AGS（スズキの自動MT）は同じグレードでも相場が大きく下がる。
+   エブリー4WDで測ると AGS/MT 110.7万 に対し AT 133.8万 と23万の差があった。
+   在庫表に変速機の欄が無いため、グレード文言から判定し、無ければAT扱いにする。 */
+const MK_MTRE=/AGS|(^|[^A-Za-z])(MT|4MT|5MT|6MT|5速|6速|マニュアル)([^A-Za-z]|$)/i;
+function mktMt(g){return MK_MTRE.test(String(g||''));}
 const MK_HVRE=/e\s*[:：-]?\s*HEV|e\s*-?\s*POWER|ハイブリッド|HYBRID|PHEV|プラグイン|E-Four/i;
 function mktHv(r){return r[10]==='1'||MK_HVRE.test(r[11]||'');}
 
@@ -2955,21 +2960,36 @@ function genLabel(g){ if(!g)return ''; const a=Math.floor(g.from/100),b=Math.flo
    同じ車種・同じ年式でも、グレードで価格が大きく変わる（N-BOX H28〜H30 で
    GLパッケージ65.9万 〜 カスタム/ターボ/GL 120万、その差54万）。
    相場を比べるときは、まずグレードを揃える。 */
-const GK_EQUIP=/ホンダセンシング|セーフティサポート|スマートアシスト|プロパイロット|セーフティセンス|セーフティパッケージ|ナビゲーション|バックカメラ|全周囲カメラ|アラウンドビュー|ドライブレコーダー|ドラレコ|フルセグ|地デジ|Bluetooth|シートヒーター|コーナーセンサー|ソナー|スマートキー|プッシュスタート|クルーズコントロール|クルコン|レーダーブレーキ|衝突軽減|誤発進|LEDライト|LEDヘッド|アルミホイール|純正アルミ|エアロ|両側電動|片側電動|電動スライド|パワースライド|パワスラ|後席モニター|リアモニター|ワンオーナー|禁煙車?|届出済未使用車?|登録済未使用車?|未使用車|記録簿|整備付|保証付|新品タイヤ|車検[0-9R年月\/\.]*|ツートン|2トーン|ナビ|カメラ|ETC2?\.?0?|純正|社外|モニター|センサー|SDナビ|メモリーナビ|ワンセグ|スタイル|プラス/gi;
+const GK_EQUIP=/ホンダセンシング|セーフティサポート|スマートアシスト|プロパイロット|セーフティセンス|セーフティパッケージ|ナビゲーション|バックカメラ|全周囲カメラ|アラウンドビュー|ドライブレコーダー|ドラレコ|フルセグ|地デジ|Bluetooth|シートヒーター|コーナーセンサー|ソナー|スマートキー|プッシュスタート|クルーズコントロール|クルコン|レーダーブレーキ|衝突軽減|誤発進|LEDライト|LEDヘッド|アルミホイール|純正アルミ|エアロ|両側電動|片側電動|電動スライド|パワースライド|パワスラ|後席モニター|リアモニター|ワンオーナー|禁煙車?|届出済未使用車?|登録済未使用車?|未使用車|記録簿|整備付|保証付|新品タイヤ|車検[0-9R年月\/\.]*|ツートン|2トーン|ナビ|カメラ|ETC2?\.?0?|純正|社外|モニター|センサー|SDナビ|メモリーナビ|ワンセグ|スタイル|プラス|ハイルーフ|ロールーフ|セミハイルーフ|標準ルーフ|軽キャン[ピン]*グ*車?|キャンピング/gi;
 /* グレード文字列の下ごしらえ。
    在庫表と市場で書き方が違う部分を先に落とす。ここを外すと一致しなくなる：
      ・排気量「1.5」「2.0」「660」  → 市場側だけ先頭に付く
      ・動力「HV」「e:HEV」「e-POWER」→ 在庫表だけ付ける癖がある（動力は別に照合済み）
      ・「※軽修復」などの備考、「7人」などの乗車定員 */
+/* 車名の表記ゆれを吸収した正規表現。
+   在庫表「エブリー」に対し市場は「エブリイ」と書く。そのまま突き合わせると
+   車名がグレード欄に residual として残り、全グレードが同じキーに潰れてしまう。 */
+const KANA_VAR=[['ーイィ'],['ァア'],['ェエ'],['ゥウ'],['ォオ'],['ッツ'],['ャヤ'],['ュユ'],['ョヨ']];
+const _MRE={};
+function modelRe(model){
+  const m=String(model||'').normalize('NFKC').replace(/[-\s]/g,'');
+  if(!m)return null;
+  if(_MRE[m]!==undefined)return _MRE[m];
+  const cls=c=>{
+    for(let i=0;i<KANA_VAR.length;i++){const g=KANA_VAR[i][0];
+      if(g.indexOf(c)>=0)return '['+g+']';}
+    return c.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  };
+  let re=null;
+  try{re=new RegExp(m.split('').map(cls).join('[-\\s]*'),'gi');}catch(e){}
+  _MRE[m]=re; return re;
+}
 function gradeClean(t,model){
   if(!t)return '';
   let s=String(t).normalize('NFKC')
     .replace(/[※*].*$/,' ')
     .replace(/[（(].*?[）)]/g,' ').replace(/[･・]/g,' ');
-  if(model){
-    const m=String(model).normalize('NFKC').replace(/[-\s]/g,'');
-    try{s=s.replace(new RegExp(m.split('').map(c=>c.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('[-\\s]*'),'gi'),' ');}catch(e){}
-  }
+  if(model){const re=modelRe(model); if(re)s=s.replace(re,' ');}
   return s.replace(GK_EQUIP,' ').replace(/PKG/gi,'パッケージ')
     .replace(/e\s*[:：-]?\s*HEV|e\s*-?\s*POWER|ハイブリッド|(^|[^A-Za-z])(HV|PHEV|PHV)([^A-Za-z]|$)/gi,' ')
     .replace(/\d+\s*人乗?り?/g,' ')
@@ -3036,7 +3056,8 @@ function paMkt(d){
   if(!MKDATA||!code||!MKDATA.cars[code]||y==null)return null;
   const all=MKDATA.cars[code].rows.map(l=>l.split('\t')).filter(r=>r[8]==='0');
   const hv=d.hv==='〇', wd=d.fwd==='〇';
-  const spec=r=>(mktHv(r)===hv)&&((r[9]==='1')===wd);
+  const myMt=mktMt(d.grade);
+  const spec=r=>(mktHv(r)===hv)&&((r[9]==='1')===wd)&&(mktMt(r[11])===myMt);
   const yOk=r=>{const v=+r[4];return v>=y-1&&v<=y+1;};
   const kOk=r=>{if(d.km==null)return true;const v=parseFloat(r[5])*10000;return v>=d.km-20000&&v<=d.km+20000;};
   const hoku=r=>r[0]==='北陸甲信越';
@@ -3078,7 +3099,9 @@ function paMkt(d){
    1つ新しい年式が混ざって中央値が上振れするため、下げ幅の判断が鈍る。
    走行の許容は±2万kmを上限とし、足りない場合はエリアとグレードの粒度だけを緩める。
    8台に届かない場合は「類似品なし」とし、従来の広い条件に判断を戻す（少数で決めない）。 */
-const PA_SIM_MIN=8;
+/* 比較群の最低台数。全段階でグレード・動力・駆動・変速機・世代を揃えているため
+   少数でも中身は揃っている。10台未満は画面に「母数が少なめ」を出す。 */
+const PA_SIM_MIN=5;
 /* ═══ 色の価値差を揃えてから比べる ═══
    人気色（白・パール・黒）と不人気色（シルバー系）では同じ車でも値段が違う。
    自社が黒で市場がシルバーばかりだと、相場が実際より安く見えて余計に下げてしまう。
@@ -3108,7 +3131,8 @@ function paSim(d){
   const model=MKDATA.cars[code].name;
   const all=MKDATA.cars[code].rows.map(l=>l.split('\t')).filter(r=>r[8]==='0');
   const hv=d.hv==='〇', wd=d.fwd==='〇';
-  const spec=r=>(mktHv(r)===hv)&&((r[9]==='1')===wd);
+  const myMt=mktMt(d.grade);
+  const spec=r=>(mktHv(r)===hv)&&((r[9]==='1')===wd)&&(mktMt(r[11])===myMt);
   const kOk=r=>{if(d.km==null)return true;const v=parseFloat(r[5])*10000;
                 return v>=d.km-20000&&v<=d.km+20000;};
   const yEq=r=>+r[4]===y;
@@ -3131,24 +3155,28 @@ function paSim(d){
    {l:'北陸甲信越＋東海・同年式・同グレード',           ar:null, y:yEq,  g:gF, col:null,    c:true},
    {l:'北陸甲信越＋東海・同年式・同型グレード',         ar:null, y:yEq,  g:gC, col:null,    c:true},
    {l:'北陸甲信越＋東海・年式±1年・同グレード',         ar:null, y:yNear,g:gF, col:null,    c:true},
-   {l:'北陸甲信越＋東海・年式±1年・同型グレード',       ar:null, y:yNear,g:gC, col:null,    c:true}];
+   {l:'北陸甲信越＋東海・年式±1年・同型グレード',       ar:null, y:yNear,g:gC, col:null,    c:true},
+   /* ここから先は走行の条件を外す。台数が足りないときに
+      グレードを崩すより、走行を諦めた方がズレが小さいため。 */
+   {l:'北陸甲信越＋東海・同年式・同型グレード・走行不問',   ar:null, y:yEq,  g:gC, col:null,    c:true, nokm:true},
+   {l:'北陸甲信越＋東海・年式±1年・同型グレード・走行不問', ar:null, y:yNear,g:gC, col:null,    c:true, nokm:true}];
   for(let i=0;i<T.length;i++){
     const t=T[i];
-    const rs=all.filter(r=>(!t.ar||t.ar(r))&&t.y(r)&&kOk(r)&&spec(r)&&gOk(r)&&genOk(r)
+    const rs=all.filter(r=>(!t.ar||t.ar(r))&&t.y(r)&&(t.nokm||kOk(r))&&spec(r)&&gOk(r)&&genOk(r)
                         &&(!t.g||t.g(r))&&(!t.col||t.col(r)));
     const p=rs.map(r=>t.c?paColAdj(r[3],r[6],myI):parseFloat(r[3]))
              .filter(v=>v>0).sort((x,z)=>x-z);
     if(p.length>=PA_SIM_MIN){
       const q=f=>p[Math.min(p.length-1,Math.floor(p.length*f))];
       return {sim:true, tier:i, adj:t.c,
-        scope:t.l+(gen?'・'+genLabel(gen):'')+((i===3||i===5)?(kC?'（'+kC+'）':''):(kF?'（'+kF+'）':'')),
+        scope:t.l+(gen?'・'+genLabel(gen):'')+((i>=3&&i!==4)?(kC?'（'+kC+'）':''):(kF?'（'+kF+'）':'')),
         gradeKey:kF, gradeCode:kC, gen:gen, n:p.length,
         low:p[0], q1:q(.25), med:q(.5), q3:q(.75), high:p[p.length-1], fair:q(.5),
         rank:d.price!=null?p.filter(v=>v<d.price).length+1:null,
         url:(function(){const c=code.split('/');
-             const wide=(i===4||i===5);
+             const wide=(i===4||i===5||i===7);
              const qs=['AR='+(i===0?'7':'7*3'),'YMIN='+(wide?y-1:y),'YMAX='+(wide?y+1:y)];
-             if(d.km!=null){const lo=pSnapLo(d.km-20000),hi=pSnapHi(d.km+20000);
+             if(d.km!=null&&!t.nokm){const lo=pSnapLo(d.km-20000),hi=pSnapHi(d.km+20000);
                if(lo)qs.push('SMIN='+lo); if(hi)qs.push('SMAX='+hi);}
              return 'https://www.carsensor.net/usedcar/b'+c[0]+'/'+c[1]+'/index.html?'+qs.join('&');})()};
     }
@@ -3402,8 +3430,8 @@ function renderPriceAlert(){
 
       <div class="ga-metrics">
         ${met('自社価格',paMoney(c.price),'万')}
-        ${met('市場の中央値',paMoney(m.med),'万','比較 '+m.n+'台'+(m.n<8?'（母数が少なめ）':''),m.n<8?'ga-up':'ga-flat',
-              m.n<8?'比較できる掲載が'+m.n+'台しかありません。中央値のブレが大きいので、実際の掲載を見て確かめてください':null)}
+        ${met('市場の中央値',paMoney(m.med),'万','比較 '+m.n+'台'+(m.n<10?'（母数が少なめ）':''),m.n<10?'ga-up':'ga-flat',
+              m.n<10?'比較できる掲載が'+m.n+'台しかありません。中央値のブレが大きいので、実際の掲載を見て確かめてください':null)}
         ${met('乖離',(r.gap==null?'—':(r.gap>0?'+':'')+r.gap.toFixed(1)),'万',gapTxt,gapCls)}
         ${met('安い順',(m.rank?m.rank:'—'),(m.rank?'/'+(m.n+1):''),null,null,'比較群の中で安い方から何番目か')}
         ${met('閲覧/日',(cm?cm.perDay.toFixed(1):'—'),'',
@@ -3436,6 +3464,7 @@ function renderPriceAlert(){
       <div class="ga-ft">
         <span>${r.sim?'<span class="src">同型比較</span>：':'照合：'}${m.scope}　${m.n}台</span>
         ${r.sim&&m.adj?`<span title="市場の各車を「自社と同じ色だったらいくらか」に直してから中央値を取っています">色の価値差を補正済み（自社 ${c.color||'—'}）</span>`:''}
+        ${r.sim?`<span title="AT/MT・AGSは同じグレードでも相場が変わるため分けています">${mktMt(c.grade)?'MT/AGS車として比較':'AT車として比較（MT・AGSは除外）'}</span>`:''}
         ${r.sim&&r.w?`<span>参考：絞らない条件なら ${r.w.n}台・中央値 ${paMoney(r.w.med)}万</span>`:''}
         ${!r.sim?'<span style="color:var(--g-amb-d)">同型グレードで8台に届かないため参考値です。実際の掲載を見て判断してください</span>':''}
         <span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">
