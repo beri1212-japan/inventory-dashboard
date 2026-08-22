@@ -180,6 +180,83 @@ body{font-family:var(--font);font-size:14.9px;letter-spacing:.01em;-webkit-font-
 .mkseg button{font-family:var(--font);font-size:12px;padding:4px 11px;border:0;background:#fff;color:#6b7280;cursor:pointer;}
 .mkseg button.on{background:var(--accent);color:#fff;font-weight:600;}
 .pa-n{font-size:19px;font-weight:700;font-family:var(--mono);}
+/* ═══ 価格アラート：Googleアナリティクス風のテーマ ═══
+   色数を落として白基調にし、数字を主役にする。
+   状態は必ず「色＋ラベル」で示し、色だけで意味を持たせない。
+   配色は CVD（色覚特性）の分離を検証済み。 */
+#page-pricealert{
+  --g-ink:#202124; --g-ink2:#5f6368; --g-ink3:#80868b;
+  --g-line:#e8eaed; --g-line2:#dadce0; --g-surf:#fff; --g-soft:#f8f9fa;
+  --g-blue:#1a73e8; --g-blue-t:#e8f0fe; --g-blue-d:#1967d2;
+  --g-red:#d93025;  --g-red-t:#fce8e6;  --g-red-d:#c5221f;
+  --g-amb:#ef9d00;  --g-amb-t:#fef3d8;  --g-amb-d:#b06000;
+  --g-grn:#1e8e3e;  --g-grn-t:#e6f4ea;  --g-grn-d:#137333;
+  --g-pur:#9334e6;  --g-pur-t:#f3e8fd;  --g-pur-d:#8430ce;
+  --g-gry:#80868b;  --g-gry-t:#f1f3f4;
+  color:var(--g-ink);
+}
+/* スコアカード */
+#page-pricealert .kpi{background:var(--g-surf);border:1px solid var(--g-line);border-radius:8px;padding:14px 16px;box-shadow:none;}
+#page-pricealert .kpi-lbl{font-size:12px;color:var(--g-ink2);font-weight:500;letter-spacing:0;margin-bottom:6px;}
+#page-pricealert .kpi-val{font-size:30px;font-weight:400;color:var(--g-ink);line-height:1.15;font-variant-numeric:tabular-nums;letter-spacing:-.5px;}
+#page-pricealert .kpi-sub{font-size:11.5px;color:var(--g-ink3);margin-top:5px;}
+/* セクション */
+#page-pricealert .sec{background:var(--g-surf);border:1px solid var(--g-line);border-radius:8px;box-shadow:none;margin-bottom:12px;}
+#page-pricealert .sec-hdr{background:transparent;border-bottom:1px solid var(--g-line);padding:14px 18px;}
+#page-pricealert .sec-title{font-size:15px;font-weight:500;color:var(--g-ink);}
+#page-pricealert .sec-body{padding:0 18px 14px;}
+/* 絞り込みチップ */
+#page-pricealert .mkseg{display:flex;gap:8px;border:0;overflow:visible;flex-wrap:wrap;}
+#page-pricealert .mkseg button{border:1px solid var(--g-line2);background:var(--g-surf);color:var(--g-ink2);
+  border-radius:999px;padding:5px 14px;font-size:12.5px;font-weight:500;transition:background .12s,border-color .12s;}
+#page-pricealert .mkseg button:hover{background:var(--g-soft);}
+#page-pricealert .mkseg button b{font-weight:500;color:var(--g-ink);margin-left:3px;font-variant-numeric:tabular-nums;}
+#page-pricealert .mkseg button.on{background:var(--g-blue-t);border-color:transparent;color:var(--g-blue-d);font-weight:500;}
+#page-pricealert .mkseg button.on b{color:var(--g-blue-d);}
+/* テキストボタン */
+#page-pricealert .minibtn{border:1px solid var(--g-line2);background:var(--g-surf);color:var(--g-blue-d);
+  border-radius:999px;padding:5px 14px;font-size:12.5px;font-weight:500;text-decoration:none;display:inline-block;}
+#page-pricealert .minibtn:hover{background:var(--g-blue-t);border-color:transparent;}
+#page-pricealert .minibtn.plain{border-color:transparent;color:var(--g-ink2);}
+#page-pricealert .minibtn.plain:hover{background:var(--g-soft);color:var(--g-ink);}
+/* カード */
+.ga-card{background:var(--g-surf);border:1px solid var(--g-line);border-radius:8px;padding:16px 18px 12px;margin-bottom:10px;transition:box-shadow .15s;}
+.ga-card:hover{box-shadow:0 1px 3px rgba(60,64,67,.15),0 4px 8px rgba(60,64,67,.08);}
+.ga-hd{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:2px;}
+.ga-chip{font-size:11.5px;font-weight:500;padding:3px 10px;border-radius:999px;white-space:nowrap;letter-spacing:.01em;}
+.ga-name{font-size:16px;font-weight:500;color:var(--g-ink);}
+.ga-grade{font-size:13px;color:var(--g-ink2);}
+.ga-days{font-size:12.5px;font-weight:500;padding:3px 10px;border-radius:999px;font-variant-numeric:tabular-nums;}
+.ga-sub{font-size:12.5px;color:var(--g-ink3);margin-bottom:14px;}
+/* 指標 */
+.ga-metrics{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:16px;}
+.ga-m .l{font-size:11.5px;color:var(--g-ink2);margin-bottom:3px;white-space:nowrap;}
+.ga-m .v{font-size:24px;font-weight:400;color:var(--g-ink);line-height:1.2;font-variant-numeric:tabular-nums;letter-spacing:-.3px;}
+.ga-m .v u{font-size:12.5px;font-weight:400;text-decoration:none;color:var(--g-ink2);margin-left:1px;}
+.ga-m .d{font-size:11.5px;font-weight:500;margin-top:2px;}
+.ga-up{color:var(--g-red-d);}.ga-dn{color:var(--g-grn-d);}.ga-flat{color:var(--g-ink3);}
+/* 相場の分布 */
+.ga-strip{position:relative;height:20px;margin:0 7px 5px;}
+.ga-track{position:absolute;top:7px;left:0;right:0;height:6px;border-radius:3px;background:#e8eaed;}
+.ga-iqr{position:absolute;top:7px;height:6px;border-radius:3px;background:#aecbfa;}
+.ga-med{position:absolute;top:3px;width:2.5px;height:14px;border-radius:1px;background:#174ea6;}
+.ga-you{position:absolute;top:3px;width:14px;height:14px;border-radius:50%;transform:translateX(-50%);
+  border:2px solid #fff;box-shadow:0 0 0 1px rgba(60,64,67,.25);}
+.ga-scale{display:flex;justify-content:space-between;font-size:11.5px;color:var(--g-ink3);
+  font-variant-numeric:tabular-nums;margin:0 7px 14px;}
+/* 推奨 */
+.ga-rec{background:var(--g-soft);border-radius:6px;padding:11px 14px;margin-bottom:10px;}
+.ga-rec .t{font-size:11px;color:var(--g-ink2);letter-spacing:.06em;margin-bottom:3px;}
+.ga-rec .b{font-size:14.5px;font-weight:500;line-height:1.6;color:var(--g-ink);}
+.ga-note{font-size:12.5px;color:var(--g-ink2);line-height:1.7;margin-bottom:4px;}
+.ga-warn{font-size:12.5px;color:var(--g-red-d);line-height:1.7;margin-bottom:4px;}
+/* フッター */
+.ga-ft{border-top:1px solid var(--g-line);margin-top:10px;padding-top:10px;
+  display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:11.5px;color:var(--g-ink3);}
+.ga-ft b{color:var(--g-ink2);font-weight:500;font-variant-numeric:tabular-nums;}
+.ga-ft .src{color:var(--g-blue-d);font-weight:500;}
+@media(max-width:1100px){.ga-metrics{grid-template-columns:repeat(3,1fr);gap:12px 4px;}}
+
 .mktbtn{color:var(--accent);}
 .mktbtn b{font-family:var(--mono);font-weight:700;}
 .mktlink{color:var(--accent);text-decoration:none;font-weight:600;}
@@ -3010,12 +3087,12 @@ function paCm(d){
           med:arr.length?arr[Math.floor(arr.length/2)]:null};
 }
 const PA_CAT={
-  A:{key:'A',label:'値下げ',      c:'#b91c1c',bg:'#fef2f2'},
-  B:{key:'B',label:'再掲載・見せ方',c:'#d97706',bg:'#fffbeb'},
-  C:{key:'C',label:'問合せ導線',   c:'#7c3aed',bg:'#f5f3ff'},
-  D:{key:'D',label:'値上げ余地',   c:'#047857',bg:'#ecfdf5'},
-  F:{key:'F',label:'経過観察',     c:'#0559d2',bg:'#eff6ff'},
-  X:{key:'X',label:'判定不可',     c:'var(--text3)',bg:'var(--bg3)'}
+  A:{key:'A',label:'値下げ',      c:'#d93025',bg:'#fce8e6',t:'#c5221f'},
+  B:{key:'B',label:'再掲載・見せ方',c:'#ef9d00',bg:'#fef3d8',t:'#b06000'},
+  C:{key:'C',label:'問合せ導線',   c:'#9334e6',bg:'#f3e8fd',t:'#8430ce'},
+  D:{key:'D',label:'値上げ余地',   c:'#1e8e3e',bg:'#e6f4ea',t:'#137333'},
+  F:{key:'F',label:'経過観察',     c:'#1a73e8',bg:'#e8f0fe',t:'#1967d2'},
+  X:{key:'X',label:'判定不可',     c:'#80868b',bg:'#f1f3f4',t:'#5f6368'}
 };
 function paDiag(d,m,cm){
   if(!m||d.price==null)return {cat:PA_CAT.X,rec:'市場の明細データがないため判定できません',score:0,dead:false};
@@ -3217,54 +3294,76 @@ function renderPriceAlert(){
     const c=r.car,m=r.m,cm=r.cm,g=r.g;
     const span=Math.max(m.high-m.low,1), pos=v=>Math.max(0,Math.min(100,(v-m.low)/span*100));
     const lossFair=c.cost!=null?Math.round((m.med-c.cost)*10)/10:null;
-    return `<div style="border:1px solid var(--border);border-left:4px solid ${g.cat.c};border-radius:8px;padding:12px 14px;margin-bottom:10px;background:${g.cat.bg}">
-      <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:8px">
-        <span class="mtag" style="background:${g.cat.c};color:#fff">${g.cat.label}</span>
-        ${g.dead?'<span class="mtag" style="background:#fee2e2;color:#991b1b">原価が相場超え</span>':''}
-        <b style="font-size:15.5px">${c.name}</b>
-        <span style="font-size:12.6px;color:var(--text2)">${c.grade||''}</span>
-        <span style="font-size:12.6px;color:var(--text3)">${ymV4(c)} / ${c.km!=null?(c.km/10000).toFixed(1)+'万km':'—'} / ${c.color||'—'} / 車体${c.lower4||'—'}</span>
-        ${c.fwd==='〇'?'<span class="mtag mtag-fwd">4WD</span>':''}${c.hv==='〇'?'<span class="mtag mtag-hv">HV</span>':''}
-        <span style="margin-left:auto"><span class="pill ${(c.days||0)>=300?'pill-r':(c.days||0)>=121?'pill-y':'pill-g'}">${c.days!=null?c.days+'日':'—'}</span></span>
+    const dayC=(c.days||0)>=300?'--g-red':(c.days||0)>=121?'--g-amb':'--g-grn';
+    const dayT=(c.days||0)>=300?'--g-red-d':(c.days||0)>=121?'--g-amb-d':'--g-grn-d';
+    const dayB=(c.days||0)>=300?'--g-red-t':(c.days||0)>=121?'--g-amb-t':'--g-grn-t';
+    // 数値の見出し。Googleアナリティクス同様、差分は矢印つきで色は補助
+    const met=(l,v,unit,d,dc,tip)=>`<div class="ga-m"${tip?` title="${tip}"`:''}>
+        <div class="l">${l}</div>
+        <div class="v">${v}${unit?`<u>${unit}</u>`:''}</div>
+        ${d?`<div class="d ${dc||'ga-flat'}">${d}</div>`:''}</div>`;
+    const gapTxt=r.gap==null?'':(r.gap>0?'▲ +'+r.gap.toFixed(1)+'万 高い':r.gap<0?'▼ '+r.gap.toFixed(1)+'万 安い':'相場ちょうど');
+    const gapCls=r.gap==null?'ga-flat':r.gap>0?'ga-up':r.gap<0?'ga-dn':'ga-flat';
+    const iqrL=pos(m.q1), iqrW=Math.max(1,pos(m.q3)-pos(m.q1));
+    return `<div class="ga-card">
+      <div class="ga-hd">
+        <span class="ga-chip" style="background:var(${'--g-'+({A:'red',B:'amb',C:'pur',D:'grn',F:'blue',X:'gry'}[g.cat.key])}-t);color:${g.cat.t||g.cat.c}">${g.cat.label}</span>
+        ${g.dead?'<span class="ga-chip" style="background:var(--g-red-t);color:var(--g-red-d)">原価が相場超え</span>':''}
+        <span class="ga-name">${c.name}</span>
+        <span class="ga-grade">${c.grade||''}</span>
+        ${c.fwd==='〇'?'<span class="ga-chip" style="background:var(--g-gry-t);color:var(--g-ink2)">4WD</span>':''}
+        ${c.hv==='〇'?'<span class="ga-chip" style="background:var(--g-gry-t);color:var(--g-ink2)">HV</span>':''}
+        <span style="margin-left:auto"><span class="ga-days" style="background:var(${dayB});color:var(${dayT})">${c.days!=null?c.days+'日':'—'}</span></span>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:10px">
-        <div><div style="font-size:11.5px;color:var(--text3)">自社価格</div><div class="pa-n">${paMoney(c.price)}<span style="font-size:12px">万</span></div></div>
-        <div><div style="font-size:11.5px;color:var(--text3)">市場の中央値</div><div class="pa-n" style="color:#0559d2">${paMoney(m.med)}<span style="font-size:12px">万</span></div></div>
-        <div><div style="font-size:11.5px;color:var(--text3)">乖離</div><div class="pa-n" style="color:${r.gap>0?'#b91c1c':r.gap<0?'#047857':'var(--text)'}">${r.gap==null?'—':(r.gap>0?'+':'')+r.gap.toFixed(1)}<span style="font-size:12px">万</span></div></div>
-        <div><div style="font-size:11.5px;color:var(--text3)">安い順</div><div class="pa-n">${m.rank?m.rank+'<span style="font-size:12px">/'+(m.n+1)+'</span>':'—'}</div></div>
-        <div><div style="font-size:11.5px;color:var(--text3)">閲覧/日</div><div class="pa-n">${cm?cm.perDay.toFixed(1):'—'}${cm&&cm.pct!=null?'<span style="font-size:12px;color:'+(cm.pct<50?'#b91c1c':'#047857')+'"> 上位'+(100-cm.pct)+'%</span>':''}</div></div>
-        <div><div style="font-size:11.5px;color:var(--text3)">中央値で売ると</div><div class="pa-n" style="color:${lossFair!=null&&lossFair<0?'#b91c1c':'var(--text)'}">${lossFair==null?'—':(lossFair>0?'+':'')+lossFair.toFixed(1)}<span style="font-size:12px">万</span></div></div>
+      <div class="ga-sub">${ymV4(c)}　·　${c.km!=null?(c.km/10000).toFixed(1)+'万km':'—'}　·　${c.color||'—'}　·　車体 ${c.lower4||'—'}</div>
+
+      <div class="ga-metrics">
+        ${met('自社価格',paMoney(c.price),'万')}
+        ${met('市場の中央値',paMoney(m.med),'万','比較 '+m.n+'台'+(m.n<8?'（母数が少なめ）':''),m.n<8?'ga-up':'ga-flat',
+              m.n<8?'比較できる掲載が'+m.n+'台しかありません。中央値のブレが大きいので、実際の掲載を見て確かめてください':null)}
+        ${met('乖離',(r.gap==null?'—':(r.gap>0?'+':'')+r.gap.toFixed(1)),'万',gapTxt,gapCls)}
+        ${met('安い順',(m.rank?m.rank:'—'),(m.rank?'/'+(m.n+1):''),null,null,'比較群の中で安い方から何番目か')}
+        ${met('閲覧/日',(cm?cm.perDay.toFixed(1):'—'),'',
+              cm&&cm.pct!=null?(cm.pct>=50?'▲ 上位'+(100-cm.pct)+'%':'▼ 下位'+cm.pct+'%'):null,
+              cm&&cm.pct!=null?(cm.pct>=50?'ga-dn':'ga-up'):null,
+              '同カテゴリ内での詳細閲覧数の位置')}
+        ${met('中央値で売ると',(lossFair==null?'—':(lossFair>0?'+':'')+lossFair.toFixed(1)),'万',null,null,'市場中央値で売った場合の原価との差')}
       </div>
-      <div style="margin-bottom:8px">
-        <div style="position:relative;height:26px">
-          <div style="position:absolute;top:11px;left:0;right:0;height:5px;border-radius:3px;background:linear-gradient(90deg,#d1fae5,#dbeafe,#fee2e2)"></div>
-          <div style="position:absolute;top:6px;left:${pos(m.q1)}%;width:2px;height:15px;background:#94a3b8"></div>
-          <div style="position:absolute;top:3px;left:${pos(m.med)}%;width:2px;height:21px;background:#0559d2"></div>
-          <div style="position:absolute;top:6px;left:${pos(m.q3)}%;width:2px;height:15px;background:#94a3b8"></div>
-          ${c.price!=null?`<div style="position:absolute;top:1px;left:${pos(c.price)}%;transform:translateX(-50%);width:11px;height:11px;border-radius:50%;background:${g.cat.c};border:2px solid #fff;box-shadow:0 0 0 1px ${g.cat.c}"></div>`:''}
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--text3)">
-          <span>最安 ${paMoney(m.low)}万</span><span>25% ${paMoney(m.q1)} ／ 中央 ${paMoney(m.med)} ／ 75% ${paMoney(m.q3)}</span><span>最高 ${paMoney(m.high)}万</span>
-        </div>
+
+      <div class="ga-strip" title="最安 ${paMoney(m.low)}万 〜 最高 ${paMoney(m.high)}万／青い帯は中央50%（25%〜75%）／縦線が中央値／丸が自社価格">
+        <div class="ga-track"></div>
+        <div class="ga-iqr" style="left:${iqrL}%;width:${iqrW}%"></div>
+        <div class="ga-med" style="left:${pos(m.med)}%"></div>
+        ${c.price!=null?`<div class="ga-you" style="left:${pos(c.price)}%;background:${g.cat.c}"></div>`:''}
       </div>
-      <div style="font-size:13.2px;line-height:1.7;margin-bottom:8px"><b style="color:${g.cat.c}">推奨：${g.rec}</b>
-        ${cm?`<br><span style="color:var(--text2)">反響：${cm.days}日で閲覧${cm.view}・お気に入り${cm.fav}・問合せ${cm.inq}（同カテゴリ${cm.n}台の中央値は1日${cm.med!=null?cm.med.toFixed(1):'—'}回）</span>`:'<br><span style="color:var(--text3)">反響：突合できていません</span>'}
-        ${g.dead?`<br><span style="color:#991b1b">原価${paMoney(c.cost)}万が市場中央値${paMoney(m.med)}万を${(c.cost-m.med).toFixed(1)}万上回っています。価格政策では回収できません。</span>`:''}
+      <div class="ga-scale">
+        <span>最安 ${paMoney(m.low)}万</span>
+        <span>25% ${paMoney(m.q1)}　中央 ${paMoney(m.med)}　75% ${paMoney(m.q3)}</span>
+        <span>最高 ${paMoney(m.high)}万</span>
       </div>
-      <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:11.5px;color:var(--text3)">
-        <span>${r.sim?'<b style="color:#0559d2">類似品</b>で判断：':'照合：'}${m.scope}</span><span>競合 <b>${m.n}台</b></span>
-        ${r.sim&&r.w?`<span style="color:var(--text3)">／ 参考：従来の広い条件（年式±1年）は ${r.w.scope} で ${r.w.n}台・中央値 ${paMoney(r.w.med)}万</span>`:''}
-        ${!r.sim?'<span style="color:#b45309">類似品が8台に届かないため、従来の条件で判断しています</span>':''}
-        <span style="margin-left:auto;display:flex;gap:6px">
-          ${r.sim?`<a class="minibtn" style="border-color:#0559d2;color:#0559d2" href="${m.url}" target="_blank" rel="noopener">類似品を見る（同年式・±2万km）</a>`:''}
-          <a class="minibtn" href="${(r.w||m).url}" target="_blank" rel="noopener">${r.sim?'広い条件で見る':'カーセンサーで見る'}</a>
-          <button class="minibtn" onclick="paAi('${c.sid}')">AI診断</button>
-          <button class="minibtn" onclick="runComment('${c.sid}')">コメント案</button>
+
+      <div class="ga-rec" style="box-shadow:inset 3px 0 0 ${g.cat.c}">
+        <div class="t">推奨アクション</div>
+        <div class="b">${g.rec}</div>
+      </div>
+      ${cm?`<div class="ga-note">反響：${cm.days}日で 閲覧 <b>${cm.view}</b>・お気に入り <b>${cm.fav}</b>・問合せ <b>${cm.inq}</b>（同カテゴリ${cm.n}台の中央値は1日${cm.med!=null?cm.med.toFixed(1):'—'}回）</div>`
+          :'<div class="ga-note" style="color:var(--g-ink3)">反響：突合できていません</div>'}
+      ${g.dead?`<div class="ga-warn">原価 ${paMoney(c.cost)}万 が市場中央値 ${paMoney(m.med)}万 を ${(c.cost-m.med).toFixed(1)}万 上回っています。価格政策では回収できません。</div>`:''}
+
+      <div class="ga-ft">
+        <span>${r.sim?'<span class="src">類似品</span>で判断：':'照合：'}${m.scope}　競合 <b>${m.n}台</b></span>
+        ${r.sim&&r.w?`<span>参考：年式±1年の広い条件は ${r.w.n}台・中央値 ${paMoney(r.w.med)}万</span>`:''}
+        ${!r.sim?'<span style="color:var(--g-amb-d)">類似品が8台に届かないため、従来の条件で判断しています</span>':''}
+        <span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">
+          ${r.sim?`<a class="minibtn" href="${m.url}" target="_blank" rel="noopener">類似品を見る</a>`:''}
+          <a class="minibtn plain" href="${(r.w||m).url}" target="_blank" rel="noopener">${r.sim?'広い条件で見る':'カーセンサーで見る'}</a>
+          <button class="minibtn plain" onclick="paAi('${c.sid}')">AI診断</button>
+          <button class="minibtn plain" onclick="runComment('${c.sid}')">コメント案</button>
           <button class="minibtn" onclick="openPriceChange('${encodeURIComponent(c.lower4)}','${encodeURIComponent(c.name)}',${c.price!=null?c.price:0},'${encodeURIComponent(c.cat||'')}')">価格を変更</button>
         </span>
       </div>
     </div>`;
-  }).join('')||'<div style="padding:20px;color:var(--text3);font-size:13.2px">対応が必要な在庫はありません。</div>';
+  }).join('')||'<div style="padding:24px;color:var(--g-ink3);font-size:13.2px">対応が必要な在庫はありません。</div>';
 
   const tb=document.getElementById('paTodo');if(!tb)return;
   const nod=rows.filter(r=>r.g.cat.key==='X').map(r=>r.car).sort((a,b)=>(b.days||0)-(a.days||0));
