@@ -3010,6 +3010,14 @@ function genOfStock(d){
    実測：R3のノートで比較18台のうち13台（72%）が2020年＝旧型で、
    中央値が99.0万（旧型込み）と92.9万（新型のみ）で6.1万ずれていた。
    → その年がまるごと世代の中に入っている場合だけ採用する。 */
+/* 収集時に世代（Fコード）が付いている行は、それを直接使う。
+   付いていない古いデータは、従来どおり年で判定する。 */
+function genMatch(g,r,ownY){
+  if(!g)return true;
+  const f=r[12];
+  if(f)return f===g.f;
+  return genYearOk(g,+r[4],ownY);
+}
 function genYearClean(g,y){
   if(!g)return true;
   return (y*100+1)>=g.from && (y*100+12)<=g.to;
@@ -3138,7 +3146,7 @@ function paMkt(d){
   const gv=gvFilter(d), gOk=gv?(r=>gv.f(r[11])):(()=>true);
   const model=MKDATA.cars[code].name;
   const gen=genOfStock(d);
-  const genOk=gen?(r=>genYearOk(gen,+r[4],y)):(()=>true);
+  const genOk=gen?(r=>genMatch(gen,r,y)):(()=>true);
   const gk=stockGradeKey(d);
   const gExact=gk?(r=>mktGradeKey(r,model)===gk):null;
   const gRough=gk?(r=>gradeCoarse(mktGradeKey(r,model))===gradeCoarse(gk)):null;
@@ -3250,7 +3258,7 @@ function paLevels(d){
   const kF=gradeKey(d.grade,model);
   /* 共通条件 */
   const base=r=>(mktPw(r)===pw)&&((r[9]==='1')===wd)&&(mktMt(r[11])===myMt)
-              &&(!gv||gv.f(r[11]))&&(!gen||genYearOk(gen,+r[4],y))
+              &&(!gv||gv.f(r[11]))&&(!gen||genMatch(gen,r,y))
               &&(d.km==null||(function(){const v=parseFloat(r[5])*10000;
                    return kmInWindow(d.km,v);})());
   const yEq=r=>+r[4]===y;
@@ -3650,6 +3658,8 @@ function renderPriceAlert(){
             <span>修復歴なし</span>
             ${r.lv.gen?`<span>${genLabel(r.lv.gen)}</span>`:''}
             ${(()=>{const y=mkY(c.year);if(!r.lv.gen||y==null)return '';
+              const hasF=MKDATA&&MKDATA.fields&&MKDATA.fields.indexOf('gen')>=0;
+              if(hasF)return '<span title="収集時に世代コードを取得しているため、モデルチェンジ年も正しく分けられます">世代コードで判定</span>';
               const dy=genDirtyYears(r.lv.gen,y-1,y+1).filter(v=>v!==y);
               return dy.length?`<span title="市場データには月が無く、モデルチェンジのあった年は新旧を見分けられません">${dy.join('・')}年はモデルチェンジ年のため除外</span>`:'';})()}
             <span style="margin-left:auto">②〜④は色の価値差を補正</span></div>
