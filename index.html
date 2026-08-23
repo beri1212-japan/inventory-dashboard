@@ -2960,11 +2960,14 @@ const PW_LABEL={HV:'HV',DS:'ディーゼル',GS:'ガソリン'};
 const PW_FUEL={HV:'3',DS:'2',GS:'1'};    // カーセンサーの FUEL パラメータ
 /* カーセンサーの検索URLに、計算で使っているのと同じ条件を載せる。
    これが無いと、リンクを開いたとき4WDと2WDが混ざって出て、画面の数字と合わない。 */
-function mktUrlSpec(d){
+function mktUrlSpec(d,gen){
   const q=[];
   q.push('KUDO='+(d.fwd==='〇'?'4WD1':'4WD0'));
   q.push('FUEL='+PW_FUEL[stockPw(d)]);
   q.push('SLST='+(mktMt(d.grade)?'MT':'AT'));
+  // 世代（フルモデルチェンジ）の絞り込み。NI/s008 + F003 → NI_S008_F003
+  const code=MK_CODE[d.name];
+  if(gen&&gen.f&&code)q.push('FMCC='+code.replace('/','_').toUpperCase()+'_'+gen.f);
   return q;
 }
 
@@ -3000,7 +3003,30 @@ function genOfStock(d){
   return genOf(code,y,d.mon||6);
 }
 /* 市場側は年しか無いので、世代の開始年〜終了年（年単位）で判定する */
-function genYearOk(g,y){ if(!g)return true; return y>=Math.floor(g.from/100)&&y<=Math.floor(g.to/100); }
+/* ═══ モデルチェンジ年は使わない ═══
+   世代マスタは月まで持っているが、市場データには年しか無い。
+   ノートは3代目が2020年12月開始なので、2020年の掲載はほぼ旧型E12。
+   年でしか判定できないため、モデルチェンジをまたぐ年は新旧の区別がつかない。
+   実測：R3のノートで比較18台のうち13台（72%）が2020年＝旧型で、
+   中央値が99.0万（旧型込み）と92.9万（新型のみ）で6.1万ずれていた。
+   → その年がまるごと世代の中に入っている場合だけ採用する。 */
+function genYearClean(g,y){
+  if(!g)return true;
+  return (y*100+1)>=g.from && (y*100+12)<=g.to;
+}
+function genYearOk(g,y,ownY){
+  if(!g)return true;
+  if(genYearClean(g,y))return true;
+  // 自車の年式そのものがモデルチェンジ年なら、その年だけは残す（他に比べる相手がいないため）
+  return ownY!=null && y===ownY;
+}
+/* 除外したモデルチェンジ年を画面に出すためのラベル */
+function genDirtyYears(g,y0,y1){
+  if(!g)return [];
+  const out=[];
+  for(let y=y0;y<=y1;y++)if(!genYearClean(g,y))out.push(y);
+  return out;
+}
 function genLabel(g){ if(!g)return ''; const a=Math.floor(g.from/100),b=Math.floor(g.to/100);
   return (g.i+1)+'代目('+a+(b>=9999?'〜':'〜'+b)+')'; }
 
@@ -3112,7 +3138,7 @@ function paMkt(d){
   const gv=gvFilter(d), gOk=gv?(r=>gv.f(r[11])):(()=>true);
   const model=MKDATA.cars[code].name;
   const gen=genOfStock(d);
-  const genOk=gen?(r=>genYearOk(gen,+r[4])):(()=>true);
+  const genOk=gen?(r=>genYearOk(gen,+r[4],y)):(()=>true);
   const gk=stockGradeKey(d);
   const gExact=gk?(r=>mktGradeKey(r,model)===gk):null;
   const gRough=gk?(r=>gradeCoarse(mktGradeKey(r,model))===gradeCoarse(gk)):null;
@@ -3137,7 +3163,7 @@ function paMkt(d){
               rank:d.price!=null?p.filter(v=>v<d.price).length+1:null,
               url:(function(){const c=code.split('/');const qs=['AR='+(i===0?'7':'7*3'),'YMIN='+(y-1),'YMAX='+(y+1)];
                    if(i<2&&d.km!=null){const w=kmWindow(d.km);const lo=pSnapLo(w[0]),hi=pSnapHi(w[1]);if(lo)qs.push('SMIN='+lo);if(hi)qs.push('SMAX='+hi);}
-                   mktUrlSpec(d).forEach(function(x){qs.push(x);});
+                   mktUrlSpec(d,gen).forEach(function(x){qs.push(x);});
                    return 'https://www.carsensor.net/usedcar/b'+c[0]+'/'+c[1]+'/index.html?'+qs.join('&');})()};
     }
   }
@@ -3224,7 +3250,7 @@ function paLevels(d){
   const kF=gradeKey(d.grade,model);
   /* 共通条件 */
   const base=r=>(mktPw(r)===pw)&&((r[9]==='1')===wd)&&(mktMt(r[11])===myMt)
-              &&(!gv||gv.f(r[11]))&&(!gen||genYearOk(gen,+r[4]))
+              &&(!gv||gv.f(r[11]))&&(!gen||genYearOk(gen,+r[4],y))
               &&(d.km==null||(function(){const v=parseFloat(r[5])*10000;
                    return kmInWindow(d.km,v);})());
   const yEq=r=>+r[4]===y;
@@ -3251,7 +3277,7 @@ function paLevels(d){
         const qs=['AR=7*3','YMIN='+(wide?y-1:y),'YMAX='+(wide?y+1:y)];
         if(d.km!=null){const w=kmWindow(d.km);const lo=pSnapLo(w[0]),hi=pSnapHi(w[1]);
           if(lo)qs.push('SMIN='+lo); if(hi)qs.push('SMAX='+hi);}
-        mktUrlSpec(d).forEach(function(x){qs.push(x);});
+        mktUrlSpec(d,gen).forEach(function(x){qs.push(x);});
         return 'https://www.carsensor.net/usedcar/b'+c[0]+'/'+c[1]+'/index.html?'+qs.join('&');})()};
   });
   return {levels:out, gradeKey:kF, gen:gen, mt:myMt, color:d.color,
@@ -3623,6 +3649,9 @@ function renderPriceAlert(){
             ${c.km!=null?`<span>走行 ${kmWindowLabel(c.km)}</span>`:''}
             <span>修復歴なし</span>
             ${r.lv.gen?`<span>${genLabel(r.lv.gen)}</span>`:''}
+            ${(()=>{const y=mkY(c.year);if(!r.lv.gen||y==null)return '';
+              const dy=genDirtyYears(r.lv.gen,y-1,y+1).filter(v=>v!==y);
+              return dy.length?`<span title="市場データには月が無く、モデルチェンジのあった年は新旧を見分けられません">${dy.join('・')}年はモデルチェンジ年のため除外</span>`:'';})()}
             <span style="margin-left:auto">②〜④は色の価値差を補正</span></div>
           <table><thead><tr><th>段階</th><th>台数</th><th>中央値</th><th>25〜75%</th><th>自社の位置</th></tr></thead>
           <tbody>${L.map(row).join('')}</tbody></table></div>
@@ -6802,7 +6831,7 @@ async function mktBrief(d){
   const gv=gvFilter(d), gOk=gv?(r=>gv.f(r[11])):(()=>true);
   const model=MKDATA.cars[code].name, gk=stockGradeKey(d);
   const gen=genOfStock(d);
-  const noFixAll=all.filter(r=>r[8]==='0'&&gOk(r)&&(!gen||genYearOk(gen,+r[4])));
+  const noFixAll=all.filter(r=>r[8]==='0'&&gOk(r)&&(!gen||genYearOk(gen,+r[4],mkY(d.year))));
   const sameG=gk?noFixAll.filter(r=>mktGradeKey(r,model)===gk):[];
   const useGrade=sameG.length>=8;
   const noFix=useGrade?sameG:noFixAll;
