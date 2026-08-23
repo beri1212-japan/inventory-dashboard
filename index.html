@@ -1076,7 +1076,8 @@ table.lst tbody tr.ul td:last-child{background:#fffaf3;}
       在庫表と <b>車台末番3桁 ＋ 年式 ＋ 走行距離</b> で自動的に突き合わせます。
       <b>月を変えて何度でも読み込めます。複数ファイルをまとめて選べる</b>ので、過去2年分を一度に投入することもできます。
       読み込んだ月はこのブラウザに貯まっていき、月の切り替え・前月比較・通算表示ができます。
-      （容量節約のため、日別データは直近3か月分のみ保持し、それ以前は月合計だけを残します）
+      日別データは<b>最大24か月分</b>保持します（容量が足りないときだけ古い月から月合計に畳みます）。
+      期間で複数月を選んでも、日別が残っていれば<b>月をまたいだ日別の折れ線</b>で表示します。
     </div>
   </div>
 
@@ -4230,6 +4231,101 @@ function cmTrendOut(){
   ['cmCross','cmDot'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});
   const t=document.getElementById('cmTip');if(t)t.style.display='none';
 }
+/* ═══ 期間をまたいだ日別の推移 ═══
+   従来は複数月を選ぶと月合計の棒に切り替わっていたが、日別データは各月に
+   残っているので、月をまたいで1本の折れ線につなげる。
+   点が多くなりすぎる場合（おおむね半年超）だけ月次に戻す。 */
+const CM_SPAN_MAX=200;
+function cmDailySpan(metric){
+  const pts=[],bounds=[];
+  cmScope().forEach(ym=>{
+    const mo=CM.months[ym];
+    if(!mo||mo.slim)return;
+    const n=31,sum=new Array(n).fill(0),has=new Array(n).fill(false);
+    mo.rows.forEach(r=>{
+      const a=r.d&&r.d[metric]; if(!a)return;
+      for(let i=0;i<Math.min(n,a.length);i++)if(a[i]!=null){sum[i]+=a[i];has[i]=true;}
+    });
+    let days=0;for(let i=0;i<n;i++)if(has[i])days=i+1;
+    while(days>1&&sum[days-1]===0)days--;   // 出力当日の未集計ぶんを落とす
+    if(!days)return;
+    bounds.push({ym,at:pts.length});
+    const y=+ym.slice(0,4), m=+ym.replace(/^\d{4}年/,'').replace('月','');
+    for(let i=0;i<days;i++)pts.push({ym,day:i+1,v:sum[i],
+      ymd:y+'-'+('0'+m).slice(-2)+'-'+('0'+(i+1)).slice(-2)});
+  });
+  return {pts,bounds};
+}
+function cmSpanSvg(){
+  const m=CM_TREND.metric;
+  const {pts,bounds}=cmDailySpan(m);
+  const n=pts.length;
+  if(n<2)return cmMonthSvg();
+  const W=1000,H=260,L=52,R=16,T=18,B=34;
+  const max=Math.max(...pts.map(p=>p.v),1);
+  const step=Math.pow(10,Math.floor(Math.log10(max/3||1)));
+  const unit=[1,2,2.5,5,10].map(x=>x*step).find(x=>max/x<=4)||step*10;
+  const top=Math.ceil(max/unit)*unit;
+  const px=i=>L+(n>1?i/(n-1):0)*(W-L-R);
+  const py=v=>T+(1-v/top)*(H-T-B);
+  let grid='',ylab='';
+  for(let g=0;g<=Math.round(top/unit);g++){
+    const v=g*unit,y=py(v);
+    grid+='<line x1="'+L+'" y1="'+y.toFixed(1)+'" x2="'+(W-R)+'" y2="'+y.toFixed(1)+'" stroke="#eef0f2" stroke-width="1"/>';
+    ylab+='<text x="'+(L-10)+'" y="'+(y+4).toFixed(1)+'" text-anchor="end" font-size="12" fill="#8b95a1" font-family="var(--mono)">'+v+'</text>';
+  }
+  // 月の境目に区切り線と月名
+  let sep='',xlab='';
+  bounds.forEach(function(b,bi){
+    const x=px(b.at);
+    if(bi>0)sep+='<line x1="'+x.toFixed(1)+'" y1="'+T+'" x2="'+x.toFixed(1)+'" y2="'+(H-B)+'" stroke="#dfe4e9" stroke-width="1"/>';
+    const nx=(bi+1<bounds.length)?px(bounds[bi+1].at):px(n-1);
+    xlab+='<text x="'+(((x+nx)/2)).toFixed(1)+'" y="'+(H-9)+'" text-anchor="middle" font-size="12" fill="#5f6368" font-family="var(--mono)">'+b.ym.replace(/^\d{4}年/,'')+'</text>';
+  });
+  const line=pts.map(function(p,i){return (i?'L':'M')+px(i).toFixed(1)+' '+py(p.v).toFixed(1);}).join(' ');
+  const area='M'+px(0).toFixed(1)+' '+py(0).toFixed(1)+' '
+    +pts.map(function(p,i){return 'L'+px(i).toFixed(1)+' '+py(p.v).toFixed(1);}).join(' ')
+    +' L'+px(n-1).toFixed(1)+' '+py(0).toFixed(1)+' Z';
+  return '<svg id="cmSpanSvg" viewBox="0 0 '+W+' '+H+'" style="width:100%;height:260px;display:block"'
+    +' onmousemove="cmSpanHover(event)" onmouseleave="cmTrendOut()">'
+    +'<defs><linearGradient id="cmg2" x1="0" y1="0" x2="0" y2="1">'
+    +'<stop offset="0%" stop-color="var(--accent)" stop-opacity=".20"/>'
+    +'<stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>'
+    +grid+ylab+sep+xlab
+    +'<path d="'+area+'" fill="url(#cmg2)"/>'
+    +'<path d="'+line+'" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+    +'<line id="cmCross" x1="0" y1="'+T+'" x2="0" y2="'+(H-B)+'" stroke="#c8cfd6" stroke-width="1" stroke-dasharray="3 3" style="display:none"/>'
+    +'<circle id="cmDot" r="5" fill="#fff" stroke="var(--accent)" stroke-width="2.5" style="display:none"/>'
+    +'<rect x="'+L+'" y="'+T+'" width="'+(W-L-R)+'" height="'+(H-T-B)+'" fill="transparent"/></svg>';
+}
+function cmSpanHover(e){
+  const svg=document.getElementById('cmSpanSvg');if(!svg)return;
+  const m=CM_TREND.metric;
+  const {pts}=cmDailySpan(m);
+  const n=pts.length; if(n<2)return;
+  const W=1000,H=260,L=52,R=16,T=18,B=34;
+  const box=svg.getBoundingClientRect();
+  const x=(e.clientX-box.left)/box.width*W;
+  let i=Math.round((x-L)/((W-L-R)||1)*(n-1));
+  i=Math.max(0,Math.min(n-1,i));
+  const max=Math.max(...pts.map(p=>p.v),1);
+  const step=Math.pow(10,Math.floor(Math.log10(max/3||1)));
+  const unit=[1,2,2.5,5,10].map(z=>z*step).find(z=>max/z<=4)||step*10;
+  const top=Math.ceil(max/unit)*unit;
+  const cx=L+(n>1?i/(n-1):0)*(W-L-R), cy=T+(1-pts[i].v/top)*(H-T-B);
+  const cr=document.getElementById('cmCross'),dt=document.getElementById('cmDot');
+  if(cr){cr.setAttribute('x1',cx);cr.setAttribute('x2',cx);cr.style.display='';}
+  if(dt){dt.setAttribute('cx',cx);dt.setAttribute('cy',cy);dt.style.display='';}
+  const tip=document.getElementById('cmTip');
+  if(tip){
+    tip.style.display='block';
+    tip.innerHTML='<div style="font-size:11.5px;color:var(--text3)">'+pts[i].ym+' '+pts[i].day+'日</div>'
+      +'<div style="font-size:16px;font-weight:700;font-family:var(--mono)">'+pts[i].v
+      +'<span style="font-size:11.5px;font-weight:500;color:var(--text3)"> '+CM_METRIC_LABEL[m]+'</span></div>';
+    const left=cx/W*box.width;
+    tip.style.left=Math.max(0,Math.min(box.width-140,left-70))+'px';
+  }
+}
 /* 月次推移（期間が複数月のとき）。1点＝1か月、同じ指標・1軸 */
 function cmMonthSvg(){
   const m=CM_TREND.metric;
@@ -4816,10 +4912,20 @@ function renderCmatch(){
     </div>
     <div class="sec-body" style="padding:8px 12px 4px">
       <div style="position:relative">
-        ${multi?cmMonthSvg():(daily?cmTrendSvg():cmMonthSvg())}
+        ${(()=>{
+          if(!multi)return daily?cmTrendSvg():cmMonthSvg();
+          const sp=cmDailySpan(CM_TREND.metric);
+          return (sp.pts.length>=2&&sp.pts.length<=CM_SPAN_MAX)?cmSpanSvg():cmMonthSvg();
+        })()}
         <div id="cmTip" class="cmtip" style="display:none"></div>
       </div>
-      ${!multi&&!daily?'<div style="font-size:12.6px;color:var(--text3);padding:4px 2px 8px">※この月は容量節約のため日別データを保存していません（日別は直近3か月分のみ）。月合計で表示しています。</div>':''}
+      ${(()=>{
+        if(!multi)return daily?'':'<div style="font-size:12.6px;color:var(--text3);padding:4px 2px 8px">※この月は日別データを保存していないため、月合計で表示しています。</div>';
+        const sp=cmDailySpan(CM_TREND.metric);
+        if(sp.pts.length>=2&&sp.pts.length<=CM_SPAN_MAX)
+          return '<div style="font-size:12.6px;color:var(--text3);padding:4px 2px 8px">※'+sp.bounds.length+'か月ぶんの日別を1本につないでいます（'+sp.pts.length+'日分）。縦線が月の境目です。</div>';
+        return '<div style="font-size:12.6px;color:var(--text3);padding:4px 2px 8px">※期間が長いため月合計で表示しています（日別は'+CM_SPAN_MAX+'日分まで）。</div>';
+      })()}
     </div>
   </div>`;
 
