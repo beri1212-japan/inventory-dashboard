@@ -180,6 +180,25 @@ body{font-family:var(--font);font-size:14.9px;letter-spacing:.01em;-webkit-font-
 .mkseg button{font-family:var(--font);font-size:12px;padding:4px 11px;border:0;background:#fff;color:#6b7280;cursor:pointer;}
 .mkseg button.on{background:var(--accent);color:#fff;font-weight:600;}
 .pa-n{font-size:19px;font-weight:700;font-family:var(--mono);}
+/* ═══ 車種年表 ═══ */
+.tlwrap{overflow-x:auto;border:1px solid var(--border);border-radius:8px;}
+.tlgrid{min-width:940px;position:relative;}
+.tlhead{display:flex;position:sticky;top:0;z-index:3;background:var(--bg3);border-bottom:1px solid var(--border);}
+.tlhead .nm{width:150px;flex:none;font-size:11.5px;color:var(--text3);padding:6px 10px;}
+.tlhead .yr{flex:1;position:relative;height:26px;}
+.tlhead .yr span{position:absolute;top:6px;transform:translateX(-50%);font-size:11px;color:var(--text3);font-family:var(--mono);}
+.tlrow{display:flex;align-items:center;border-bottom:1px solid var(--border);min-height:34px;}
+.tlrow:hover{background:var(--bg3);}
+.tlrow .nm{width:150px;flex:none;font-size:12.6px;font-weight:500;padding:5px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tlrow .nm s{display:block;text-decoration:none;font-size:10.5px;color:var(--text3);font-weight:400;}
+.tltrack{flex:1;position:relative;height:30px;margin:2px 0;}
+.tlgline{position:absolute;top:0;bottom:0;width:1px;background:var(--border);}
+.tlband{position:absolute;top:4px;height:17px;border-radius:3px;display:flex;align-items:center;
+  justify-content:center;font-size:10px;color:#fff;font-weight:600;overflow:hidden;white-space:nowrap;}
+.tlmc{position:absolute;top:4px;width:1px;height:17px;background:rgba(255,255,255,.55);}
+.tlstk{position:absolute;top:23px;width:5px;height:5px;border-radius:50%;background:#d93025;transform:translateX(-50%);}
+.tlnow{position:absolute;top:0;bottom:0;width:1px;background:#d93025;opacity:.35;}
+
 /* ═══ 価格アラート：Googleアナリティクス風のテーマ ═══
    色数を落として白基調にし、数字を主役にする。
    状態は必ず「色＋ラベル」で示し、色だけで意味を持たせない。
@@ -239,6 +258,9 @@ body{font-family:var(--font);font-size:14.9px;letter-spacing:.01em;-webkit-font-
 .ga-strip{position:relative;height:20px;margin:0 7px 5px;}
 .ga-track{position:absolute;top:7px;left:0;right:0;height:6px;border-radius:3px;background:#e8eaed;}
 .ga-iqr{position:absolute;top:7px;height:6px;border-radius:3px;background:#aecbfa;}
+.ga-bin{position:absolute;top:7px;height:6px;}
+.ga-bin:first-of-type{border-radius:3px 0 0 3px}
+.ga-q{position:absolute;top:4px;width:1px;height:12px;background:#5f6368;opacity:.55}
 .ga-med{position:absolute;top:3px;width:2.5px;height:14px;border-radius:1px;background:#174ea6;}
 .ga-you{position:absolute;top:3px;width:14px;height:14px;border-radius:50%;transform:translateX(-50%);
   border:2px solid #fff;box-shadow:0 0 0 1px rgba(60,64,67,.25);}
@@ -618,6 +640,7 @@ table.lst tbody tr.ul td:last-child{background:#fffaf3;}
     <button class="nav-item" onclick="showPage('pricealert')"><svg class="ic" aria-hidden="true"><use href="#i-alert"></use></svg><span>価格アラート</span><span class="nav-badge" id="navPa" style="display:none"></span></button>
     <button class="nav-item" onclick="showPage('cmatch')"><svg class="ic" aria-hidden="true"><use href="#i-chart"></use></svg><span>反響分析</span><span class="nav-badge" id="navCm" style="display:none"></span></button>
     <button class="nav-item" onclick="showPage('market')"><svg class="ic" aria-hidden="true"><use href="#i-chart"></use></svg><span>市場マップ</span></button>
+    <button class="nav-item" onclick="showPage('timeline')"><svg class="ic" aria-hidden="true"><use href="#i-calendar"></use></svg><span>車種年表</span></button>
   </nav>
   <div class="side-ft">
     <button class="nav-item" onclick="openMarketModal()"><svg class="ic" aria-hidden="true"><use href="#i-line"></use></svg><span>市場分析</span></button>
@@ -1010,6 +1033,33 @@ table.lst tbody tr.ul td:last-child{background:#fffaf3;}
     </div>
   </div>
   <div id="consultBody"></div>
+</div>
+
+<!-- PAGE: 車種年表 -->
+<div class="page" id="page-timeline">
+  <div class="sec">
+    <div class="sec-hdr">
+      <span class="sec-title"><svg class="ic ic-s" aria-hidden="true"><use href="#i-calendar"></use></svg>車種年表（世代・マイナーチェンジ）</span>
+      <div class="ctrls">
+        <select class="sel" id="tlFilter" onchange="renderTimeline()">
+          <option value="stock">在庫がある車種</option>
+          <option value="all">全車種</option>
+        </select>
+        <label style="font-size:12.6px;color:var(--text2);display:flex;align-items:center;gap:5px;cursor:pointer">
+          <input type="checkbox" id="tlMc" checked onchange="renderTimeline()">マイナーチェンジも表示
+        </label>
+      </div>
+      <span style="margin-left:auto;font-size:12.6px;color:var(--text3)" id="tlMeta"></span>
+    </div>
+    <div class="sec-body" style="padding:6px 14px 14px">
+      <div style="font-size:12.6px;color:var(--text3);line-height:1.8;margin-bottom:8px">
+        横軸が年、縦軸が車種です。帯ひとつが<b>1世代（フルモデルチェンジの区切り）</b>で、帯の中の細い縦線が<b>マイナーチェンジ</b>。
+        帯が濃いほど新しい世代です。帯の下の点は<b>自社の在庫がある年式</b>を示します。
+        相場を比べるときは<b>同じ帯の中に収まっているか</b>を見てください。帯をまたぐと別物の相場になります。
+      </div>
+      <div id="tlBody"></div>
+    </div>
+  </div>
 </div>
 
 <!-- PAGE: 価格アラート -->
@@ -2884,6 +2934,104 @@ function exportListPdf(){
   setTimeout(()=>{w.focus();w.print();},400);
 }
 
+/* ═══════════ 車種年表 ═══════════
+   世代とマイナーチェンジを年軸に並べる。相場を比べるときに
+   「同じ帯に入っているか」を目で確かめるための一覧。
+   データは gen_timeline.json（カーセンサーのカタログから年1回取得） */
+let TLDATA=null;
+async function tlLoad(){
+  if(TLDATA)return TLDATA;
+  try{
+    const r=await fetch('gen_timeline.json?t='+Date.now(),{cache:'no-store'});
+    if(!r.ok)return null;
+    TLDATA=await r.json();
+  }catch(e){TLDATA=null;}
+  return TLDATA;
+}
+const TL_Y0=2005, TL_Y1=(new Date()).getFullYear()+1;
+function tlX(ym){                       // YYYYMM → 0〜100%
+  if(!ym)return null;
+  const y=Math.floor(ym/100), m=ym%100;
+  const v=(y+(m-1)/12-TL_Y0)/(TL_Y1-TL_Y0)*100;
+  return Math.max(0,Math.min(100,v));
+}
+/* 自社在庫がどの年式にあるか（車種コード → 年の集合） */
+function tlStockYears(){
+  const out={};
+  STOCK.forEach(function(d){
+    const c=MK_CODE[d.name]; if(!c)return;
+    const y=mkY(d.year); if(y==null)return;
+    (out[c]=out[c]||{})[y]=(out[c][y]||0)+1;
+  });
+  return out;
+}
+async function renderTimeline(){
+  const box=document.getElementById('tlBody'); if(!box)return;
+  const data=await tlLoad();
+  const meta=document.getElementById('tlMeta');
+  if(!data||!data.cars){
+    box.innerHTML='<div style="padding:18px;color:var(--text3);font-size:13.2px">年表データ（gen_timeline.json）がまだリポジトリにありません。</div>';
+    return;
+  }
+  const filt=(document.getElementById('tlFilter')||{}).value||'stock';
+  const showMc=!!(document.getElementById('tlMc')||{}).checked;
+  const sy=tlStockYears();
+  const stockCodes={};
+  STOCK.forEach(function(d){const c=MK_CODE[d.name];if(c)stockCodes[c]=(stockCodes[c]||0)+1;});
+  let codes=Object.keys(data.cars);
+  if(filt==='stock')codes=codes.filter(function(c){return stockCodes[c];});
+  codes.sort(function(a,b){return (stockCodes[b]||0)-(stockCodes[a]||0)
+    || data.cars[a].name.localeCompare(data.cars[b].name,'ja');});
+  if(meta)meta.textContent=codes.length+'車種／'+data.built+'取得';
+  // 年の目盛り
+  let head='';
+  for(let y=TL_Y0;y<=TL_Y1;y++){
+    if(y%2)continue;
+    head+='<span style="left:'+tlX(y*100+1).toFixed(2)+'%">'+String(y).slice(2)+'</span>';
+  }
+  let glines='';
+  for(let y=TL_Y0;y<=TL_Y1;y++)
+    glines+='<div class="tlgline" style="left:'+tlX(y*100+1).toFixed(2)+'%"></div>';
+  const nowX=tlX((new Date()).getFullYear()*100+((new Date()).getMonth()+1));
+  const rows=codes.map(function(c){
+    const o=data.cars[c];
+    const gens=o.gens||[];
+    const nGen=gens.length;
+    const bands=gens.map(function(g,i){
+      const x0=tlX(g.from), x1=tlX(g.to===999912?(TL_Y1*100+12):g.to);
+      if(x0==null||x1==null||x1<=x0)return '';
+      // 新しい世代ほど濃く（世代の順序を明るさで表す）
+      const t=nGen>1?i/(nGen-1):1;
+      const bg='rgba(5,89,210,'+(0.28+0.62*t).toFixed(2)+')';
+      const w=x1-x0;
+      const lbl=(i+1)+'代目';
+      const dsp=Math.floor(g.from/100)+'/'+String(g.from%100).padStart(2,'0')+'〜'
+        +(g.to===999912?'現在':Math.floor(g.to/100)+'/'+String(g.to%100).padStart(2,'0'));
+      let mc='';
+      if(showMc)(g.mc||[]).forEach(function(m){
+        const mx=tlX(m.from); if(mx==null||mx<=x0||mx>=x1)return;
+        mc+='<div class="tlmc" style="left:'+((mx-x0)/w*100).toFixed(2)+'%"></div>';
+      });
+      return '<div class="tlband" style="left:'+x0.toFixed(2)+'%;width:'+w.toFixed(2)+'%;background:'+bg+'"'
+        +' title="'+o.name+' '+lbl+' '+dsp+(g.n!=null?'／掲載'+g.n+'台':'')
+        +((g.mc||[]).length?'／マイナーチェンジ'+g.mc.length+'回':'')+'">'
+        +(w>7?lbl:'')+mc+'</div>';
+    }).join('');
+    const dots=Object.keys(sy[c]||{}).map(function(y){
+      const x=tlX((+y)*100+6); if(x==null)return '';
+      return '<div class="tlstk" style="left:'+x.toFixed(2)+'%" title="'+y+'年式 在庫'+sy[c][y]+'台"></div>';
+    }).join('');
+    return '<div class="tlrow"><div class="nm">'+o.name
+      +(stockCodes[c]?'<s>在庫'+stockCodes[c]+'台</s>':'')+'</div>'
+      +'<div class="tltrack">'+glines
+      +'<div class="tlnow" style="left:'+nowX.toFixed(2)+'%"></div>'
+      +bands+dots+'</div></div>';
+  }).join('');
+  box.innerHTML='<div class="tlwrap"><div class="tlgrid">'
+    +'<div class="tlhead"><div class="nm">車種</div><div class="yr">'+head+'</div></div>'
+    +rows+'</div></div>';
+}
+
 /* ═══════════ ⑤ 価格アラート ═══════════
    MARKET = 市場相場の調査結果。キーは車体番号の下4桁。
    いまは手入力（AI調査の結果をここに追記していく）。将来はシート or GAS から読む。
@@ -3279,7 +3427,7 @@ function paLevels(d){
     const q=f=>p.length?p[Math.min(p.length-1,Math.floor(p.length*f))]:null;
     return {key:L.k, label:L.t, sub:L.sub, adj:L.adj, n:p.length, hoku:hoku,
       low:p.length?p[0]:null, q1:q(.25), med:q(.5), q3:q(.75),
-      high:p.length?p[p.length-1]:null,
+      high:p.length?p[p.length-1]:null, hist:paHist(p),
       rank:(p.length&&d.price!=null)?p.filter(v=>v<d.price).length+1:null,
       url:(function(){const c=code.split('/');
         const wide=(i>=2);
@@ -3313,6 +3461,23 @@ function paEdge(L){
   else if(mi>=60&&ma>=60){msg='同じ仕様でも車種全体でも高い方。値下げの余地があります。';tone='bad';}
   else {msg='同じ仕様でも車種全体でも中位。価格以外（写真・掲載順・装備の見せ方）で差をつける場面です。';tone='mid';}
   return {micro:mi,macro:ma,nMicro:nMi,msg:msg,tone:tone};
+}
+
+/* 価格の分布を等幅の階級に数える。棒の濃淡で「どの価格帯に台数が集まっているか」を示す。
+   中央値や四分位だけでは、山が1つなのか2つに割れているのかが見えないため。 */
+const PA_BINS=28;
+function paHist(sorted){
+  if(!sorted||sorted.length<3)return null;
+  const lo=sorted[0], hi=sorted[sorted.length-1];
+  const span=hi-lo;
+  if(!(span>0))return null;
+  const b=new Array(PA_BINS).fill(0);
+  sorted.forEach(function(v){
+    let i=Math.floor((v-lo)/span*PA_BINS);
+    if(i<0)i=0; if(i>=PA_BINS)i=PA_BINS-1;
+    b[i]++;
+  });
+  return {lo:lo,hi:hi,bins:b,max:Math.max.apply(null,b)};
 }
 
 /* 判定に使う段階。厳しい方から見て、母数が足りた最初の段階を採用する。 */
@@ -3632,12 +3797,23 @@ function renderPriceAlert(){
 
       <div class="ga-strip" title="最安 ${paMoney(m.low)}万 〜 最高 ${paMoney(m.high)}万／青い帯は中央50%（25%〜75%）／縦線が中央値／丸が自社価格">
         <div class="ga-track"></div>
-        <div class="ga-iqr" style="left:${iqrL}%;width:${iqrW}%"></div>
+        ${(()=>{
+          const h=m.hist;
+          if(!h)return `<div class="ga-iqr" style="left:${iqrL}%;width:${iqrW}%"></div>`;
+          // 階級ごとに台数で濃さを変える。台数0の帯は薄いグレーのまま
+          const w=100/h.bins.length;
+          return h.bins.map((c,i)=>{
+            if(!c)return '';
+            const a=(0.18+0.82*Math.sqrt(c/h.max)).toFixed(2);
+            return `<div class="ga-bin" style="left:${(i*w).toFixed(2)}%;width:${(w+0.15).toFixed(2)}%;background:rgba(26,115,232,${a})" title="${(h.lo+(h.hi-h.lo)*i/h.bins.length).toFixed(1)}〜${(h.lo+(h.hi-h.lo)*(i+1)/h.bins.length).toFixed(1)}万：${c}台"></div>`;
+          }).join('')
+          +`<div class="ga-q" style="left:${iqrL}%"></div><div class="ga-q" style="left:${(iqrL+iqrW)}%"></div>`;
+        })()}
         <div class="ga-med" style="left:${pos(m.med)}%"></div>
         ${c.price!=null?`<div class="ga-you" style="left:${pos(c.price)}%;background:${g.cat.c}"></div>`:''}
       </div>
       <div class="ga-scale">
-        <span>最安 ${paMoney(m.low)}万</span>
+        <span>最安 ${paMoney(m.low)}万${m.hist?'<span style="opacity:.7"> ・色が濃いほど台数が多い</span>':''}</span>
         <span>25% ${paMoney(m.q1)}　中央 ${paMoney(m.med)}　75% ${paMoney(m.q3)}</span>
         <span>最高 ${paMoney(m.high)}万</span>
       </div>
@@ -6002,6 +6178,7 @@ function balBarChart2(id,items){
 }
 
 const PAGE_META={
+  timeline:['車種年表','世代とマイナーチェンジを年軸で見る（相場比較の土台）'],
   stock:['在庫現状','車種 × 年式 / 走行 / 価格帯のマトリクス'],
   list:['在庫一覧','全在庫を1台ずつ。絞り込み・並べ替え・PDF出力'],
   unlisted:['未掲載管理','未入庫・掲載待ち・仕上待ちのフェーズ別一覧'],
@@ -6034,6 +6211,7 @@ function showPage(n){
   if(n==='pricealert')renderPriceAlert();
   if(n==='cmatch')renderCmatch();
   if(n==='market')renderMarket();
+  if(n==='timeline')renderTimeline();
 }
 
 
