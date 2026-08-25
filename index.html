@@ -2017,7 +2017,8 @@ function buySpec(cat,name){
     o.mktHoku=hoku.length;
     const use=hoku.length>=8?hoku:rows;
     o.mktScope=hoku.length>=8?'北陸甲信越':'北陸＋東海';
-    const p=use.map(r=>parseFloat(r[3])).filter(v=>v>0);
+    const kmMid=(o.km[0]+o.km[1])/2;
+    const p=use.map(r=>paKmAdj(parseFloat(r[3]),parseFloat(r[5])*10000,kmMid)).filter(v=>v>0);
     o.mktMed=bqt(p,.5);
     o.mktLo=bqt(p,.10);
     o.mktPct=bqt(p,buyCfg().pct/100);
@@ -2025,7 +2026,7 @@ function buySpec(cat,name){
     o.mktCols=use.map(r=>r[6]);
     // グレード別の中央値（どのグレードが高いか）
     const gm={};
-    use.forEach(r=>{const k=mktGradeKey(r,MKDATA.cars[code].name)||'(不明)';const v=parseFloat(r[3]);if(v>0)(gm[k]=gm[k]||[]).push(v);});
+    use.forEach(r=>{const k=mktGradeKey(r,MKDATA.cars[code].name)||'(不明)';const v=paKmAdj(parseFloat(r[3]),parseFloat(r[5])*10000,kmMid);if(v>0)(gm[k]=gm[k]||[]).push(v);});
     o.mktGrades=Object.entries(gm).filter(x=>x[1].length>=5)
       .map(x=>({g:x[0],n:x[1].length,med:bqt(x[1],.5),lo:bqt(x[1],buyCfg().pct/100)}))
       .sort((a,b)=>b.n-a.n).slice(0,8);
@@ -2227,6 +2228,76 @@ function buyColorList(o){
     return (tb?tb.pct:0)-(ta?ta.pct:0);
   });
 }
+/* ═══ 市場の回転 ═══
+   前回収集から掲載が消えた台数（gone）が、その市場が実際に動いている量。
+   掲載数 ÷ 週に消える台数 ＝ 在庫消化週数。小さいほど品薄で、仕入れても捌ける。
+   2026-08-25 の実測では ウェイク3.1週 に対して トール21.1週 と7倍の開きがあった。
+   規定台数割れだけで候補を出すと、市場がだぶついている車種も同じ扱いになる。
+   1回ぶんでは荒いので、収集のたびに貯めて直近8回の平均を採る。 */
+const TURN_KEY='turnover_v1';
+let TURN=null;
+function turnHist(){try{return JSON.parse(localStorage.getItem(TURN_KEY)||'{}');}catch(e){return {};}}
+function turnDays(){
+  if(!MKDATA||!MKDATA.collected||!MKDATA.prev)return null;
+  const a=new Date(MKDATA.prev), b=new Date(MKDATA.collected);
+  const d=Math.round((b-a)/86400000);
+  return (d>=1&&d<=60)?d:null;
+}
+function turnMeasure(){
+  if(!MKDATA||!MKDATA.cars)return null;
+  const F=MKDATA.fields||[], iFix=F.indexOf('fix');
+  const out={};
+  Object.keys(MKDATA.cars).forEach(function(code){
+    const c=MKDATA.cars[code];
+    const ok=function(l){const r=l.split('\t');return r[0]==='北陸甲信越'&&(iFix<0||r[iFix]==='0');};
+    const a=(c.rows||[]).filter(ok).length, g=(c.gone||[]).filter(ok).length;
+    if(a>=30)out[code]={a:a,g:g};
+  });
+  return out;
+}
+function turnBuild(){
+  if(!MKDATA)return;
+  const h=turnHist(), day=MKDATA.collected||'', d=turnDays();
+  if(day&&d&&!h[day]){
+    const m=turnMeasure();
+    if(m){h[day]={d:d,c:m};
+      const ks=Object.keys(h).sort(); while(ks.length>8){delete h[ks.shift()];}
+      try{localStorage.setItem(TURN_KEY,JSON.stringify(h));}catch(e){}}
+  }
+  const acc={};
+  Object.keys(h).forEach(function(day){
+    const t=h[day]; if(!t||!t.d||!t.c)return;
+    Object.keys(t.c).forEach(function(code){
+      const x=t.c[code];
+      const a=(acc[code]=acc[code]||{wk:[],g:0,a:x.a,n:0});
+      a.wk.push(x.g*7/t.d); a.g+=x.g; a.a=x.a; a.n++;
+    });
+  });
+  const out={};
+  Object.keys(acc).forEach(function(code){
+    const a=acc[code];
+    const wg=a.wk.reduce(function(p,q){return p+q;},0)/a.wk.length;
+    out[code]={a:a.a, g:a.g, n:a.n, weekly:Math.round(wg*10)/10,
+               weeks:wg>0?Math.round(a.a/wg*10)/10:null};
+  });
+  TURN=out;
+}
+function turnOf(name){
+  const code=MK_CODE[name];
+  if(!code||!TURN||!TURN[code])return null;
+  const t=TURN[code];
+  if(t.g<8)return Object.assign({},t,{thin:true});
+  return t;
+}
+function turnNote(t){
+  if(!t||t.weeks==null)return null;
+  if(t.thin)return {tone:'flat',msg:'消え込みの実測がまだ少なく、参考値です'};
+  if(t.weeks<=4.5)return {tone:'good',msg:'品薄です。取れるうちに取る価値があります'};
+  if(t.weeks>=10) return {tone:'bad', msg:'市場がだぶついています。規定割れでも急がない方が安全です'};
+  if(t.weeks>=7)  return {tone:'mid', msg:'やや供給過多。価格を強気にすると滞留しやすい帯です'};
+  return {tone:'flat',msg:'標準的な回転です'};
+}
+
 /* 色ごとの想定小売と落札上限。
    自社の値付け位置（posUsed）は動かさず、色ごとの「売れる位置」の差だけを足し引きする。
    基準は、その母集団の色構成で重み付けした平均位置。 */
@@ -2273,12 +2344,15 @@ function buyYearBands(o){
   }
   if(spans.length<2)return null;      // 帯が1つなら分ける意味がない
   const cfg=buyCfg();
+  const kmMid=(o.km[0]+o.km[1])/2;      // 走行レンジの真ん中に揃えてから相場を取る
   const out=[];
   spans.forEach(function(sp){
     const rows=all.filter(function(r){const y=+r[4];return y>=sp[0]&&y<=sp[1];});
     const hoku=rows.filter(function(r){return r[0]==='北陸甲信越';});
     const use=hoku.length>=8?hoku:rows;
-    const p=use.map(function(r){return parseFloat(r[3]);}).filter(function(v){return v>0;});
+    /* 帯の中でも走行で価格が動く。レンジ中央の走行に換算してから位置を取る */
+    const p=use.map(function(r){return paKmAdj(parseFloat(r[3]),parseFloat(r[5])*10000,kmMid);})
+               .filter(function(v){return v>0;});
     if(p.length<5){out.push({y:sp,n:rows.length,hoku:hoku.length,thin:true});return;}
     const retail=bqt(p,o.posUsed/100);
     const target=buyTargetProfit(o.cat,retail);
@@ -2286,7 +2360,7 @@ function buyYearBands(o){
     const bid=Math.round((buyMax-buyFee(o.cat))/(1+cfg.tax/100)*10)/10;
     const gm={};
     use.forEach(function(r){const k=mktGradeKey(r,MKDATA.cars[code].name)||'(不明)';
-      const v=parseFloat(r[3]); if(v>0){(gm[k]=gm[k]||[]).push(v);}});
+      const v=paKmAdj(parseFloat(r[3]),parseFloat(r[5])*10000,kmMid); if(v>0){(gm[k]=gm[k]||[]).push(v);}});
     const grades=Object.entries(gm).filter(function(x){return x[1].length>=4;})
       .map(function(x){return {g:x[0],n:x[1].length,lo:bqt(x[1],o.posUsed/100),med:bqt(x[1],.5)};})
       .sort(function(a,b){return b.n-a.n;}).slice(0,3);
@@ -2521,6 +2595,10 @@ function buyExportPdf(){
                   +'</tr>';}).join('')
             +'</table><i>※自社の値付け位置を基準に、色ごとの売れやすさの差を足し引きした額。白と赤で12〜15万変わります</i></div>';
         })()
+      +(function(){const t=turnOf(d.name), nt=turnNote(t);
+          if(!t||t.weeks==null)return '';
+          return '<div class="turn">市場の回転：<b>'+t.weeks.toFixed(1)+'週分</b>の在庫'
+            +'（北陸甲信越 '+t.a+'台／週に約'+t.weekly.toFixed(0)+'台が消えている）　'+esc(nt.msg)+'</div>';})()
       +(d.mktGrades&&d.mktGrades.length?'<div class="grade">グレード別の相場（'+buyCfg().pct+'%点）：'
           +d.mktGrades.slice(0,6).map(function(g){return esc(g.g||'—')+' <b>'+g.lo.toFixed(1)+'万</b><s>'+g.n+'台</s>';}).join('　')+'</div>':'')
       +(d.gConc!=null&&d.gConc>=50?'<div class="warn">在庫の'+d.gConc+'%が「'+esc(d.gTop[0])+'」に偏っています。同じグレードばかりでは回転が落ちるため、別グレードで補うこと</div>':'')
@@ -2592,6 +2670,7 @@ function buyExportPdf(){
    +'.bands td.g{font-size:7.2pt;color:#666}'
    +'.bands .hi{background:#fff5f5}.bands td.hi b{color:#b91c1c;font-size:10pt}'
    +'.bands>i{display:block;font-style:normal;font-size:6.8pt;color:#888;margin-top:2px}'
+   +'.turn{font-size:8pt;background:#f5f7fa;border-left:3px solid #94a3b8;padding:3px 7px;margin-bottom:5px;border-radius:0 3px 3px 0}'
    +'.grade s{text-decoration:none;color:#888;font-size:7pt;margin-left:2px}'
    +'.warn{font-size:8.6pt;color:#92400e;background:#fffbeb;border-left:2.5pt solid #d97706;padding:3px 7px;margin-bottom:4px}'
    +'.money .hl{border:1.2pt solid #b91c1c;background:#fff5f5}.money .hl .big{color:#b91c1c}'
@@ -2684,6 +2763,14 @@ function renderAction(){
             </table>
             <div style="font-size:10.5px;color:var(--text3);padding:3px 7px">自社の値付け位置（${d.posUsed}%）を基準に、色ごとの売れやすさの差を足し引きした額です</div>
           </div>`;})()}
+        ${(()=>{const t=turnOf(d.name), nt=turnNote(t);
+          if(!t||t.weeks==null)return '';
+          const c={good:'#059669',bad:'#b91c1c',mid:'#b45309',flat:'var(--text3)'}[nt.tone];
+          const bg={good:'#ecfdf5',bad:'#fef2f2',mid:'#fffbeb',flat:'var(--bg3)'}[nt.tone];
+          return `<div class="adet" style="margin-top:3px;padding:4px 8px;border-radius:6px;background:${bg};color:var(--text2)">
+            市場の回転　<b style="color:${c};font-size:14px">${t.weeks.toFixed(1)}週分</b> の在庫
+            <span style="color:var(--text3)">（北陸甲信越に ${t.a}台、週に約 ${t.weekly.toFixed(0)}台が消えている${t.n>1?'／'+t.n+'回の収集の平均':''}）</span>
+            <span style="color:${c}">${nt.msg}</span></div>`;})()}
         ${d.mktHoku!=null?`<div class="adet" style="margin-top:2px;color:var(--text3)">この条件の競合：北陸甲信越 ${d.mktHoku}台 / 東海含め ${d.mktAll}台${d.mktMed!=null?`・市場は安値${d.mktLo.toFixed(1)}／${buyCfg().pct}%点${d.mktPct.toFixed(1)}／中央${d.mktMed.toFixed(1)}万`:''}</div>`:''}
         ${d.missing&&d.missing.length?`<div class="adet" style="margin-top:2px;color:#b45309">在庫に無い売れ色：${d.missing.join('・')}</div>`:''}
       </div>
@@ -7613,7 +7700,7 @@ function mkLoad(){
   if(MKLOAD)return MKLOAD;
   MKLOAD=fetch('market_latest.json',{cache:'no-cache'})
     .then(r=>r.ok?r.json():fetch('market_2026-08-17.json').then(x=>x.json()))
-    .then(j=>{MKDATA=j;_POS={};try{cposBuild();}catch(e){}return j;});
+    .then(j=>{MKDATA=j;_POS={};try{cposBuild();turnBuild();}catch(e){}return j;});
   return MKLOAD;
 }
 function mkOwn(code){
