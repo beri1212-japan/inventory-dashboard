@@ -294,6 +294,30 @@ body{font-family:var(--font);font-size:14.9px;letter-spacing:.01em;-webkit-font-
 .ga-lv .posc{display:flex;align-items:center;gap:7px;justify-content:flex-end;}
 .ga-lv .bar{position:relative;width:74px;height:5px;border-radius:3px;background:#e8eaed;flex:none;}
 .ga-lv .bar i{position:absolute;top:-3px;width:2.5px;height:11px;border-radius:1px;background:#174ea6;}
+.ga-lv th:nth-child(4),.ga-lv td:nth-child(4){white-space:nowrap;}
+.ga-lv th:nth-child(5),.ga-lv td:nth-child(5){width:128px;padding-left:22px;}
+.ga-lv .posc>span:first-child{min-width:30px;text-align:right;}
+.ga-lv .bar{width:62px;}
+.ga-extra{border:1px solid var(--g-line);border-radius:6px;margin-bottom:12px;padding:2px 0;}
+.ex-row{display:grid;grid-template-columns:92px 1fr;gap:4px 12px;padding:9px 12px;align-items:start;}
+.ex-row+.ex-row{border-top:1px solid var(--g-line);}
+.ex-k{font-size:11px;color:var(--g-ink3);padding-top:3px;}
+.ex-v{font-size:12.5px;color:var(--g-ink);display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+.ex-v b{font-weight:600;}
+.ex-n{grid-column:2;font-size:11px;color:var(--g-ink3);line-height:1.5;}
+.eqchip{border:1px solid var(--g-line);background:#fff;color:var(--g-ink3);border-radius:13px;
+  padding:3px 11px;font-size:11.5px;font-weight:500;cursor:pointer;font-family:inherit;line-height:1.4;}
+.eqchip:hover{background:var(--g-soft);}
+.eqchip.on{background:#e8f0fe;border-color:#1a73e8;color:#174ea6;}
+.eqchip s{text-decoration:none;font-size:9.5px;opacity:.65;margin-left:4px;}
+.walltb{border-collapse:collapse;font-size:11.5px;width:100%;max-width:430px;font-variant-numeric:tabular-nums;}
+.walltb th{font-weight:400;font-size:10px;color:var(--g-ink3);text-align:right;padding:2px 8px;}
+.walltb th:first-child,.walltb td:first-child{text-align:left;}
+.walltb td{padding:3px 8px;border-top:1px solid var(--g-line);text-align:right;color:var(--g-ink);}
+.walltb tr.mine td{background:#f6faff;font-weight:600;}
+.tagme{font-size:9.5px;color:#174ea6;margin-left:5px;font-weight:600;}
+.wb{display:inline-block;width:44px;height:5px;border-radius:3px;background:#e8eaed;margin-right:6px;vertical-align:1px;}
+.wb i{display:block;height:100%;border-radius:3px;background:#1a73e8;}
 .ga-read{font-size:12.5px;line-height:1.7;padding:9px 12px;border-radius:6px;margin-bottom:12px;}
 .ga-read b{font-weight:500;}
 .ga-read.good{background:var(--g-grn-t);color:var(--g-grn-d);}
@@ -355,6 +379,30 @@ table.mko td:first-child,table.mko th:first-child{text-align:left;font-family:va
 .pg-title{font-size:18.4px;font-weight:700;color:var(--text);letter-spacing:.01em;line-height:1.2;margin:0;}
 .pg-sub{font-size:13.2px;color:var(--text3);font-weight:400;}
 .hdr-r{margin-left:auto;display:flex;align-items:center;gap:12px;}
+/* ── 担当カテゴリ絞り込みバー ── */
+.catbar{position:sticky;top:60px;z-index:55;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  padding:8px 24px;background:rgba(255,255,255,.78);backdrop-filter:saturate(180%) blur(10px);
+  -webkit-backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--border);}
+.catbar-lb{font-size:12px;color:var(--text3);font-weight:600;letter-spacing:.02em;margin-right:2px;}
+.catchip{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 12px;border-radius:15px;
+  border:1px solid var(--border2);background:var(--bg2);color:var(--text2);font-size:13px;font-weight:600;
+  cursor:pointer;transition:background .12s,border-color .12s,color .12s;font-family:inherit;}
+.catchip:hover{background:var(--bg4);}
+.catchip .bx{width:14px;height:14px;border-radius:3.5px;border:1.5px solid var(--text3);background:transparent;
+  display:inline-flex;align-items:center;justify-content:center;flex:none;}
+.catchip .bx svg{width:10px;height:10px;stroke:#fff;stroke-width:3.2;fill:none;opacity:0;}
+.catchip.on{background:#e8f0fe;border-color:#0559d2;color:#0559d2;}
+.catchip.on .bx{background:#0559d2;border-color:#0559d2;}
+.catchip.on .bx svg{opacity:1;}
+.catchip .n{font-size:11.5px;font-weight:700;opacity:.65;}
+.catbar-btn{height:30px;padding:0 11px;border-radius:15px;border:1px solid var(--border2);background:var(--bg2);
+  color:var(--text3);font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;}
+.catbar-btn:hover{background:var(--bg4);color:var(--text2);}
+.catbar-n{margin-left:auto;font-size:12px;color:var(--text3);font-weight:600;}
+.catbar-n b{color:#0559d2;}
+@media(max-width:760px){.catbar{top:60px;padding:7px 14px;gap:6px;}
+  .catbar-lb{display:none;}.catchip{height:28px;padding:0 10px;font-size:12.5px;}
+  .catbar-n{width:100%;margin-left:0;order:9;}}
 .upd{font-size:12.6px;color:var(--text3);font-family:var(--mono);white-space:nowrap;}
 .rbtn{background:var(--accent);border:none;color:#fff;padding:0 14px;height:34px;border-radius:8px;cursor:pointer;font-size:14.4px;font-family:var(--font);font-weight:500;display:inline-flex;align-items:center;gap:7px;box-shadow:var(--sh);transition:filter .15s;}
 .rbtn:hover{filter:brightness(1.08);opacity:1;}
@@ -663,6 +711,13 @@ table.lst tbody tr.ul td:last-child{background:#fffaf3;}
       <svg class="ic ic-s" aria-hidden="true"><use href="#i-refresh"></use></svg><span id="btntxt">更新</span>
     </button>
   </div>
+</div>
+
+<div class="catbar" id="catbar">
+  <span class="catbar-lb">担当カテゴリ</span>
+  <span id="catChips"></span>
+  <button class="catbar-btn" onclick="catSetAll()">すべて</button>
+  <span class="catbar-n" id="catbarN"></span>
 </div>
 
 <div class="main">
@@ -1177,6 +1232,63 @@ const CAT_ORDER=["ミニバン","SUV","HVCP","軽"];
 const KM_BANDS=["〜2万km","2〜4万km","4〜6万km","6〜8万km","8〜10万km","10万km超"];
 const PRICE_BANDS=["〜20万","20〜40万","40〜60万","60〜80万","80〜100万","100〜120万","120〜140万","140〜160万","160〜180万","180〜200万","200〜220万","220〜240万","240〜260万","260〜280万","280〜300万","300万超"];
 let STOCK=[],UNLISTED=[],SOLD=[];
+/* 担当カテゴリの絞り込み。_ALL が生データ、STOCK/UNLISTED/SOLD は絞り込み後の“見えている分”。
+   既存コードは全部 STOCK を見ているので、ここを差し替えるだけで全ページに効く。 */
+let STOCK_ALL=[],UNLISTED_ALL=[],SOLD_ALL=[];
+const CATF_KEY='cat_filter_v1';
+let CATF=null;                       // null = 全カテゴリ
+function catfLoad(){
+  try{const v=JSON.parse(localStorage.getItem(CATF_KEY)||'null');
+    if(Array.isArray(v)){const k=v.filter(c=>CAT_ORDER.includes(c));CATF=k.length&&k.length<CAT_ORDER.length?k:null;}
+  }catch(e){CATF=null;}
+}
+function catfSave(){try{CATF?localStorage.setItem(CATF_KEY,JSON.stringify(CATF)):localStorage.removeItem(CATF_KEY);}catch(e){}}
+function catOn(c){return !CATF||CATF.includes(c);}
+function catActive(){return CATF?CATF.slice():CAT_ORDER.slice();}
+function catfApply(){
+  const f=a=>CATF?a.filter(d=>CATF.includes(d.cat)):a.slice();
+  STOCK=f(STOCK_ALL);UNLISTED=f(UNLISTED_ALL);SOLD=f(SOLD_ALL);
+}
+function catChipsHtml(){
+  const chk='<span class="bx"><svg viewBox="0 0 12 12"><path d="M2 6.2 4.7 9 10 3"/></svg></span>';
+  return CAT_ORDER.map(c=>{
+    const n=STOCK_ALL.filter(d=>d.cat===c).length;
+    return '<button class="catchip'+(catOn(c)?' on':'')+'" onclick="catToggle(\''+c+'\')">'+chk+
+           '<span>'+c+'</span><span class="n">'+n+'</span></button>';
+  }).join('');
+}
+function catRenderBar(){
+  const el=document.getElementById('catChips');if(el)el.innerHTML=catChipsHtml();
+  const n=document.getElementById('catbarN');
+  if(n)n.innerHTML=CATF?('表示中 <b>'+STOCK.length+'</b> / '+STOCK_ALL.length+'台（'+CATF.join('・')+'）')
+                       :('全 <b>'+STOCK_ALL.length+'</b>台');
+  const sel=document.getElementById('catSel');
+  if(sel){
+    const cur=sel.value, act=catActive();
+    sel.innerHTML='<option value="">'+(CATF?'選択中すべて':'全カテゴリ')+'</option>'+
+      act.map(c=>'<option'+(c===cur?' selected':'')+'>'+c+'</option>').join('');
+    if(cur&&!act.includes(cur))sel.value='';
+  }
+}
+function catToggle(c){
+  let sel=catActive();
+  sel = sel.includes(c) ? sel.filter(x=>x!==c) : sel.concat([c]);
+  if(!sel.length)sel=[c];            // 全部OFFは意味がないので最後の1つは残す
+  CATF = sel.length===CAT_ORDER.length ? null : CAT_ORDER.filter(x=>sel.includes(x));
+  catfSave();catfRefresh();
+}
+function catSetAll(){CATF=null;catfSave();catfRefresh();}
+function catfRefresh(){
+  catfApply();
+  try{buildYrData();fillConsultCats();cmAttach();}catch(e){}
+  try{updateSummary();renderMatrix();renderProfitCards();renderUnlisted();renderLong();
+      renderAction();renderSold();renderPriceAlert();renderCmatch();}catch(e){}
+  const act=id=>{const p=document.getElementById('page-'+id);return p&&p.classList.contains('active');};
+  try{if(act('list'))renderList();if(act('balance'))renderBalance();
+      if(act('consult'))renderConsult();if(act('market'))renderMarket();
+      if(act('timeline'))renderTimeline();}catch(e){}
+  catRenderBar();
+}
 
 const csvUrl=gid=>`https://docs.google.com/spreadsheets/d/${SID}/export?format=csv&gid=${gid}`;
 function parseCsv(t){return t.split('\n').map(l=>{const c=[];let cur='',q=false;for(const ch of l){if(ch==='"')q=!q;else if(ch===','&&!q){c.push(cur.trim());cur='';}else cur+=ch;}c.push(cur.trim());return c;});}
@@ -1288,6 +1400,11 @@ function diffHtml(diff){
 }
 function updateSummary(){
   const ids={'ミニバン':'sm','SUV':'ss','HVCP':'sh','軽':'sk'};
+  // 絞り込み中は担当外のカードを畳む（0台が並ぶと壊れて見えるため）
+  CAT_ORDER.forEach(c=>{
+    const card=document.querySelector('.summary .card[onclick*="'+c+'"]');
+    if(card)card.style.display=catOn(c)?'':'none';
+  });
   let totT=0,totTok=false;
   CAT_ORDER.forEach(c=>{
     const items=STOCK.filter(d=>d.cat===c);
@@ -1418,6 +1535,16 @@ const COLOR_HEX={'黒':'#14181d','パール':'#f4f4f2','白':'#ffffff','シル�
   '青':'#1c72e0','紺':'#1e3a5f','水色':'#7dd3fc','赤':'#d40924','ワイン':'#7f1d1d','緑':'#00af44',
   'ブラウン':'#7c4a21','ベージュ':'#e2d6bd','紫':'#955be3','ピンク':'#f472b6','黄':'#f5c518',
   'オレンジ':'#ff862e','カーキ':'#7d7f4a','ゴールド':'#d4af37','ブロンズ':'#a97142'};
+/* 市場データの色は 黒/白/銀/灰/青/赤/茶/紫/緑/黄/橙/他 の粗い区分。
+   在庫表は「パール」「ソフトベージュ」など商品名で入るため、同じ粒度に寄せてから突き合わせる。 */
+const COL_BUCKET=[[/黒|ブラック|ｸﾛ|クロ/,'黒'],[/白|パール|ホワイト|ｼﾛ|シロ/,'白'],
+  [/銀|シルバ|ｼﾙﾊﾞ/,'銀'],[/灰|グレ|ガンメタ/,'灰'],[/青|ブルー|紺|ネイビー/,'青'],
+  [/赤|レッド|ワイン|ボルドー/,'赤'],[/茶|ブラウン|ベージュ|カーキ|ブロンズ|ｷｬﾒﾙ|キャメル/,'茶'],
+  [/紫|パープル|バイオレット/,'紫'],[/緑|グリーン|カーキ/,'緑'],[/黄|イエロー/,'黄'],
+  [/橙|オレンジ/,'橙'],[/桃|ピンク/,'桃']];
+function colBucket(c){const t=String(c||'');
+  for(let i=0;i<COL_BUCKET.length;i++){if(COL_BUCKET[i][0].test(t))return COL_BUCKET[i][1];}
+  return '';}
 function normColor(v){
   const t=String(v==null?'':v).trim();
   if(!t||t.length>6&&!COLOR_ALIAS[t])return COLOR_ALIAS[t]||'';
@@ -1483,7 +1610,7 @@ function parseRangeCell(v){
 }
 function buildYrData(){
   Object.keys(YR_DATA).forEach(k=>delete YR_DATA[k]);
-  [...STOCK,...UNLISTED,...SOLD].forEach(d=>{
+  [...STOCK_ALL,...UNLISTED_ALL,...SOLD_ALL].forEach(d=>{
     if(!d.name)return;
     const y=ySeireki(d.year);if(y==null)return;
     const c=YR_DATA[d.name];
@@ -2695,7 +2822,8 @@ async function loadAll(){
   try{
     // 車種マスタから既定数を読み込んでからデータロード
     await loadMasterV4();
-    [STOCK,UNLISTED,SOLD]=await Promise.all([loadStockV4(),loadUnlistedV4(),loadSoldV4()]);
+    [STOCK_ALL,UNLISTED_ALL,SOLD_ALL]=await Promise.all([loadStockV4(),loadUnlistedV4(),loadSoldV4()]);
+    catfLoad();catfApply();
     YEAR_ORDER.length=0;YEAR_ORDER_V4.forEach(y=>YEAR_ORDER.push(y));
     KM_BANDS.length=0;KM_BANDS_V4.forEach(k=>KM_BANDS.push(k));
     PRICE_BANDS.length=0;PRICE_BANDS_V4.forEach(p=>PRICE_BANDS.push(p));
@@ -2707,6 +2835,7 @@ async function loadAll(){
     cmAttach();
     updateSummary();renderMatrix();renderProfitCards();renderUnlisted();renderLong();renderAction();renderSold();renderPriceAlert();renderCmatch();
     if(document.getElementById('page-balance').classList.contains('active'))renderBalance();
+    catRenderBar();
     document.getElementById('upd').textContent='更新: '+new Date().toLocaleString('ja-JP',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
   }catch(e){
     document.getElementById('MT').innerHTML=`<tr><td colspan="30"><div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:14px;color:#dc2626;margin:10px"><b>⚠ エラー: </b>${e.message}</div></td></tr>`;
@@ -3191,7 +3320,7 @@ function genLabel(g){ if(!g)return ''; const a=Math.floor(g.from/100),b=Math.flo
    同じ車種・同じ年式でも、グレードで価格が大きく変わる（N-BOX H28〜H30 で
    GLパッケージ65.9万 〜 カスタム/ターボ/GL 120万、その差54万）。
    相場を比べるときは、まずグレードを揃える。 */
-const GK_EQUIP=/ホンダセンシング|セーフティサポート|スマートアシスト|プロパイロット|セーフティセンス|セーフティパッケージ|ナビゲーション|バックカメラ|全周囲カメラ|アラウンドビュー|ドライブレコーダー|ドラレコ|フルセグ|地デジ|Bluetooth|シートヒーター|コーナーセンサー|ソナー|スマートキー|プッシュスタート|クルーズコントロール|クルコン|レーダーブレーキ|衝突軽減|誤発進|LEDライト|LEDヘッド|アルミホイール|純正アルミ|エアロ|両側電動|片側電動|電動スライド|パワースライド|パワスラ|後席モニター|リアモニター|ワンオーナー|禁煙車?|届出済未使用車?|登録済未使用車?|未使用車|記録簿|整備付|保証付|新品タイヤ|車検[0-9R年月\/\.]*|ツートン|2トーン|ナビ|カメラ|ETC2?\.?0?|純正|社外|モニター|センサー|SDナビ|メモリーナビ|ワンセグ|スタイル|プラス|ハイルーフ|ロールーフ|セミハイルーフ|標準ルーフ|軽キャン[ピン]*グ*車?|キャンピング/gi;
+const GK_EQUIP=/ホンダセンシング|セーフティサポート|スマートアシスト|プロパイロット|セーフティセンス|セーフティパッケージ|ナビゲーション|バックカメラ|全周囲カメラ|アラウンドビュー|ドライブレコーダー|ドラレコ|フルセグ|地デジ|Bluetooth|シートヒーター|コーナーセンサー|ソナー|スマートキー|プッシュスタート|クルーズコントロール|クルコン|レーダーブレーキ|衝突軽減|誤発進|LEDライト|LEDヘッド|アルミホイール|純正アルミ|エアロ|両側電動|片側電動|電動スライド|パワースライド|パワスラ|後席モニター|リアモニター|ワンオーナー|禁煙車?|届出済未使用車?|登録済未使用車?|未使用車|記録簿|整備付|保証付|新品タイヤ|車検[0-9R年月\/\.]*|ツートン|2トーン|ナビ|カメラ|ETC2?\.?0?|純正|社外|モニター|センサー|SDナビ|メモリーナビ|ワンセグ|スタイル|プラス|ハイルーフ|ロールーフ|セミハイルーフ|標準ルーフ|軽キャン[ピン]*グ*車?|キャンピング|エマージェンシー(ブレーキ)?|衝突被害軽減|被害軽減|軽減ブレーキ|安全装置|衝突安全|全方位(モニター|カメラ)?|デジタルインナーミラー|インナーミラー|オートライト|オートハイビーム|インテリ(ジェント)?キー|電動格納|パワーバックドア|ハンズフリー|置くだけ充電|ステアリングヒーター|シートクーラー|パノラマ(ルーフ|ムーンルーフ)?|サンルーフ|ムーンルーフ|ディスプレイ(オーディオ|Ａ)|Dオーディオ|認定中古車|試乗車(UP|アップ)?|デモカー|メーカーオプション|メーカーOP|純正OP|寒冷地仕様|寒冷地|保証書|新車保証|ロングラン保証|自社ローン|ローン対応|全国対応|関東仕入|検[0-9]年|車検整備(付)?|鈑金塗装(付)?|走行[0-9０-９.]+万?[kK]m|[0-9０-９]+(\.[0-9])?\s*(インチ|型)(ナビ)?|フロアマット|ドアバイザー|バイザー|パドルシフト|ワンセグ|DVD再生|Apple\s*CarPlay|CarPlay|スズキコネクト|新品タイヤ|夏タイヤ|冬タイヤ|スタッドレス/gi;
 /* グレード文字列の下ごしらえ。
    在庫表と市場で書き方が違う部分を先に落とす。ここを外すと一致しなくなる：
      ・排気量「1.5」「2.0」「660」  → 市場側だけ先頭に付く
@@ -3395,6 +3524,99 @@ function paColAdj(price,fromCol,toIdx){
    全段階に共通で揃えるもの：変速機（AT / MT・AGS）、駆動（2WD / 4WD）、
    動力（HV / ガソリン）、修復歴なし、世代、走行±2万km。
    ②〜④は色が混ざるため、各車を「自社と同じ色だったらいくらか」に直してから集計する。 */
+/* ═══ 走行の効きは価格帯で変わる ═══
+   北陸甲信越＋東海の54,832台を「同車種・同世代・同年式・同グレード・同駆動」で束ね、
+   束の中で走行と価格の傾きを取ったところ、1万kmあたりの下落は次のようになった。
+     〜80万 -3.4 / 80〜150万 -5.4 / 150〜250万 -7.8 / 250〜400万 -9.4 / 400万〜 -17.5
+   走行±2万kmで括ってから中央値を取ると、400万の車では幅の中に35万円の差が残る。
+   そこで比較対象を1台ずつ「自社と同じ走行だったらいくらか」に直してから中央値を取る。 */
+const KM_SLOPE=[[80,3.4],[150,5.4],[250,7.8],[400,9.4],[Infinity,17.5]];
+function kmSlope(p){for(let i=0;i<KM_SLOPE.length;i++){if(p<KM_SLOPE[i][0])return KM_SLOPE[i][1];}return 17.5;}
+function paKmAdj(price,compKm,myKm){
+  const p=Number(price);
+  if(!(p>0)||myKm==null||compKm==null||isNaN(compKm))return p;
+  const v=p-kmSlope(p)*((myKm-compKm)/10000);
+  return Math.round(Math.min(p*1.6,Math.max(p*0.5,v))*10)/10;
+}
+function kmSlopeLabel(p){return kmSlope(p).toFixed(1)+'万/1万km';}
+
+/* ═══ 装備（サブグレード） ═══
+   同じ「ハイウェイスターX」でもプロパイロットの有無で13万違う（走行を揃えたn=83で実測）。
+   グレード名だけで括ると、この差が中央値に紛れ込む。
+   自車の装備はグレード欄の文言から推定し、外れていれば画面で切り替えられるようにする。 */
+const EQ_RULES=[
+  {k:'pp', name:'プロパイロット', own:/プロパイロット|ﾌﾟﾛﾊﾟｲﾛｯﾄ|propilot/i, mkt:/プロパイロット|ﾌﾟﾛﾊﾟｲﾛｯﾄ/i,
+   cars:/ルークス|デイズ|セレナ|ノート|オーラ|エクストレイル|サクラ/},
+];
+const EQ_KEY='pa_eq_v1';
+function eqStore(){try{return JSON.parse(localStorage.getItem(EQ_KEY)||'{}');}catch(e){return {};}}
+function eqSet(sid,k,v){const m=eqStore();m[sid+'|'+k]=v?1:0;try{localStorage.setItem(EQ_KEY,JSON.stringify(m));}catch(e){}}
+function eqGuess(d,rule){return rule.own.test(String(d.grade||'')+' '+String(d.name||''));}
+function paEqList(d){
+  if(!gvHasGrade())return [];
+  const nm=String(d.name||'');
+  const st=eqStore();
+  return EQ_RULES.filter(function(r){return !r.cars||r.cars.test(nm);}).map(function(r){
+    const k=String(d.sid||d.lower4||'')+'|'+r.k;
+    const g=eqGuess(d,r);
+    const ov=st[k];
+    return {k:r.k, name:r.name, re:r.mkt, on:(ov===undefined?g:!!ov), guessed:g, manual:ov!==undefined};
+  });
+}
+function paEqOk(eqs,g){
+  for(let i=0;i<eqs.length;i++){ if(eqs[i].re.test(g||'')!==eqs[i].on)return false; }
+  return true;
+}
+function paEqToggle(sid,k){
+  const d=STOCK.find(function(x){return String(x.sid)===String(sid);})||STOCK.find(function(x){return x.lower4===String(sid);});
+  if(!d)return;
+  const cur=paEqList(d).filter(function(e){return e.k===k;})[0];
+  if(!cur)return;
+  eqSet(String(d.sid||d.lower4),k,!cur.on);
+  renderPriceAlert();
+}
+
+/* ═══ 価格の壁 ═══
+   「110万を超えると低走行がたくさん出てくる」という現場の感覚は数字で出る。
+   ルークス ハイウェイスターX 2WD（2020〜22）を10万円刻みで並べると
+     100〜110万 16台 走行中央4.8万km ／ 110〜120万 39台 走行中央4.1万km ／ 120〜130万 49台 3.3万km
+   価格を上げるほど競合が増え、しかも競合の走行は減る。自車の走行がその帯で浮くなら、
+   そこは越えてはいけない壁になる。 */
+function paWall(rows,myKm,myPrice){
+  if(!rows||rows.length<12||myKm==null)return null;
+  const B={};
+  rows.forEach(function(r){
+    const p=parseFloat(r[3]), k=parseFloat(r[5])*10000;
+    if(!(p>0)||isNaN(k))return;
+    const step=p<150?10:p<400?20:40;
+    const b=Math.floor(p/step)*step;
+    (B[b]=B[b]||{lo:b,step:step,km:[]}).km.push(k);
+  });
+  const out=Object.keys(B).map(function(k){return B[k];})
+    .filter(function(b){return b.km.length>=3;})
+    .sort(function(a,b){return a.lo-b.lo;});
+  if(out.length<2)return null;
+  out.forEach(function(b){
+    const v=b.km.slice().sort(function(x,z){return x-z;});
+    b.n=v.length; b.med=v[Math.floor(v.length/2)];
+    b.over=v.filter(function(x){return x<myKm;}).length;   // 自車より距離が少ない競合
+    b.pct=Math.round(b.over/v.length*100);
+    b.mine=myPrice!=null&&myPrice>=b.lo&&myPrice<b.lo+b.step;
+  });
+  return out;
+}
+/* 評価点で修復歴を判定する。
+   出品票の赤い「修」はリアゲート交換などでも付くが、フレーム交換でなければR点にはならない。
+   評価点が数字（3.5以上）なら修復歴なしとして扱う。R・RA は修復歴あり。 */
+function ratingFix(rating){
+  const t=String(rating||'').trim().toUpperCase();
+  if(!t)return null;
+  if(/^R/.test(t))return true;
+  const v=parseFloat(t.replace(/[^\d.]/g,''));
+  if(t.indexOf('S')>=0&&isNaN(v))return false;
+  if(isNaN(v))return null;
+  return v<3.5;
+}
 function paLevels(d){
   const code=MK_CODE[d.name], y=mkY(d.year);
   if(!MKDATA||!code||!MKDATA.cars[code]||y==null)return null;
@@ -3405,6 +3627,8 @@ function paLevels(d){
   const gv=gvFilter(d);
   const myI=paColIdx(d.color);
   const kF=gradeKey(d.grade,model);
+  const kF1=gradeKeyN(d.grade,model,1);
+  const eqs0=paEqList(d);
   /* 共通条件 */
   const base=r=>(mktPw(r)===pw)&&((r[9]==='1')===wd)&&(mktMt(r[11])===myMt)
               &&(!gv||gv.f(r[11]))&&(!gen||genMatch(gen,r,y))
@@ -3412,17 +3636,49 @@ function paLevels(d){
                    return kmInWindow(d.km,v);})());
   const yEq=r=>+r[4]===y;
   const yNear=r=>{const v=+r[4];return v>=y-1&&v<=y+1;};
-  const gSame=kF?(r=>gradeKey(r[11],model)===kF):(()=>true);
-  const cSame=r=>paColIdx(r[6])===myI;
+  /* グレードキーは2語。ただし掲載文の書き方で語が増えると一致しなくなる
+     （例：ルークス「ハイウェイスターX」対「ハイウェイスターX エマージェンシー…」）。
+     年式±1でも母数が足りないときは先頭語だけで照合し直す。 */
+  /* 市場データのグレード文字列は収集時に28文字で切られており、末尾が語の途中で切れる
+     （「…プロパイロット エ」）。2語目にこの断片が入ると一致しなくなるので、
+     2語キーが1語キーの半分も拾えていないときは1語で照合する。 */
+  const nStrict=kF?all.filter(r=>base(r)&&yNear(r)&&gradeKey(r[11],model)===kF).length:0;
+  const nLoose =kF?all.filter(r=>base(r)&&yNear(r)&&gradeKeyN(r[11],model,1)===kF1).length:0;
+  const loose=!!kF&&(nStrict<PA_SIM_MIN||nStrict<nLoose*0.5);
+  const gSame=kF?(loose?(r=>gradeKeyN(r[11],model,1)===kF1):(r=>gradeKey(r[11],model)===kF)):(()=>true);
+  const cSame=r=>colBucket(r[6])===colBucket(d.color)||paColIdx(r[6])===myI&&!colBucket(d.color);
+  /* 装備は掲載文に必ず書かれるとは限らない。市場側で「有り」の割合が極端なときは
+     文言に出ていないだけの可能性が高いので、その装備での絞り込みはやめる。 */
+  /* 装備の判定は走行の窓を外して母数を確保する（掲載文に書かれる割合を見たいだけなので） */
+  const eqPool=all.filter(r=>(mktPw(r)===pw)&&((r[9]==='1')===wd)&&(mktMt(r[11])===myMt)
+      &&(!gv||gv.f(r[11]))&&(!gen||genMatch(gen,r,y))&&yNear(r)
+      &&(!kF||(loose?gradeKeyN(r[11],model,1)===kF1:gradeKey(r[11],model)===kF)));
+  const eqs=eqs0.filter(function(e){
+    if(eqPool.length<12)return false;
+    const sh=eqPool.filter(function(r){return e.re.test(r[11]||'');}).length/eqPool.length;
+    e.share=Math.round(sh*100);
+    return sh>=0.15&&sh<=0.85;
+  });
+  const gEq=eqs.length?(r=>paEqOk(eqs,r[11])):(()=>true);
+  /* 装備の価値差：同じ母集団で有無の中央値を比べる */
+  let eqPrem=null;
+  if(eqs.length===1&&eqPool.length>=16){
+    const md=a=>{const v=a.map(r=>paKmAdj(parseFloat(r[3]),parseFloat(r[5])*10000,d.km)).filter(x=>x>0).sort((x,z)=>x-z);
+                 return v.length>=5?v[Math.floor(v.length/2)]:null;};
+    const on=md(eqPool.filter(r=>eqs[0].re.test(r[11]||''))), off=md(eqPool.filter(r=>!eqs[0].re.test(r[11]||'')));
+    if(on!=null&&off!=null)eqPrem={name:eqs[0].name,on:on,off:off,diff:Math.round((on-off)*10)/10};
+  }
   const DEF=[
-    {k:'s1', t:'超類似', sub:'同年式・同グレード・同色',      y:yEq,   g:gSame,     col:cSame, adj:false},
-    {k:'s2', t:'類似',   sub:'同年式・同グレード（全色）',    y:yEq,   g:gSame,     col:null,  adj:true},
-    {k:'s3', t:'年式±1', sub:'年式±1年・同グレード（全色）',  y:yNear, g:gSame,     col:null,  adj:true},
-    {k:'s4', t:'全体',   sub:'年式±1年・全グレード（全色）',  y:yNear, g:()=>true,  col:null,  adj:true}];
+    {k:'s1', t:'超類似', sub:'同年式・同グレード・同装備・同色',   y:yEq,   g:gSame,     col:cSame, adj:false, eq:true},
+    {k:'s2', t:'類似',   sub:'同年式・同グレード・同装備（全色）', y:yEq,   g:gSame,     col:null,  adj:true,  eq:true},
+    {k:'s3', t:'年式±1', sub:'年式±1年・同グレード・同装備',     y:yNear, g:gSame,     col:null,  adj:true,  eq:true},
+    {k:'s4', t:'全体',   sub:'年式±1年・全グレード（装備・色不問）',y:yNear, g:()=>true,  col:null,  adj:true,  eq:false}];
   const out=DEF.map(function(L,i){
-    const rs=all.filter(r=>base(r)&&L.y(r)&&L.g(r)&&(!L.col||L.col(r)));
-    const p=rs.map(r=>L.adj?paColAdj(r[3],r[6],myI):parseFloat(r[3]))
-              .filter(v=>v>0).sort((x,z)=>x-z);
+    const rs=all.filter(r=>base(r)&&L.y(r)&&L.g(r)&&(!L.col||L.col(r))&&(!L.eq||gEq(r)));
+    const p=rs.map(function(r){
+        let v=L.adj?paColAdj(r[3],r[6],myI):parseFloat(r[3]);
+        return paKmAdj(v,parseFloat(r[5])*10000,d.km);   // 走行を自社に合わせて換算
+      }).filter(v=>v>0).sort((x,z)=>x-z);
     const hoku=rs.filter(r=>r[0]==='北陸甲信越').length;
     const q=f=>p.length?p[Math.min(p.length-1,Math.floor(p.length*f))]:null;
     return {key:L.k, label:L.t, sub:L.sub, adj:L.adj, n:p.length, hoku:hoku,
@@ -3437,7 +3693,22 @@ function paLevels(d){
         mktUrlSpec(d,gen).forEach(function(x){qs.push(x);});
         return 'https://www.carsensor.net/usedcar/b'+c[0]+'/'+c[1]+'/index.html?'+qs.join('&');})()};
   });
-  return {levels:out, gradeKey:kF, gen:gen, mt:myMt, color:d.color,
+  /* 色の薄さ：④の母集団に自社色がどれだけいるか */
+  const wideRows=all.filter(r=>(mktPw(r)===pw)&&((r[9]==='1')===wd)&&(mktMt(r[11])===myMt)
+      &&(!gv||gv.f(r[11]))&&(!gen||genMatch(gen,r,y))&&yNear(r));
+  let colShare=null;
+  if(d.color&&colBucket(d.color)&&wideRows.length>=10){
+    const mb=colBucket(d.color);
+    const same=mb?wideRows.filter(r=>colBucket(r[6])===mb).length:0;
+    colShare={n:same,total:wideRows.length,pct:Math.round(same/wideRows.length*100)};
+  }
+  /* 価格の壁：同グレード帯・年式±1・走行不問で、価格帯ごとの競合の走行を見る */
+  const wallRows=wideRows.filter(r=>!kF||(loose?gradeKeyN(r[11],model,1)===kF1:gradeKey(r[11],model)===kF));
+  const wall=paWall(wallRows.length>=12?wallRows:wideRows,d.km,d.price);
+  return {levels:out, gradeKey:loose?kF1:kF, loose:loose, eqPrem:eqPrem,
+          gen:gen, mt:myMt, color:d.color, eqs:eqs,
+          colShare:colShare, wall:wall, wallGrade:wallRows.length>=12,
+          slope:d.price!=null?kmSlope(d.price):null,
           spec:PW_LABEL[pw]+'・'+(wd?'4WD':'2WD')+'・'+(myMt?'MT/AGS':'AT')};
 }
 /* ═══ ミクロとマクロの優位性 ═══
@@ -3839,10 +4110,33 @@ function renderPriceAlert(){
               if(hasF)return '<span title="収集時に世代コードを取得しているため、モデルチェンジ年も正しく分けられます">世代コードで判定</span>';
               const dy=genDirtyYears(r.lv.gen,y-1,y+1).filter(v=>v!==y);
               return dy.length?`<span title="市場データには月が無く、モデルチェンジのあった年は新旧を見分けられません">${dy.join('・')}年はモデルチェンジ年のため除外</span>`:'';})()}
+            ${r.lv.slope!=null?`<span title="比較対象を1台ずつ「自社と同じ走行だったらいくらか」に直してから中央値を取っています">走行を自社に換算（${kmSlopeLabel(c.price)}）</span>`:''}
             <span style="margin-left:auto">②〜④は色の価値差を補正</span></div>
           <table><thead><tr><th>段階</th><th>台数</th><th>中央値</th><th>25〜75%</th><th>自社の位置</th></tr></thead>
           <tbody>${L.map(row).join('')}</tbody></table></div>
         ${r.ed?`<div class="ga-read ${r.ed.tone}"><b>ミクロ ${r.ed.micro}% ／ マクロ ${r.ed.macro}%</b>　${r.ed.msg}</div>`:''}`;
+      })()}
+      ${(()=>{ if(!r.lv)return '';
+        const L=r.lv, sid=c.sid||c.lower4;
+        const chips=(L.eqs||[]).map(e=>`<button class="eqchip ${e.on?'on':''}" onclick="paEqToggle('${sid}','${e.k}')" title="${e.manual?'手動設定':'グレード欄から推定'}／クリックで切り替え">${e.on?'✓ ':''}${e.name}${e.on?'':' なし'}${e.manual?'<s>手動</s>':''}</button>`);
+        const col=L.colShare, wall=L.wall;
+        if(!chips.length&&!col&&!wall)return '';
+        return `<div class="ga-extra">
+          ${chips.length?`<div class="ex-row"><span class="ex-k">装備で分ける</span>
+            <span class="ex-v">${chips.join('')}</span>
+            <span class="ex-n">${L.eqPrem?`この車種・この年式帯では <b>${L.eqPrem.name}${L.eqPrem.diff>=0?'あり':'なし'}が ${Math.abs(L.eqPrem.diff).toFixed(1)}万高い</b>（あり ${L.eqPrem.on.toFixed(1)}万 ／ なし ${L.eqPrem.off.toFixed(1)}万・走行補正後）。`:'同じグレード名でも装備で相場が動きます。'}①〜③はこの装備を揃えて比較しています。推定が違っていたら押して切り替えてください${(L.eqs||[]).some(e=>e.share!=null)?`（市場での装着率 ${(L.eqs||[]).map(e=>e.name+' '+e.share+'%').join('・')}）`:''}</span></div>`:''}
+          ${col?`<div class="ex-row"><span class="ex-k">色の厚み</span>
+            <span class="ex-v"><b>${c.color||'—'}</b> は市場の <b>${col.pct}%</b>（${col.total}台中 ${col.n}台）</span>
+            <span class="ex-n">${col.pct<=20?'少数派の色です。同じ色の競合が少ないため、価格だけで並べられにくい。値下げを急ぐ必要は薄いです':(col.pct>=45?'最多勢力の色です。同じ色の競合が多く、価格で直接比較されやすい':'標準的な厚みです')}</span></div>`:''}
+          ${wall?`<div class="ex-row"><span class="ex-k">価格の壁</span>
+            <div class="ex-v"><table class="walltb"><thead><tr><th>価格帯</th><th>競合</th><th>競合の走行中央</th><th title="その価格帯の競合のうち、自社より走行が少ない車の割合">自車より低走行</th></tr></thead><tbody>
+            ${wall.map(b=>`<tr class="${b.mine?'mine':''}"><td>${b.lo}〜${b.lo+b.step}万${b.mine?'<span class="tagme">今ここ</span>':''}</td>
+              <td>${b.n}台</td><td>${(b.med/10000).toFixed(1)}万km</td>
+              <td><span class="wb"><i style="width:${b.pct}%"></i></span>${b.pct}%</td></tr>`).join('')}
+            </tbody></table></div>
+            <span class="ex-n">自車は ${c.km!=null?(c.km/10000).toFixed(1)+'万km':'走行不明'}。上の帯に行くほど競合が増え、競合の走行は減ります。右の割合が高い帯は「その値段では自車がいちばん距離が多い」状態です${L.wallGrade?'':'（同グレードで足りず車種全体で集計）'}</span>
+          </div>`:''}
+        </div>`;
       })()}
       <div class="ga-rec" style="box-shadow:inset 3px 0 0 ${g.cat.c}">
         <div class="t">推奨アクション</div>
@@ -3856,6 +4150,8 @@ function renderPriceAlert(){
         <span>${r.sim?'<span class="src">同型比較</span>：':'照合：'}${m.scope}　${m.n}台</span>
         ${r.sim&&m.adj?`<span title="市場の各車を「自社と同じ色だったらいくらか」に直してから中央値を取っています">色の価値差を補正済み（自社 ${c.color||'—'}）</span>`:''}
         ${r.sim?`<span title="AT/MT・AGSは同じグレードでも相場が変わるため分けています">${mktMt(c.grade)?'MT/AGS車として比較':'AT車として比較（MT・AGSは除外）'}</span>`:''}
+        ${(()=>{const f=ratingFix(c.rating);if(f===null)return '';
+          return `<span title="評価点が3.5以上なら修復歴なしとして扱います。リアゲート交換などはフレーム交換ではないためR点になりません">評価点 ${c.rating} → ${f?'修復歴あり':'修復歴なし'}</span>`;})()}
         ${r.sim&&r.w?`<span>参考：絞らない条件なら ${r.w.n}台・中央値 ${paMoney(r.w.med)}万</span>`:''}
         ${!r.sim?'<span style="color:var(--g-amb-d)">同型グレードで8台に届かないため参考値です。実際の掲載を見て判断してください</span>':''}
         <span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">
@@ -4259,7 +4555,8 @@ function cmClear(){
 /* 在庫 ↔ C-match の突合。末番3桁で候補を出し、年式・走行で1台に決める */
 let CM_ROWS=[];   // 対象期間で集計した物件（cmAttachが作る）
 function cmAttach(){
-  STOCK.forEach(d=>{d.cm=null;d.cmP=null;});
+  const CMS=STOCK_ALL.length?STOCK_ALL:STOCK;   // 突合は絞り込み前の全在庫で
+  CMS.forEach(d=>{d.cm=null;d.cmP=null;});
   CM_ROWS=[];
   if(!CM||!cmCur())return;
   CM_ROWS=cmAggRows();
@@ -4273,7 +4570,7 @@ function cmAttach(){
   CM_ROWS.forEach(r=>{r._hit=null;});
   const bySuf={};
   CM_ROWS.forEach(r=>{(bySuf[r.suf]=bySuf[r.suf]||[]).push(r);});
-  STOCK.forEach(d=>{
+  CMS.forEach(d=>{
     const suf=(d.lower4||'').slice(-3);
     const cand=bySuf[suf];
     if(!cand||!cand.length)return;
