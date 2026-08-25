@@ -316,6 +316,11 @@ body{font-family:var(--font);font-size:14.9px;letter-spacing:.01em;-webkit-font-
 .walltb td{padding:3px 8px;border-top:1px solid var(--g-line);text-align:right;color:var(--g-ink);}
 .walltb tr.mine td{background:#f6faff;font-weight:600;}
 .tagme{font-size:9.5px;color:#174ea6;margin-left:5px;font-weight:600;}
+.cpz{display:inline-block;margin-left:8px;padding:1px 9px;border-radius:11px;font-size:11.5px;
+  background:var(--g-soft);color:var(--g-ink2,#4d5660);border:1px solid var(--g-line);}
+.cpz.ok{background:#e6f4ea;border-color:#b7e0c4;color:#137333;}
+.cpz.mid{background:#fef3d8;border-color:#f0d69a;color:#a06000;}
+.cpz.bad{background:#fce8e6;border-color:#f5bdb7;color:#c5221f;}
 .wb{display:inline-block;width:44px;height:5px;border-radius:3px;background:#e8eaed;margin-right:6px;vertical-align:1px;}
 .wb i{display:block;height:100%;border-radius:3px;background:#1a73e8;}
 .ga-read{font-size:12.5px;line-height:1.7;padding:9px 12px;border-radius:6px;margin-bottom:12px;}
@@ -3352,6 +3357,7 @@ function gradeClean(t,model){
   if(model){const re=modelRe(model); if(re)s=s.replace(re,' ');}
   return s.replace(GK_EQUIP,' ').replace(/PKG/gi,'パッケージ')
     .replace(/e\s*[:：-]?\s*HEV|e\s*-?\s*POWER|ハイブリッド|(^|[^A-Za-z])(HV|PHEV|PHV)([^A-Za-z]|$)/gi,' ')
+    .replace(/クリーン\s*ディーゼル\s*ターボ|ディーゼル\s*ターボ|クリーン\s*ディーゼル|ディーゼル/g,' ')
     .replace(/\d+\s*人乗?り?/g,' ')
     .replace(/(^|\s)\d+\.\d+(\s|$)/g,' ')
     .replace(/\b\d{3,4}(cc)?\b/gi,' ')
@@ -3524,6 +3530,103 @@ function paColAdj(price,fromCol,toIdx){
    全段階に共通で揃えるもの：変速機（AT / MT・AGS）、駆動（2WD / 4WD）、
    動力（HV / ガソリン）、修復歴なし、世代、走行±2万km。
    ②〜④は色が混ざるため、各車を「自社と同じ色だったらいくらか」に直してから集計する。 */
+/* ═══ 色ごとの「売れる位置」 ═══
+   色は「いくら高い／安い」ではなく「分布の何%に置けば動くか」で効く。
+   前回収集からの消え込み（gone）を色別に集計すると、軽ではこうなる：
+     白 掲載53.8% → 売れた54.2%（+0.4）  真ん中より上でも動く
+     黒 掲載47.8% → 売れた43.0%（-4.8）
+     赤 掲載47.0% → 売れた31.4%（-15.5） 真ん中では動かず、下から3割まで来ないと売れない
+     黄 -12.5 ／ 緑 -7.5 も同じ傾向
+   毎回の収集で消え込みが取れるので、この表は収集のたびに更新して精度を上げる。 */
+const KEI_CODES=new Set(['SZ/s001','SZ/s002','SZ/s005','SZ/s034','SZ/s049','SZ/s050','SZ/s015',
+  'DA/s069','DA/s071','DA/s055','DA/s006','DA/s032','DA/s042','DA/s065','DA/s011','DA/s012',
+  'HO/s094','HO/s098','HO/s100','NI/s179','NI/s181','NI/s162','MI/s109','MA/s003','TO/s227']);
+function cposClass(code){return KEI_CODES.has(code)?'kei':'futsu';}
+/* 実測が足りないときに使う既定値（2026-08-25 の消え込み3,435台） */
+const CPOS_DEF={kei:{'白':54,'青':52,'灰':50,'紫':48,'黒':43,'緑':43,'茶':40,'橙':40,'銀':35,'黄':34,'赤':31,'桃':31,'他':48},
+                futsu:{'白':52,'灰':48,'黒':47,'青':47,'紫':44,'緑':43,'茶':41,'橙':40,'赤':38,'銀':35,'黄':34,'桃':31,'他':46}};
+const CPOS_KEY='color_pos_v2';
+let CPOS=null;
+function cposHist(){try{return JSON.parse(localStorage.getItem(CPOS_KEY)||'{}');}catch(e){return {};}}
+/* 収集1回分から色別の「売れた位置」を出す */
+function cposMeasure(){
+  if(!MKDATA||!MKDATA.cars)return null;
+  const F=MKDATA.fields||[], iBase=F.indexOf('base'), iYear=F.indexOf('year'),
+        iCol=F.indexOf('color'), iFix=F.indexOf('fix'), iW4=F.indexOf('wd4'), iGen=F.indexOf('gen');
+  if(iBase<0||iCol<0)return null;
+  const coh={};
+  Object.keys(MKDATA.cars).forEach(function(code){
+    const c=MKDATA.cars[code], cls=cposClass(code);
+    const add=function(line,gone){
+      const r=line.split('\t'); const b=parseFloat(r[iBase]);
+      if(!(b>0)||r[iFix]==='1'||!r[iYear])return;
+      const k=cls+'|'+code+'|'+(iGen>=0?r[iGen]:'')+'|'+r[iYear]+'|'+r[iW4];
+      (coh[k]=coh[k]||[]).push({b:b,c:colBucket(r[iCol])||'他',g:gone,cls:cls});
+    };
+    (c.rows||[]).forEach(function(l){add(l,0);});
+    (c.gone||[]).forEach(function(l){add(l,1);});
+  });
+  const acc={kei:{},futsu:{}};
+  Object.keys(coh).forEach(function(k){
+    const v=coh[k]; if(v.length<10)return;
+    const p=v.map(function(z){return z.b;}).sort(function(a,b){return a-b;});
+    v.forEach(function(z){
+      if(!z.g)return;
+      let lo=0; for(let i=0;i<p.length;i++){if(p[i]<z.b)lo++;}
+      const t=acc[z.cls]; (t[z.c]=t[z.c]||[]).push(lo/p.length*100);
+    });
+  });
+  const out={kei:{},futsu:{}};
+  ['kei','futsu'].forEach(function(cls){
+    Object.keys(acc[cls]).forEach(function(c){
+      const a=acc[cls][c].sort(function(x,z){return x-z;});
+      if(a.length<25)return;
+      out[cls][c]={p:Math.round(a[Math.floor(a.length/2)]), n:a.length};
+    });
+  });
+  return out;
+}
+/* 収集ごとの実測を貯めて、直近8回の加重平均を採る */
+function cposBuild(){
+  if(!MKDATA)return;
+  const h=cposHist(), day=MKDATA.collected||'';
+  if(day&&!h[day]){
+    const m=cposMeasure();
+    if(m){h[day]=m;
+      const ks=Object.keys(h).sort(); while(ks.length>8){delete h[ks.shift()];}
+      try{localStorage.setItem(CPOS_KEY,JSON.stringify(h));}catch(e){}}
+  }
+  const mix={kei:{},futsu:{},days:Object.keys(h).length};
+  ['kei','futsu'].forEach(function(cls){
+    const sum={},cnt={};
+    Object.keys(h).forEach(function(day){
+      const t=(h[day]||{})[cls]||{};
+      Object.keys(t).forEach(function(c){
+        sum[c]=(sum[c]||0)+t[c].p*t[c].n; cnt[c]=(cnt[c]||0)+t[c].n;});
+    });
+    Object.keys(sum).forEach(function(c){mix[cls][c]={p:Math.round(sum[c]/cnt[c]),n:cnt[c]};});
+  });
+  CPOS=mix;
+}
+/* その色を「安い方から何%」に置けば動くか */
+function cposTarget(code,color){
+  const cls=cposClass(code), c=colBucket(color)||'他';
+  const live=CPOS&&CPOS[cls]&&CPOS[cls][c];
+  if(live&&live.n>=25)return {pct:live.p, n:live.n, src:'実測', color:c, cls:cls};
+  const def=CPOS_DEF[cls][c];
+  if(def==null)return null;
+  return {pct:def, n:0, src:'既定値', color:c, cls:cls};
+}
+function pctPrice(sorted,pct){
+  if(!sorted||!sorted.length)return null;
+  const n=sorted.length, i=pct/100*(n-1), lo=Math.floor(i), hi=Math.min(n-1,lo+1), f=i-lo;
+  return Math.round((sorted[lo]*(1-f)+sorted[hi]*f)*10)/10;
+}
+function pctOf(sorted,price){
+  if(!sorted||!sorted.length||price==null)return null;
+  let lo=0; for(let i=0;i<sorted.length;i++){if(sorted[i]<price)lo++;}
+  return Math.round(lo/sorted.length*100);
+}
 /* ═══ 走行の効きは価格帯で変わる ═══
    北陸甲信越＋東海の54,832台を「同車種・同世代・同年式・同グレード・同駆動」で束ね、
    束の中で走行と価格の傾きを取ったところ、1万kmあたりの下落は次のようになった。
@@ -3669,10 +3772,12 @@ function paLevels(d){
     if(on!=null&&off!=null)eqPrem={name:eqs[0].name,on:on,off:off,diff:Math.round((on-off)*10)/10};
   }
   const DEF=[
+    /* 色は「いくら上乗せするか」ではなく「分布の何%に置くか」で効く（cposTarget）。
+       ここで色ぶんの金額を足すと、位置モデルと二重に効いてしまうので補正はしない。 */
     {k:'s1', t:'超類似', sub:'同年式・同グレード・同装備・同色',   y:yEq,   g:gSame,     col:cSame, adj:false, eq:true},
-    {k:'s2', t:'類似',   sub:'同年式・同グレード・同装備（全色）', y:yEq,   g:gSame,     col:null,  adj:true,  eq:true},
-    {k:'s3', t:'年式±1', sub:'年式±1年・同グレード・同装備',     y:yNear, g:gSame,     col:null,  adj:true,  eq:true},
-    {k:'s4', t:'全体',   sub:'年式±1年・全グレード（装備・色不問）',y:yNear, g:()=>true,  col:null,  adj:true,  eq:false}];
+    {k:'s2', t:'類似',   sub:'同年式・同グレード・同装備（全色）', y:yEq,   g:gSame,     col:null,  adj:false, eq:true},
+    {k:'s3', t:'年式±1', sub:'年式±1年・同グレード・同装備',     y:yNear, g:gSame,     col:null,  adj:false, eq:true},
+    {k:'s4', t:'全体',   sub:'年式±1年・全グレード（装備・色不問）',y:yNear, g:()=>true,  col:null,  adj:false, eq:false}];
   const out=DEF.map(function(L,i){
     const rs=all.filter(r=>base(r)&&L.y(r)&&L.g(r)&&(!L.col||L.col(r))&&(!L.eq||gEq(r)));
     const p=rs.map(function(r){
@@ -3681,7 +3786,7 @@ function paLevels(d){
       }).filter(v=>v>0).sort((x,z)=>x-z);
     const hoku=rs.filter(r=>r[0]==='北陸甲信越').length;
     const q=f=>p.length?p[Math.min(p.length-1,Math.floor(p.length*f))]:null;
-    return {key:L.k, label:L.t, sub:L.sub, adj:L.adj, n:p.length, hoku:hoku,
+    return {key:L.k, label:L.t, sub:L.sub, adj:L.adj, n:p.length, hoku:hoku, arr:p,
       low:p.length?p[0]:null, q1:q(.25), med:q(.5), q3:q(.75),
       high:p.length?p[p.length-1]:null, hist:paHist(p),
       rank:(p.length&&d.price!=null)?p.filter(v=>v<d.price).length+1:null,
@@ -3789,15 +3894,20 @@ function paDiag(d,m,cm){
   const dead = d.cost!=null && d.cost > m.med;              // 原価が相場中央値を超える＝価格政策では回収不能
   /* 同型グレードで比較できていないときは、相場そのものが当てにならない。
      グレード違いは数十万動くので、値下げと言い切る前に余裕を持たせる。 */
-  const hi   = d.price >= m.med*(m.sim?1.04:1.10);
-  const lo   = d.price <= m.q1;
+  const cp   = m.cpos;
+  /* 目標価格は「その色が売れる位置」。実測が無ければ従来どおり中央値 */
+  const goal = (cp&&cp.price!=null)?cp.price:m.med;
+  const gtxt = (Math.round(goal*10)/10).toFixed(1)+'万'
+             + (cp?'（'+cp.color+'は同条件の中で下から'+cp.pct+'%に入ると動く色）':'');
+  const hi   = d.price >= goal*(m.sim?1.04:1.10);
+  const lo   = d.price <= (cp&&cp.price!=null?goal*0.94:m.q1);
   const viewLow = cm && cm.pct!=null ? cm.pct < 50 : null;
   const long = (d.days||0) >= 120;
   let cat, rec;
   if(hi){
     cat=PA_CAT.A;
-    rec=(Math.round(m.med*10)/10).toFixed(1)+'万まで下げる（'
-       +(m.sim?'同型'+m.n+'台の中央値':'参考値・同型で比較できていません')+'）';
+    rec=gtxt+'まで下げる（'
+       +(m.sim?'同型'+m.n+'台':'参考値・同型で比較できていません')+'）';
   }else if(viewLow===true && long){
     cat=PA_CAT.B;
     const tr=paTrend(d);
@@ -3808,8 +3918,8 @@ function paDiag(d,m,cm){
     rec='見られてお気に入りも付いている。総額表示・保証・車検残の見せ方を直す';
   }else if(lo && viewLow===false){
     cat=PA_CAT.D;
-    rec=(Math.round(m.med*10)/10).toFixed(1)+'万まで戻せる（'
-       +(m.sim?'同型'+m.n+'台の中央値':'参考値・同型で比較できていません')+'・反響は上位）';
+    rec=gtxt+'まで戻せる（'
+       +(m.sim?'同型'+m.n+'台':'参考値・同型で比較できていません')+'・反響は上位）';
   }else{
     cat=PA_CAT.F; rec='現状維持。次の巡回で再判定';
   }
@@ -3822,9 +3932,26 @@ function paRows(){
     const w=paMkt(d);                 // 従来＝年式±1年の広い条件（参考）
     const sm=paSim(d);                // 類似品＝同年式・走行±2万km（判断の根拠）
     const m=sm||w;                    // 判断は類似品を優先し、足りなければ従来に戻す
-    const cm=paCm(d), g=paDiag(d,m,cm);
+    const cm=paCm(d);
     const lv=paLevels(d), ed=paEdge(lv);
-    return {car:d,m,w,sim:sm,cm,g,lv,ed,gap:(m&&d.price!=null)?Math.round((d.price-m.med)*10)/10:null};
+    /* 色は「いくら高い／安い」ではなく「分布の何%に置けば動くか」で効く */
+    const code=MK_CODE[d.name];
+    let cp=null;
+    /* 位置は母数がないと安定しない。同グレードの3段階のうち、いちばん台数のある群で測る */
+    let pool=null;
+    if(lv){
+      [0,1,2].forEach(function(i){const v=lv.levels[i];   // 同グレードの中で測る
+        if(v&&v.n>=8&&(!pool||v.n>pool.n))pool=v;});
+      if(!pool&&lv.levels[3]&&lv.levels[3].n>=8)pool=lv.levels[3];
+    }
+    if(code&&pool){
+      const t=cposTarget(code,d.color);
+      if(t){cp=Object.assign({},t,{price:pctPrice(pool.arr,t.pct), now:pctOf(pool.arr,d.price),
+             n2:pool.arr.length, lvl:pool.label, lvlsub:pool.sub});}
+    }
+    if(m)m.cpos=cp;
+    const g=paDiag(d,m,cm);
+    return {car:d,m,w,sim:sm,cm,g,lv,ed,cpos:cp,gap:(m&&d.price!=null)?Math.round((d.price-m.med)*10)/10:null};
   }).sort((a,b)=>b.g.score-a.g.score);
 }
 
@@ -4111,7 +4238,7 @@ function renderPriceAlert(){
               const dy=genDirtyYears(r.lv.gen,y-1,y+1).filter(v=>v!==y);
               return dy.length?`<span title="市場データには月が無く、モデルチェンジのあった年は新旧を見分けられません">${dy.join('・')}年はモデルチェンジ年のため除外</span>`:'';})()}
             ${r.lv.slope!=null?`<span title="比較対象を1台ずつ「自社と同じ走行だったらいくらか」に直してから中央値を取っています">走行を自社に換算（${kmSlopeLabel(c.price)}）</span>`:''}
-            <span style="margin-left:auto">②〜④は色の価値差を補正</span></div>
+            <span style="margin-left:auto" title="色は金額の上乗せではなく「分布の何%に置くか」で効きます。下の『色で売れる位置』を見てください">色は位置で判定</span></div>
           <table><thead><tr><th>段階</th><th>台数</th><th>中央値</th><th>25〜75%</th><th>自社の位置</th></tr></thead>
           <tbody>${L.map(row).join('')}</tbody></table></div>
         ${r.ed?`<div class="ga-read ${r.ed.tone}"><b>ミクロ ${r.ed.micro}% ／ マクロ ${r.ed.macro}%</b>　${r.ed.msg}</div>`:''}`;
@@ -4128,6 +4255,13 @@ function renderPriceAlert(){
           ${col?`<div class="ex-row"><span class="ex-k">色の厚み</span>
             <span class="ex-v"><b>${c.color||'—'}</b> は市場の <b>${col.pct}%</b>（${col.total}台中 ${col.n}台）</span>
             <span class="ex-n">${col.pct<=20?'少数派の色です。同じ色の競合が少ないため、価格だけで並べられにくい。値下げを急ぐ必要は薄いです':(col.pct>=45?'最多勢力の色です。同じ色の競合が多く、価格で直接比較されやすい':'標準的な厚みです')}</span></div>`:''}
+          ${r.cpos?(()=>{const p=r.cpos;
+            const tone=p.now==null?'':(p.now<=p.pct+4?'ok':(p.now>=p.pct+18?'bad':'mid'));
+            return `<div class="ex-row"><span class="ex-k">色で売れる位置</span>
+            <span class="ex-v"><b>${p.color}</b> は同条件の中で <b>下から ${p.pct}%</b> に入ると動く色
+              <span class="cpz ${tone}">いま ${p.now!=null?p.now+'%':'—'}</span>
+              <span class="cpz">目安 <b>${p.price!=null?p.price.toFixed(1)+'万':'—'}</b></span></span>
+            <span class="ex-n">${p.src==='実測'?`直近${CPOS&&CPOS.days?CPOS.days:1}回の収集で掲載から消えた${p.color}の車${p.n}台が、同じ車種・年式・駆動の中で平均してこの位置にいました。`:'消え込みの実測がまだ足りないため、8/25収集の全体傾向（軽3,435台）から置いています。収集を重ねると自動で置き換わります。'}白や黒は真ん中の値段でも動きますが、赤・黄・緑は下から3割あたりまで来ないと動きません（比較群 ${p.n2}台で計算）</span></div>`;})():''}
           ${wall?`<div class="ex-row"><span class="ex-k">価格の壁</span>
             <div class="ex-v"><table class="walltb"><thead><tr><th>価格帯</th><th>競合</th><th>競合の走行中央</th><th title="その価格帯の競合のうち、自社より走行が少ない車の割合">自車より低走行</th></tr></thead><tbody>
             ${wall.map(b=>`<tr class="${b.mine?'mine':''}"><td>${b.lo}〜${b.lo+b.step}万${b.mine?'<span class="tagme">今ここ</span>':''}</td>
@@ -4148,7 +4282,7 @@ function renderPriceAlert(){
 
       <div class="ga-ft">
         <span>${r.sim?'<span class="src">同型比較</span>：':'照合：'}${m.scope}　${m.n}台</span>
-        ${r.sim&&m.adj?`<span title="市場の各車を「自社と同じ色だったらいくらか」に直してから中央値を取っています">色の価値差を補正済み（自社 ${c.color||'—'}）</span>`:''}
+        ${r.cpos?`<span title="色は価格の上乗せではなく、分布の中での置き位置で効きます">色は位置で判定（自社 ${c.color||'—'}／目安 下から${r.cpos.pct}%）</span>`:''}
         ${r.sim?`<span title="AT/MT・AGSは同じグレードでも相場が変わるため分けています">${mktMt(c.grade)?'MT/AGS車として比較':'AT車として比較（MT・AGSは除外）'}</span>`:''}
         ${(()=>{const f=ratingFix(c.rating);if(f===null)return '';
           return `<span title="評価点が3.5以上なら修復歴なしとして扱います。リアゲート交換などはフレーム交換ではないためR点になりません">評価点 ${c.rating} → ${f?'修復歴あり':'修復歴なし'}</span>`;})()}
@@ -7301,7 +7435,7 @@ function mkLoad(){
   if(MKLOAD)return MKLOAD;
   MKLOAD=fetch('market_latest.json',{cache:'no-cache'})
     .then(r=>r.ok?r.json():fetch('market_2026-08-17.json').then(x=>x.json()))
-    .then(j=>{MKDATA=j;_POS={};return j;});
+    .then(j=>{MKDATA=j;_POS={};try{cposBuild();}catch(e){}return j;});
   return MKLOAD;
 }
 function mkOwn(code){
