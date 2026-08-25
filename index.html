@@ -560,6 +560,26 @@ table.dtl tbody tr:hover td{background:#f7fafe!important;}
 .pc-cur{font-size:13.2px;color:var(--text2);margin-bottom:12px;}
 .pc-cur b{font-family:var(--mono);color:var(--text);}
 .pc-hist{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:14px;}
+.pc-mkt{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:12px;}
+.pc-mkt.none{color:var(--text3);font-size:12.5px;}
+.pm-h{display:flex;align-items:baseline;gap:8px;font-size:12px;color:var(--text3);margin-bottom:6px;flex-wrap:wrap;}
+.pm-h b{color:var(--text);font-size:13px;font-weight:600;}
+.pm-c{font-size:12.5px;color:var(--text2);margin-bottom:8px;}
+.pm-c b{color:var(--text);}
+.pm-bar{position:relative;height:16px;margin:2px 0 4px;}
+.pm-tr{position:absolute;left:0;right:0;top:6px;height:5px;border-radius:3px;background:#e8eaed;}
+.pm-iqr{position:absolute;top:6px;height:5px;border-radius:3px;background:#a9c9f4;}
+.pm-med{position:absolute;top:2px;width:2px;height:13px;background:#3c4043;border-radius:1px;margin-left:-1px;}
+.pm-tgt{position:absolute;top:1px;width:2px;height:15px;background:#059669;border-radius:1px;margin-left:-1px;}
+.pm-cur{position:absolute;top:3px;width:11px;height:11px;border-radius:50%;background:#5f6368;border:2px solid var(--bg2);margin-left:-5.5px;box-shadow:0 0 0 1px rgba(0,0,0,.15);}
+.pm-new{position:absolute;top:1px;width:13px;height:13px;border-radius:50%;background:#0559d2;border:2px solid var(--bg2);margin-left:-6.5px;box-shadow:0 0 0 1px rgba(5,89,210,.4);}
+.pm-sc{display:flex;justify-content:space-between;gap:8px;font-size:10.5px;color:var(--text3);margin-bottom:8px;}
+.pm-out{font-size:12.5px;color:var(--text3);line-height:1.7;border-top:1px solid var(--border);padding-top:7px;}
+.pm-out.on{color:var(--text2);}
+.pm-out b{color:var(--text);font-weight:600;}
+.pm-out .ok{color:#059669;font-weight:600;}
+.pm-out .mid{color:#a06000;font-weight:600;}
+.pm-out .bad{color:var(--red);font-weight:600;}
 .pc-hl{font-size:12.1px;font-weight:700;color:var(--text3);margin-bottom:6px;letter-spacing:.03em;}
 .pc-hr{display:flex;gap:10px;align-items:baseline;font-size:13.2px;padding:2px 0;font-family:var(--mono);}
 .pc-hr span{color:var(--text3);width:44px;flex-shrink:0;}
@@ -5696,6 +5716,7 @@ function openPriceChange(lower4,name,cur,cat){
   const d=(STOCK.find(x=>x.lower4===lower4&&x.name===name&&(!cat||x.cat===cat)))||{};
   // 下4桁はジャンルをまたいで重複することがあるので、年式・走行距離も一緒に渡して確実に1台に絞る
   _pcTarget={lower4,name,cur:Number(cur),cat,year:d.year||'',km:d.km!=null?d.km:null};
+  _pcMkt=pcMarket(d);
   const sum=priceSummary(d);
   const hist=sum?`<div class="pc-hist"><div class="pc-hl">これまでの値下げ</div>${sum.log.map(x=>
       `<div class="pc-hr"><span>${x.date.replace(/^\d{4}-/,'')}</span><b>${x.before} → ${x.after}</b><em>${x.diff}万</em></div>`).join('')}
@@ -5706,6 +5727,7 @@ function openPriceChange(lower4,name,cur,cat){
   document.getElementById('modal2-body').innerHTML=`
     <div class="pc-cur">下4桁 <b>${lower4}</b>　${d.year||''} ${d.color||''} ${d.km!=null?(d.km/10000).toFixed(1)+'万km':''}
       ${d.days!=null?`　<span class="pill ${d.days>=300?'pill-r':d.days>=100?'pill-y':'pill-g'}">${d.days}日</span>`:''}</div>
+    ${pcMktHtml(d)}
     ${hist}
     <div class="pc-row"><label>現在価格</label><div class="pc-now">${cur}<em>万円</em></div></div>
     <div class="pc-row"><label>新しい価格</label>
@@ -5731,10 +5753,85 @@ function pcSet(d){const el=document.getElementById('pcNew');el.value=Math.round(
 function pcPreview(){
   const v=parseFloat(document.getElementById('pcNew').value);
   const el=document.getElementById('pcDiff');
-  if(!(v>0)){el.textContent='';el.className='pc-diff';return;}
+  if(!(v>0)){el.textContent='';el.className='pc-diff';pcMktUpdate(null);return;}
   const d=Math.round((v-_pcTarget.cur)*10)/10;
   el.textContent=(d>0?'+':'')+d+'万円';
   el.className='pc-diff '+(d<0?'dn':d>0?'up':'');
+  pcMktUpdate(v);
+}
+
+/* ═══ 値下げ画面に相場を出す ═══
+   価格アラートで見た判断材料（同型比較・色で売れる位置・価格の壁・粗利）を
+   実際に値段を打ち込む場所にも出す。別画面に戻らないと分からない状態をなくす。 */
+let _pcMkt=null;
+function pcMarket(d){
+  if(!d||!d.name||!MKDATA)return null;
+  const code=MK_CODE[d.name];
+  const lv=(function(){try{return paLevels(d);}catch(e){return null;}})();
+  if(!code||!lv)return null;
+  let pool=null;
+  [0,1,2].forEach(function(i){const x=lv.levels[i];
+    if(x&&x.n>=8&&(!pool||x.n>pool.n))pool=x;});
+  if(!pool&&lv.levels[3]&&lv.levels[3].n>=8)pool=lv.levels[3];
+  if(!pool)return null;
+  const t=cposTarget(code,d.color);
+  return {arr:pool.arr, n:pool.n, med:pool.med, low:pool.low, high:pool.high,
+          q1:pool.q1, q3:pool.q3, label:pool.label, sub:pool.sub,
+          cost:d.cost!=null?d.cost:null, wall:lv.wall, km:d.km, color:d.color,
+          cpos:t?Object.assign({},t,{price:pctPrice(pool.arr,t.pct)}):null};
+}
+function pcMktHtml(d){
+  const m=_pcMkt;
+  if(!m)return '<div class="pc-mkt none">市場データが無い車種です</div>';
+  const c=m.cpos;
+  return `<div class="pc-mkt">
+    <div class="pm-h"><b>市場</b><span>${m.label}・${m.n}台（${m.sub}）</span>
+      <span style="margin-left:auto">中央 <b>${m.med!=null?m.med.toFixed(1):'—'}万</b></span></div>
+    ${c?`<div class="pm-c"><b>${c.color}</b> は同条件の中で <b>下から${c.pct}%</b> に入ると動く色　→　目安 <b>${c.price!=null?c.price.toFixed(1)+'万':'—'}</b></div>`:''}
+    <div class="pm-bar"><div class="pm-tr"></div>
+      <div class="pm-iqr" id="pmIqr"></div>
+      <div class="pm-med" id="pmMed"></div>
+      ${c&&c.price!=null?'<div class="pm-tgt" id="pmTgt"></div>':''}
+      <div class="pm-cur" id="pmCur"></div>
+      <div class="pm-new" id="pmNew" style="display:none"></div></div>
+    <div class="pm-sc"><span>${m.low!=null?m.low.toFixed(1):'—'}万</span>
+      <span id="pmLegend">青＝中央50%／黒線＝中央値${c?'／緑線＝色の目安':''}／●＝現在価格</span>
+      <span>${m.high!=null?m.high.toFixed(1):'—'}万</span></div>
+    <div class="pm-out" id="pmOut">新しい価格を入れると、市場での位置と粗利が出ます</div>
+  </div>`;
+}
+function pcMktPos(v){
+  const m=_pcMkt; if(!m||!m.arr||!m.arr.length)return 0;
+  const lo=m.low, hi=m.high, sp=Math.max(hi-lo,0.1);
+  return Math.max(0,Math.min(100,(v-lo)/sp*100));
+}
+function pcMktUpdate(v){
+  const m=_pcMkt; if(!m)return;
+  const set=function(id,val){const el=document.getElementById(id);if(el&&val!=null)el.style.left=pcMktPos(val)+'%';};
+  set('pmMed',m.med); set('pmCur',_pcTarget.cur);
+  if(m.cpos&&m.cpos.price!=null)set('pmTgt',m.cpos.price);
+  const iq=document.getElementById('pmIqr');
+  if(iq&&m.q1!=null&&m.q3!=null){iq.style.left=pcMktPos(m.q1)+'%';iq.style.width=Math.max(1,pcMktPos(m.q3)-pcMktPos(m.q1))+'%';}
+  const nw=document.getElementById('pmNew'), out=document.getElementById('pmOut');
+  if(!(v>0)){if(nw)nw.style.display='none';
+    if(out){out.className='pm-out';out.textContent='新しい価格を入れると、市場での位置と粗利が出ます';}return;}
+  if(nw){nw.style.display='';nw.style.left=pcMktPos(v)+'%';}
+  const pct=pctOf(m.arr,v);
+  const parts=[];
+  parts.push('市場での位置 <b>下から'+pct+'%</b>');
+  if(m.cpos)parts.push(pct<=m.cpos.pct+4?'<span class="ok">色の目安（'+m.cpos.pct+'%）に入っています</span>'
+    :'<span class="'+(pct>=m.cpos.pct+18?'bad':'mid')+'">色の目安は'+m.cpos.pct+'%。あと '+(v-m.cpos.price>0?(v-m.cpos.price).toFixed(1):'0')+'万下げると届きます</span>');
+  if(m.cost!=null){
+    const g=Math.round((v-m.cost)*10)/10, r=buyProfitRate(v);
+    const t=r?r.yen:null;
+    parts.push('粗利 <b>'+(g>0?'+':'')+g.toFixed(1)+'万</b>（'+(g/v*100).toFixed(1)+'%）'
+      +(t!=null?'　目標 '+t.toFixed(1)+'万 '+(g>=t?'<span class="ok">達成</span>':'<span class="bad">不足 '+(t-g).toFixed(1)+'万</span>'):''));
+  }
+  if(m.wall&&m.km!=null){
+    const b=m.wall.filter(function(x){return v>=x.lo&&v<x.lo+x.step;})[0];
+    if(b)parts.push('この価格帯は競合 <b>'+b.n+'台</b>・走行中央 '+(b.med/10000).toFixed(1)+'万km・自車より低走行 <b>'+b.pct+'%</b>');
+  }
+  if(out){out.className='pm-out on';out.innerHTML=parts.join('<br>');}
 }
 async function submitPriceChange(){
   const v=parseFloat(document.getElementById('pcNew').value);
