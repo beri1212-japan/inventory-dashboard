@@ -2062,11 +2062,15 @@ function buySpec(cat,name){
   return o;
 }
 /* 処分予定＝値下げ or 原価超えで、120日以上たっている在庫 */
-function buyDisposal(name){
-  return paRows().filter(r=>r.car.name===name&&(r.car.days||0)>=120&&(r.g.cat.key==='A'||r.g.dead)).length;
+/* 以前は引数が name だけで、中で paRows() を呼んでいた。buyRows() が車種ごとに
+   これを呼ぶため、カテゴリボタン1回で paRows() が91回動いていた（実測7.7秒）。
+   呼び出し側で1回だけ作った rows を渡す。 */
+function buyDisposal(name,rows){
+  return (rows||paRows()).filter(r=>r.car.name===name&&(r.car.days||0)>=120&&(r.g.cat.key==='A'||r.g.dead)).length;
 }
 /* ①即仕入（いま規定割れ）と ②先行仕入（処分すると規定割れ） */
 function buyRows(){
+  const PR=paRows();          /* ← 車種ごとではなく1回だけ */
   const sm={};
   STOCK.forEach(d=>{const k=d.cat+'_'+d.name;(sm[k]=sm[k]||{cat:d.cat,name:d.name,cnt:0}).cnt++;});
   Object.keys(TEISU).forEach(k=>{if(!sm[k]){const i=k.indexOf('_');sm[k]={cat:k.slice(0,i),name:k.slice(i+1),cnt:0};}});
@@ -2074,7 +2078,7 @@ function buyRows(){
   Object.keys(sm).forEach(k=>{
     const v=sm[k], t=TEISU[k];
     if(t==null)return;
-    const disp=buyDisposal(v.name);
+    const disp=buyDisposal(v.name,PR);
     const after=v.cnt-disp;
     const now=t-v.cnt, future=t-after;
     let kind=null,need=0;
@@ -3639,7 +3643,17 @@ const PA_TIERS=[
   {k:'h3',lbl:'走行不問（年式±1・同仕様）'},
   {k:'h4',lbl:'年式±1のみ（仕様不問）'}
 ];
+/* paLevels と同じ理由でメモ化する。車オブジェクトを鍵にするので、
+   在庫を読み直せば自動的に作り直される。 */
+let PA_MKT=new WeakMap();
 function paMkt(d){
+  if(!d||typeof d!=='object')return paMktCalc(d);
+  if(PA_MKT.has(d))return PA_MKT.get(d);
+  const v=paMktCalc(d);
+  PA_MKT.set(d,v);
+  return v;
+}
+function paMktCalc(d){
   const code=MK_CODE[d.name], y=mkY(d.year);
   if(!MKDATA||!code||!MKDATA.cars[code]||y==null)return null;
   const all=paMkRows(code);
@@ -7743,7 +7757,7 @@ function mkLoad(){
   if(MKLOAD)return MKLOAD;
   MKLOAD=fetch('market_latest.json',{cache:'no-cache'})
     .then(r=>r.ok?r.json():fetch('market_2026-08-17.json').then(x=>x.json()))
-    .then(j=>{MKDATA=j;_POS={};MK_ROWS=new Map();GK_CACHE.clear();PA_LV=new WeakMap();try{cposBuild();turnBuild();}catch(e){}return j;});
+    .then(j=>{MKDATA=j;_POS={};MK_ROWS=new Map();GK_CACHE.clear();PA_LV=new WeakMap();PA_MKT=new WeakMap();try{cposBuild();turnBuild();}catch(e){}return j;});
   return MKLOAD;
 }
 function mkOwn(code){
