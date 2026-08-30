@@ -3423,6 +3423,30 @@ function mktPw(r){                       // 市場1行の動力
   if(mktHv(r))return 'HV';
   return MK_DSRE.test(r[11]||'')?'DS':'GS';
 }
+/* ═══ 市場データの前処理キャッシュ ═══
+   価格アラートは在庫1台につき市場を8回以上走査する。以前はそのたびに
+   rows.map(l=>l.split('\t')) をやり直し、mktPw / mktMt を行ごとに呼び直していた。
+   実測：1クリックで mktPw が 9,237,383 回動き、画面が5.7秒固まっていた。
+   行の中身は読み込み後に変わらないので、車種ごとに1回だけ作って使い回す。
+   （名前は既存の mkRows() と衝突しないよう paMkRows とする。mkLoad() で捨てる） */
+let MK_ROWS=new Map();
+function paMkRows(code){
+  let a=MK_ROWS.get(code);
+  if(a)return a;
+  const c=MKDATA&&MKDATA.cars&&MKDATA.cars[code];
+  if(!c)return [];
+  a=c.rows.map(l=>l.split('\t')).filter(r=>r[8]==='0');
+  a.forEach(function(r){
+    r._pw=mktPw(r);                    // HV / DS / GS
+    r._mt=mktMt(r[11]);                // MT・AGS
+    r._wd=(r[9]==='1');                // 4WD
+    r._y=+r[4];                        // 年式
+    r._km=parseFloat(r[5])*10000;      // 走行（km）
+    r._base=parseFloat(r[3]);          // 本体価格
+  });
+  MK_ROWS.set(code,a);
+  return a;
+}
 function stockPw(d){                     // 自社1台の動力
   if(d.hv==='〇')return 'HV';
   return MK_DSRE.test((d.name||'')+' '+(d.grade||''))?'DS':'GS';
@@ -3551,7 +3575,17 @@ function gradeClean(t,model){
     .replace(/\b\d{3,4}(cc)?\b/gi,' ')
     .replace(/\b[24]WD\b/gi,' ').replace(/\s+/g,' ').trim();
 }
+/* 同じ文字列に対して1クリックで435,566回呼ばれていた。結果は入力だけで決まるので覚えておく。 */
+const GK_CACHE=new Map();
 function gradeKeyN(t,model,n){
+  const ck=(n||2)+'\u0000'+(model||'')+'\u0000'+(t||'');
+  const hit=GK_CACHE.get(ck);
+  if(hit!==undefined)return hit;
+  const v=gradeKeyNCalc(t,model,n);
+  GK_CACHE.set(ck,v);
+  return v;
+}
+function gradeKeyNCalc(t,model,n){
   let s=gradeClean(t,model);
   if(!s)return '';
   const key=[];
@@ -3608,12 +3642,12 @@ const PA_TIERS=[
 function paMkt(d){
   const code=MK_CODE[d.name], y=mkY(d.year);
   if(!MKDATA||!code||!MKDATA.cars[code]||y==null)return null;
-  const all=MKDATA.cars[code].rows.map(l=>l.split('\t')).filter(r=>r[8]==='0');
+  const all=paMkRows(code);
   const pw=stockPw(d), wd=d.fwd==='〇';
   const myMt=mktMt(d.grade);
-  const spec=r=>(mktPw(r)===pw)&&((r[9]==='1')===wd)&&(mktMt(r[11])===myMt);
-  const yOk=r=>{const v=+r[4];return v>=y-1&&v<=y+1;};
-  const kOk=r=>{if(d.km==null)return true;return kmInWindow(d.km,parseFloat(r[5])*10000);};
+  const spec=r=>(r._pw===pw)&&(r._wd===wd)&&(r._mt===myMt);
+  const yOk=r=>{const v=r._y;return v>=y-1&&v<=y+1;};
+  const kOk=r=>{if(d.km==null)return true;return kmInWindow(d.km,r._km);};
   const hoku=r=>r[0]==='北陸甲信越';
   const gv=gvFilter(d), gOk=gv?(r=>gv.f(r[11])):(()=>true);
   const model=MKDATA.cars[code].name;
@@ -3634,7 +3668,7 @@ function paMkt(d){
   for(let i=0;i<fs.length;i++){
     const gf=G[i];
     const rows=all.filter(r=>fs[i](r)&&(!gf||gf(r)));
-    const p=rows.map(r=>parseFloat(r[3])).filter(v=>v>0).sort((a,b)=>a-b);
+    const p=rows.map(r=>r._base).filter(v=>v>0).sort((a,b)=>a-b);
     if(p.length>=8||i===fs.length-1){
       if(!p.length)return null;
       const q=f=>p[Math.min(p.length-1,Math.floor(p.length*f))];
@@ -3908,11 +3942,21 @@ function ratingFix(rating){
   if(isNaN(v))return null;
   return v<3.5;
 }
+/* paRows() は同じ1台に対して paSim(d)→paLevels(d) と paLevels(d) を続けて呼ぶため、
+   まったく同じ計算が2回走っていた（実測 608回＝304台×2）。車オブジェクトを鍵に覚える。 */
+let PA_LV=new WeakMap();
 function paLevels(d){
+  if(!d||typeof d!=='object')return paLevelsCalc(d);
+  if(PA_LV.has(d))return PA_LV.get(d);
+  const v=paLevelsCalc(d);
+  PA_LV.set(d,v);
+  return v;
+}
+function paLevelsCalc(d){
   const code=MK_CODE[d.name], y=mkY(d.year);
   if(!MKDATA||!code||!MKDATA.cars[code]||y==null)return null;
   const model=MKDATA.cars[code].name;
-  const all=MKDATA.cars[code].rows.map(l=>l.split('\t')).filter(r=>r[8]==='0');
+  const all=paMkRows(code);
   const pw=stockPw(d), wd=d.fwd==='〇', myMt=mktMt(d.grade);
   const gen=genOfStock(d);
   const gv=gvFilter(d);
@@ -3921,12 +3965,11 @@ function paLevels(d){
   const kF1=gradeKeyN(d.grade,model,1);
   const eqs0=paEqList(d);
   /* 共通条件 */
-  const base=r=>(mktPw(r)===pw)&&((r[9]==='1')===wd)&&(mktMt(r[11])===myMt)
+  const base=r=>(r._pw===pw)&&(r._wd===wd)&&(r._mt===myMt)
               &&(!gv||gv.f(r[11]))&&(!gen||genMatch(gen,r,y))
-              &&(d.km==null||(function(){const v=parseFloat(r[5])*10000;
-                   return kmInWindow(d.km,v);})());
-  const yEq=r=>+r[4]===y;
-  const yNear=r=>{const v=+r[4];return v>=y-1&&v<=y+1;};
+              &&(d.km==null||kmInWindow(d.km,r._km));
+  const yEq=r=>r._y===y;
+  const yNear=r=>{const v=r._y;return v>=y-1&&v<=y+1;};
   /* グレードキーは2語。ただし掲載文の書き方で語が増えると一致しなくなる
      （例：ルークス「ハイウェイスターX」対「ハイウェイスターX エマージェンシー…」）。
      年式±1でも母数が足りないときは先頭語だけで照合し直す。 */
@@ -3941,7 +3984,7 @@ function paLevels(d){
   /* 装備は掲載文に必ず書かれるとは限らない。市場側で「有り」の割合が極端なときは
      文言に出ていないだけの可能性が高いので、その装備での絞り込みはやめる。 */
   /* 装備の判定は走行の窓を外して母数を確保する（掲載文に書かれる割合を見たいだけなので） */
-  const eqPool=all.filter(r=>(mktPw(r)===pw)&&((r[9]==='1')===wd)&&(mktMt(r[11])===myMt)
+  const eqPool=all.filter(r=>(r._pw===pw)&&(r._wd===wd)&&(r._mt===myMt)
       &&(!gv||gv.f(r[11]))&&(!gen||genMatch(gen,r,y))&&yNear(r)
       &&(!kF||(loose?gradeKeyN(r[11],model,1)===kF1:gradeKey(r[11],model)===kF)));
   const eqs=eqs0.filter(function(e){
@@ -3954,7 +3997,7 @@ function paLevels(d){
   /* 装備の価値差：同じ母集団で有無の中央値を比べる */
   let eqPrem=null;
   if(eqs.length===1&&eqPool.length>=16){
-    const md=a=>{const v=a.map(r=>paKmAdj(parseFloat(r[3]),parseFloat(r[5])*10000,d.km)).filter(x=>x>0).sort((x,z)=>x-z);
+    const md=a=>{const v=a.map(r=>paKmAdj(r._base,r._km,d.km)).filter(x=>x>0).sort((x,z)=>x-z);
                  return v.length>=5?v[Math.floor(v.length/2)]:null;};
     const on=md(eqPool.filter(r=>eqs[0].re.test(r[11]||''))), off=md(eqPool.filter(r=>!eqs[0].re.test(r[11]||'')));
     if(on!=null&&off!=null)eqPrem={name:eqs[0].name,on:on,off:off,diff:Math.round((on-off)*10)/10};
@@ -3969,8 +4012,8 @@ function paLevels(d){
   const out=DEF.map(function(L,i){
     const rs=all.filter(r=>base(r)&&L.y(r)&&L.g(r)&&(!L.col||L.col(r))&&(!L.eq||gEq(r)));
     const p=rs.map(function(r){
-        let v=L.adj?paColAdj(r[3],r[6],myI):parseFloat(r[3]);
-        return paKmAdj(v,parseFloat(r[5])*10000,d.km);   // 走行を自社に合わせて換算
+        let v=L.adj?paColAdj(r[3],r[6],myI):r._base;
+        return paKmAdj(v,r._km,d.km);   // 走行を自社に合わせて換算
       }).filter(v=>v>0).sort((x,z)=>x-z);
     const hoku=rs.filter(r=>r[0]==='北陸甲信越').length;
     const q=f=>p.length?p[Math.min(p.length-1,Math.floor(p.length*f))]:null;
@@ -3987,7 +4030,7 @@ function paLevels(d){
         return 'https://www.carsensor.net/usedcar/b'+c[0]+'/'+c[1]+'/index.html?'+qs.join('&');})()};
   });
   /* 色の薄さ：④の母集団に自社色がどれだけいるか */
-  const wideRows=all.filter(r=>(mktPw(r)===pw)&&((r[9]==='1')===wd)&&(mktMt(r[11])===myMt)
+  const wideRows=all.filter(r=>(r._pw===pw)&&(r._wd===wd)&&(r._mt===myMt)
       &&(!gv||gv.f(r[11]))&&(!gen||genMatch(gen,r,y))&&yNear(r));
   let colShare=null;
   if(d.color&&colBucket(d.color)&&wideRows.length>=10){
@@ -7700,7 +7743,7 @@ function mkLoad(){
   if(MKLOAD)return MKLOAD;
   MKLOAD=fetch('market_latest.json',{cache:'no-cache'})
     .then(r=>r.ok?r.json():fetch('market_2026-08-17.json').then(x=>x.json()))
-    .then(j=>{MKDATA=j;_POS={};try{cposBuild();turnBuild();}catch(e){}return j;});
+    .then(j=>{MKDATA=j;_POS={};MK_ROWS=new Map();GK_CACHE.clear();PA_LV=new WeakMap();try{cposBuild();turnBuild();}catch(e){}return j;});
   return MKLOAD;
 }
 function mkOwn(code){
