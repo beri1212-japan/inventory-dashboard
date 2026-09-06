@@ -1,0 +1,368 @@
+<!doctype html><html lang="ja" data-theme="light"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>接客業績ダッシュボード｜インディオ富山</title>
+<style>
+:root{color-scheme:light;
+--bg:#ffffff;--surf:#ffffff;--surf2:#f8f9fb;--ink:#11161d;--ink2:#4a5563;--mut:#8b95a3;
+--grid:#eef1f5;--axis:#c9d0d9;--bd:#e3e7ec;--bd2:#eef1f5;
+--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;
+--good:#0ca30c;--crit:#d03b3b;--warn:#fab219;
+--seq1:#cde2fb;--seq2:#9ec5f4;--seq3:#5598e7;--seq4:#2a78d6;--seq5:#184f95;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Hiragino Kaku Gothic ProN","Noto Sans JP",Arial,sans-serif;
+font-size:13.5px;line-height:1.6;-webkit-font-smoothing:antialiased;
+font-variant-numeric:tabular-nums}
+
+/* ── top bar ───────────────────────────────── */
+.topbar{border-bottom:1px solid var(--bd);background:#fff;position:sticky;top:0;z-index:30}
+.topin{max-width:1300px;margin:0 auto;padding:14px 22px 0}
+.brandrow{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.brandrow h1{font-size:17px;margin:0;font-weight:640;letter-spacing:.005em}
+.brandrow .src{font-size:11.5px;color:var(--mut)}
+.brandrow .sync{margin-left:auto;font-size:11px;color:var(--mut);display:inline-flex;align-items:center;gap:6px}
+.brandrow .sync::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--good)}
+.brandrow .sync.err::before{background:var(--crit)}
+.brandrow .sync.wait::before{background:var(--axis)}
+.ctl{display:flex;gap:22px;align-items:center;flex-wrap:wrap;padding:11px 0 12px}
+.cg{display:flex;gap:0;align-items:center;flex-wrap:wrap}
+.cg > span{font-size:10.5px;color:var(--mut);letter-spacing:.08em;margin-right:9px;font-weight:600}
+.segwrap{display:inline-flex;border:1px solid var(--bd);border-radius:6px;overflow:hidden;background:#fff}
+button.seg{font:inherit;font-size:12.5px;padding:5px 12px;border:0;border-left:1px solid var(--bd);
+background:#fff;color:var(--ink2);cursor:pointer;transition:background .12s,color .12s;line-height:1.5}
+button.seg:first-child{border-left:0}
+button.seg:hover{background:var(--surf2)}
+button.seg.on{background:var(--s1);color:#fff;font-weight:600}
+.range{margin-left:auto;font-size:11.5px;color:var(--mut)}
+
+.wrap{max-width:1300px;margin:0 auto;padding:22px 22px 72px}
+
+/* ── kpi row ───────────────────────────────── */
+.kpis{display:grid;grid-template-columns:repeat(7,1fr);gap:0;margin-bottom:30px;
+border:1px solid var(--bd);border-radius:8px;overflow:hidden;background:#fff}
+@media(max-width:1100px){.kpis{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:680px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{padding:13px 16px 14px;border-left:1px solid var(--bd2)}
+.kpi:first-child{border-left:0}
+.kpi .l{font-size:10.5px;color:var(--mut);letter-spacing:.06em;font-weight:600}
+.kpi .v{font-size:26px;font-weight:600;margin-top:5px;letter-spacing:-.015em;line-height:1.15;color:var(--ink)}
+.kpi .v u{font-size:12px;font-weight:500;text-decoration:none;color:var(--mut);margin-left:3px}
+.kpi .d{font-size:11px;color:var(--mut);margin-top:4px;min-height:1em}
+
+/* ── sections ──────────────────────────────── */
+section{margin-bottom:30px}
+h2{font-size:11px;margin:0 0 3px;font-weight:700;letter-spacing:.09em;color:var(--ink2)}
+.hint{color:var(--mut);font-size:11.8px;margin:0 0 10px}
+.card{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:16px 18px}
+.tb{overflow-x:auto;background:var(--surf);border:1px solid var(--bd);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:12.4px;min-width:640px}
+th{color:var(--mut);font-weight:600;font-size:10.5px;letter-spacing:.05em;text-align:left;
+padding:9px 12px;background:var(--surf2);border-bottom:1px solid var(--bd);white-space:nowrap}
+td{padding:8px 12px;border-bottom:1px solid var(--bd2);white-space:nowrap;color:var(--ink2)}
+td:first-child{color:var(--ink);font-weight:500}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#f4f8fd}
+.num{text-align:right}
+.mut{color:var(--mut)}
+tfoot td{font-weight:650;color:var(--ink);border-top:1px solid var(--axis);border-bottom:none;background:var(--surf2)}
+.bar{height:6px;border-radius:2px;background:var(--s1);display:inline-block;vertical-align:middle}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+
+/* ── charts ────────────────────────────────── */
+svg{display:block;width:100%;height:auto;overflow:visible}
+.gl{stroke:var(--grid);stroke-width:1}
+.ax{stroke:var(--axis);stroke-width:1}
+.tx{fill:var(--mut);font-size:10.5px}
+.tv{fill:var(--ink2);font-size:10.5px}
+.lg{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--ink2);margin-bottom:12px}
+.lg i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:5px;vertical-align:-1px}
+.tip{position:fixed;pointer-events:none;background:#fff;border:1px solid var(--bd);
+border-radius:6px;padding:8px 10px;font-size:11.8px;box-shadow:0 6px 20px rgba(17,22,29,.12);
+opacity:0;transition:opacity .1s;z-index:60;max-width:250px;line-height:1.5;color:var(--ink)}
+.tip b{font-weight:650}
+.fn{display:flex;flex-direction:column;gap:9px}
+.fnr{display:grid;grid-template-columns:104px 1fr 148px;gap:12px;align-items:center;font-size:12.4px}
+.fnr > div:first-child{color:var(--ink2)}
+.fnb{height:24px;border-radius:3px;position:relative;min-width:2px}
+.fnr .rt{text-align:right;color:var(--ink2);font-size:12px}
+.note{margin-top:36px;padding-top:16px;border-top:1px solid var(--bd);font-size:11.5px;
+color:var(--mut);line-height:1.85}
+.empty{padding:28px;text-align:center;color:var(--mut);font-size:12.5px}
+</style></head><body>
+<div class="topbar"><div class="topin">
+<div class="brandrow"><h1>接客業績ダッシュボード</h1>
+<span class="src">株式会社インディオ富山 ／ Zoho CRM「接客」＋「受注車両」</span>
+<span class="sync" id="syncLbl">読み込み中…</span></div>
+<div class="ctl">
+  <div class="cg" id="periodSeg"><span>期間</span></div>
+  <div class="cg" id="shopSeg"><span>拠点</span></div>
+  <div class="range" id="rangeLbl"></div>
+</div></div></div>
+<div class="wrap">
+<div class="kpis" id="kpis"></div>
+
+<section>
+  <h2>接客ファネル</h2>
+  <p class="hint">来店した客が、どこで落ちているか。各段はひとつ上の段に対する率。</p>
+  <div class="card"><div class="fn" id="funnel"></div></div>
+</section>
+
+<section>
+  <h2>推移（<span class="gran">月別</span>）</h2>
+  <p class="hint">左は接客の件数、右は金額。単位が違うので分けています。期間に応じて日別・週別・月別が切り替わります。</p>
+  <div class="grid2">
+    <div class="card">
+      <div class="lg"><span><i style="background:var(--s1)"></i>来店</span><span><i style="background:var(--s3)"></i>成約</span></div>
+      <div id="chCnt"></div>
+    </div>
+    <div class="card">
+      <div class="lg"><span><i style="background:var(--s2)"></i>売上</span><span><i style="background:var(--s4)"></i>総粗利</span></div>
+      <div id="chAmt"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>担当者別</h2>
+  <p class="hint">来店から成約までの歩留まりと、稼いだ粗利。成約は接客記録、売上・粗利は受注車両の担当者名で集計しています。</p>
+  <div class="tb" id="tbMg"></div>
+</section>
+
+<section>
+  <h2>来店きっかけ別</h2>
+  <p class="hint">どの集客経路から来た客が成約し、いくらの粗利になっているか。粗利は、その客の初回来店のきっかけに紐づけています。</p>
+  <div class="tb" id="tbMot"></div>
+</section>
+
+<section>
+  <h2>拠点別</h2>
+  <div class="tb" id="tbShop"></div>
+</section>
+
+<section>
+  <h2>付帯の獲得率</h2>
+  <p class="hint">成約1台あたり、どの付帯が何％取れているか。分母は期間内の受注台数です。</p>
+  <div class="card"><div id="chOpt"></div></div>
+  <div style="height:14px"></div>
+  <div class="tb" id="tbOpt"></div>
+</section>
+
+<div class="note" id="note"></div>
+</div>
+<div class="tip" id="tip"></div>
+<script>
+const TODAY=(()=>{const t=new Date();t.setMinutes(t.getMinutes()+t.getTimezoneOffset()+540);
+ return t.toISOString().slice(0,10);})();
+const $=id=>document.getElementById(id);
+const yen=n=>n==null?"—":(Math.round(n)).toLocaleString("ja-JP");
+const man=n=>n==null?"—":Math.round(n/10000).toLocaleString("ja-JP");
+const pct=(a,b)=>b?((a/b*100).toFixed(1)+"%"):"—";
+const pctn=(a,b)=>b?(a/b*100):0;
+
+let D=null,V=[],DL=[],SHOPS=[],TODAY_="";
+function hydrate(){
+ V=D.V.map(r=>({d:D.DT[r[0]],cat:r[1]<0?null:D.CA[r[1]],mot:r[2]<0?null:D.MO[r[2]],
+  mg:r[3]<0?null:D.MG[r[3]],se:!!(r[4]&1),es:!!(r[4]&2),cl:!!(r[4]&4),
+  sh:r[5]<0?null:D.SH[r[5]],vt:r[6]<0?null:D.VT[r[6]]}));
+ DL=D.D.map(r=>({d:D.DT[r[0]],sh:r[1]<0?null:D.SH[r[1]],mg:r[2]<0?null:D.MG[r[2]],
+  sa:r[3],gp:r[4],vg:r[5],fg:r[6],cg:r[7],
+  mot:r[8]<0?null:D.MO[r[8]],cat:r[9]<0?null:D.CA[r[9]],o:r[10]}));
+ SHOPS=[...new Set([...V.map(v=>v.sh),...DL.map(d=>d.sh)])].filter(Boolean)
+  .filter(s=>V.filter(v=>v.sh===s).length>20||DL.filter(d=>d.sh===s).length>20);
+ SHOPS.sort((a,b)=>(ORD.indexOf(a)+99)%99-(ORD.indexOf(b)+99)%99);
+}
+
+function addD(s,n){const t=new Date(s+"T00:00:00");t.setDate(t.getDate()+n);return t.toISOString().slice(0,10);}
+function monday(s){const t=new Date(s+"T00:00:00");const w=(t.getDay()+6)%7;t.setDate(t.getDate()-w);return t.toISOString().slice(0,10);}
+const PERIODS=[
+ ["今週",()=>[monday(TODAY),TODAY]],
+ ["今月",()=>[TODAY.slice(0,8)+"01",TODAY]],
+ ["先月",()=>{const y=+TODAY.slice(0,4),m=+TODAY.slice(5,7);const pm=m===1?12:m-1,py=m===1?y-1:y;
+   const s=`${py}-${String(pm).padStart(2,"0")}-01`;const e=addD(`${y}-${String(m).padStart(2,"0")}-01`,-1);return [s,e];}],
+ ["直近3か月",()=>[addD(TODAY,-89),TODAY]],
+ ["今年",()=>[TODAY.slice(0,4)+"-01-01",TODAY]],
+ ["全期間",()=>["0000-01-01","9999-12-31"]]];
+let pi=1, shopF=null;
+
+const ORD=["軽スタ","HVCP","SUV","ミニバン","アウトレット"];
+
+function seg(el,items,cur,cb){el.querySelectorAll(".segwrap").forEach(b=>b.remove());
+ const w=document.createElement("div");w.className="segwrap";
+ items.forEach((t,i)=>{const b=document.createElement("button");b.className="seg"+(i===cur?" on":"");
+  b.textContent=t;b.onclick=()=>cb(i);w.appendChild(b);});el.appendChild(w);}
+
+function build(){
+ seg($("periodSeg"),PERIODS.map(p=>p[0]),pi,i=>{pi=i;render();});
+ seg($("shopSeg"),["すべて",...SHOPS],shopF===null?0:SHOPS.indexOf(shopF)+1,
+   i=>{shopF=i===0?null:SHOPS[i-1];render();});
+}
+
+const TIP=$("tip");
+function tipOn(e,html){TIP.innerHTML=html;TIP.style.opacity=1;
+ const r=TIP.getBoundingClientRect();let x=e.clientX+14,y=e.clientY-10;
+ if(x+r.width>innerWidth-8)x=e.clientX-r.width-14;
+ if(y+r.height>innerHeight-8)y=innerHeight-r.height-8;
+ TIP.style.left=x+"px";TIP.style.top=Math.max(8,y)+"px";}
+function tipOff(){TIP.style.opacity=0;}
+
+function line(el,rows,series,fmt){
+ const W=560,H=210,PL=52,PR=14,PT=12,PB=26;
+ if(!rows.length){el.innerHTML='<div class="empty">この期間のデータがありません</div>';return;}
+ const max=Math.max(1,...rows.flatMap(r=>series.map(s=>r[s.k]||0)));
+ const nice=Math.pow(10,Math.floor(Math.log10(max)));
+ const top=Math.ceil(max/nice*1.05)*nice||1;
+ const x=i=>PL+(rows.length<2?(W-PL-PR)/2:i*(W-PL-PR)/(rows.length-1));
+ const y=v=>PT+(1-v/top)*(H-PT-PB);
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img">`;
+ for(let t=0;t<=4;t++){const v=top*t/4;s+=`<line class="gl" x1="${PL}" x2="${W-PR}" y1="${y(v)}" y2="${y(v)}"/>`+
+   `<text class="tx" x="${PL-7}" y="${y(v)+3.5}" text-anchor="end">${fmt(v)}</text>`;}
+ s+=`<line class="ax" x1="${PL}" x2="${W-PR}" y1="${y(0)}" y2="${y(0)}"/>`;
+ const step=Math.ceil(rows.length/7);
+ rows.forEach((r,i)=>{if(i%step===0||i===rows.length-1)
+   s+=`<text class="tx" x="${x(i)}" y="${H-8}" text-anchor="middle">${r.lbl}</text>`;});
+ series.forEach(se=>{const pts=rows.map((r,i)=>`${x(i)},${y(r[se.k]||0)}`).join(" ");
+  s+=`<polyline fill="none" stroke="${se.c}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" points="${pts}"/>`;});
+ series.forEach(se=>{rows.forEach((r,i)=>{
+  s+=`<circle cx="${x(i)}" cy="${y(r[se.k]||0)}" r="3.6" fill="${se.c}" stroke="#fff" stroke-width="2"/>`;});});
+ rows.forEach((r,i)=>{const w=(W-PL-PR)/Math.max(1,rows.length);
+  s+=`<rect x="${x(i)-w/2}" y="${PT}" width="${w}" height="${H-PT-PB}" fill="transparent" data-i="${i}"/>`;});
+ s+="</svg>";el.innerHTML=s;
+ el.querySelectorAll("rect[data-i]").forEach(rc=>{
+  rc.onmousemove=e=>{const r=rows[+rc.dataset.i];
+   tipOn(e,`<div style="font-weight:650;margin-bottom:3px">${r.lbl}</div>`+
+    series.map(se=>`<div><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${se.c};margin-right:5px"></i>${se.n} <b>${se.f(r[se.k]||0)}</b></div>`).join(""));};
+  rc.onmouseleave=tipOff;});
+}
+
+function hbar(el,items,fmtv){
+ if(!items.length){el.innerHTML='<div class="empty">データがありません</div>';return;}
+ const max=Math.max(1,...items.map(i=>i.v));
+ el.innerHTML=items.map(i=>`<div class="fnr"><div class="mut">${i.n}</div>
+  <div class="fnb" style="width:${Math.max(1.5,i.v/max*100)}%;background:${i.c||"var(--s1)"}"></div>
+  <div class="rt">${fmtv(i)}</div></div>`).join("");
+}
+function render(){
+ build();
+ const [s,e]=PERIODS[pi][1]();
+ const fv=V.filter(v=>v.d>=s&&v.d<=e&&(!shopF||v.sh===shopF));
+ const fd=DL.filter(d=>d.d>=s&&d.d<=e&&(!shopF||d.sh===shopF));
+ $("rangeLbl").textContent=(pi===5?`全期間（${D.DT[0]} 〜 ${D.DT[D.DT.length-1]}）`:`${s} 〜 ${e}`)
+   +`　来店${fv.length}件・受注${fd.length}台`;
+
+ const seat=fv.filter(v=>v.se).length, est=fv.filter(v=>v.es).length, clo=fv.filter(v=>v.cl).length;
+ const sa=fd.reduce((a,b)=>a+b.sa,0), gp=fd.reduce((a,b)=>a+b.gp,0);
+ const fg=fd.reduce((a,b)=>a+b.fg,0), cg=fd.reduce((a,b)=>a+b.cg,0), vg=fd.reduce((a,b)=>a+b.vg,0);
+ const nw=fv.filter(v=>v.cat&&v.cat.indexOf("新規")===0).length;
+ $("kpis").innerHTML=[
+  ["来店数",fv.length,"件",`うち新規 ${nw}件（${pct(nw,fv.length)}）`],
+  ["成約数",clo,"件",`来店比 ${pct(clo,fv.length)}`],
+  ["受注台数",fd.length,"台",""],
+  ["売上合計",man(sa),"万円",""],
+  ["総粗利",man(gp),"万円",sa?`粗利率 ${(gp/sa*100).toFixed(1)}%`:""],
+  ["平均粗利／台",fd.length?man(gp/fd.length):"—","万円",""],
+  ["付帯粗利",man(fg+cg),"万円",gp?`総粗利の ${(( fg+cg)/gp*100).toFixed(0)}%`:""]
+ ].map(k=>`<div class="kpi"><div class="l">${k[0]}</div><div class="v">${typeof k[1]==="number"?k[1].toLocaleString("ja-JP"):k[1]}<u>${k[2]}</u></div><div class="d">${k[3]}</div></div>`).join("");
+
+ hbar($("funnel"),[
+  {n:"来店",v:fv.length,c:"var(--s1)"},{n:"入着",v:seat,c:"var(--s1)"},
+  {n:"見積",v:est,c:"var(--s3)"},{n:"成約",v:clo,c:"var(--s3)"}],
+  (i)=>{const idx=["来店","入着","見積","成約"].indexOf(i.n);
+   const prev=[fv.length,fv.length,seat,est][idx];
+   return `${i.v.toLocaleString()}件　<span class="mut">${idx===0?"":pct(i.v,prev)}</span>`;});
+
+ const days=(new Date(e)-new Date(s))/864e5;
+ const mode=pi===5?"m":(days<=45?"d":(days<=200?"w":"m"));
+ const key=x=>mode==="m"?x.slice(0,7):(mode==="d"?x:monday(x));
+ const lab=k=>mode==="m"?k.slice(2).replace("-","/"):k.slice(5).replace("-","/");
+ const ks=[...new Set([...fv.map(v=>key(v.d)),...fd.map(d=>key(d.d))])].sort();
+ const rowsC=ks.map(m=>({lbl:lab(m),
+   visit:fv.filter(v=>key(v.d)===m).length,close:fv.filter(v=>key(v.d)===m&&v.cl).length}));
+ const rowsA=ks.map(m=>({lbl:lab(m),
+   sa:fd.filter(d=>key(d.d)===m).reduce((a,b)=>a+b.sa,0),
+   gp:fd.filter(d=>key(d.d)===m).reduce((a,b)=>a+b.gp,0)}));
+ const gname=mode==="m"?"月別":(mode==="d"?"日別":"週別");
+ document.querySelectorAll(".gran").forEach(x=>x.textContent=gname);
+ line($("chCnt"),rowsC,[{k:"visit",n:"来店",c:"var(--s1)",f:v=>v.toLocaleString()+"件"},
+   {k:"close",n:"成約",c:"var(--s3)",f:v=>v.toLocaleString()+"件"}],v=>Math.round(v));
+ line($("chAmt"),rowsA,[{k:"sa",n:"売上",c:"var(--s2)",f:v=>man(v)+"万"},
+   {k:"gp",n:"総粗利",c:"var(--s4)",f:v=>man(v)+"万"}],v=>man(v));
+
+ grp($("tbMg"),"担当者",v=>v.mg,d=>d.mg,fv,fd);
+ grp($("tbMot"),"来店きっかけ",v=>v.mot,d=>d.mot,fv,fd);
+ grp($("tbShop"),"拠点",v=>v.sh,d=>d.sh,fv,fd);
+ opts(fd);
+ const vmin=V.reduce((a,b)=>b.d<a?b.d:a,"9999"), dmin=DL.reduce((a,b)=>b.d<a?b.d:a,"9999");
+ $("note").innerHTML=`集計元：Zoho CRM「接客」${V.length.toLocaleString()}件（${vmin}〜）、「受注車両」${DL.length.toLocaleString()}台（${dmin}〜）。`
+  +`接客と受注車両は商談案件で紐づけており、受注の99%が接客記録と一致しています。<br>`
+  +`来店・入着・見積・成約は接客記録、売上・粗利・付帯は受注車両の値です。粗利は受注車両の「総粗利」（車両本体粗利＋販売諸費用粗利＋クレジット手数料粗利）。<br>`
+  +`来店きっかけ別の粗利は、その客の<b>初回来店時のきっかけ</b>に紐づけています。きっかけ未入力の来店は「未入力」に集計しています。<br>`
+  +`作成 ${D.gen}`;
+}
+
+function grp(el,label,kv,kd,fv,fd){
+ const keys=[...new Set([...fv.map(kv),...fd.map(kd)])];
+ const rows=keys.map(k=>{
+  const vs=fv.filter(v=>kv(v)===k), ds=fd.filter(d=>kd(d)===k);
+  return {k:k||"未入力",v:vs.length,se:vs.filter(x=>x.se).length,es:vs.filter(x=>x.es).length,
+   cl:vs.filter(x=>x.cl).length,n:ds.length,sa:ds.reduce((a,b)=>a+b.sa,0),gp:ds.reduce((a,b)=>a+b.gp,0)};
+ }).filter(r=>r.v||r.n).sort((a,b)=>b.gp-a.gp||b.v-a.v);
+ if(!rows.length){el.innerHTML='<div class="empty">この期間のデータがありません</div>';return;}
+ const T=rows.reduce((a,r)=>({v:a.v+r.v,se:a.se+r.se,es:a.es+r.es,cl:a.cl+r.cl,n:a.n+r.n,sa:a.sa+r.sa,gp:a.gp+r.gp}),
+   {v:0,se:0,es:0,cl:0,n:0,sa:0,gp:0});
+ const mx=Math.max(1,...rows.map(r=>r.gp));
+ el.innerHTML=`<table><thead><tr><th>${label}</th><th class="num">来店</th><th class="num">入着</th>
+  <th class="num">見積</th><th class="num">成約</th><th class="num">成約率</th>
+  <th class="num">受注台数</th><th class="num">売上(万)</th><th class="num">総粗利(万)</th>
+  <th class="num">平均粗利(万)</th><th>粗利構成</th></tr></thead><tbody>`
+ +rows.map(r=>`<tr><td>${r.k}</td><td class="num">${r.v||"—"}</td><td class="num mut">${r.se||"—"}</td>
+   <td class="num mut">${r.es||"—"}</td><td class="num">${r.cl||"—"}</td>
+   <td class="num">${r.v?pct(r.cl,r.v):"—"}</td>
+   <td class="num">${r.n||"—"}</td><td class="num">${r.sa?man(r.sa):"—"}</td>
+   <td class="num" style="font-weight:600">${r.gp?man(r.gp):"—"}</td>
+   <td class="num">${r.n?man(r.gp/r.n):"—"}</td>
+   <td><span class="bar" style="width:${Math.max(2,r.gp/mx*74)}px;background:${r.gp<0?"var(--crit)":"var(--s1)"}"></span></td></tr>`).join("")
+ +`</tbody><tfoot><tr><td>合計</td><td class="num">${T.v}</td><td class="num">${T.se}</td>
+   <td class="num">${T.es}</td><td class="num">${T.cl}</td><td class="num">${pct(T.cl,T.v)}</td>
+   <td class="num">${T.n}</td><td class="num">${man(T.sa)}</td><td class="num">${man(T.gp)}</td>
+   <td class="num">${T.n?man(T.gp/T.n):"—"}</td><td></td></tr></tfoot></table>`;
+}
+
+function opts(fd){
+ const n=fd.length;
+ const items=D.OPT.map((l,i)=>({n:l,c:fd.filter(d=>d.o&(1<<i)).length})).sort((a,b)=>b.c-a.c);
+ hbar($("chOpt"),items.map(i=>({n:i.n,v:n?i.c/n*100:0,c:"var(--s1)"})),
+   i=>{const it=items.find(x=>x.n===i.n);return `${it.c}台　<span class="mut">${pctn(it.c,n).toFixed(0)}%</span>`;});
+ const mgs=[...new Set(fd.map(d=>d.mg))].filter(Boolean);
+ const rows=mgs.map(m=>{const ds=fd.filter(d=>d.mg===m);
+   return {m,n:ds.length,o:D.OPT.map((_,i)=>ds.filter(d=>d.o&(1<<i)).length),
+     fg:ds.reduce((a,b)=>a+b.fg+b.cg,0)};}).filter(r=>r.n).sort((a,b)=>b.n-a.n);
+ if(!rows.length){$("tbOpt").innerHTML='<div class="empty">この期間の受注がありません</div>';return;}
+ $("tbOpt").innerHTML=`<table><thead><tr><th>担当者</th><th class="num">受注</th>`
+  +D.OPT.map(l=>`<th class="num">${l}</th>`).join("")+`<th class="num">付帯粗利(万)</th></tr></thead><tbody>`
+  +rows.map(r=>`<tr><td>${r.m}</td><td class="num">${r.n}</td>`
+    +r.o.map(c=>`<td class="num">${c?`${pctn(c,r.n).toFixed(0)}%`:'<span class="mut">—</span>'}</td>`).join("")
+    +`<td class="num" style="font-weight:600">${man(r.fg)}</td></tr>`).join("")
+  +`</tbody><tfoot><tr><td>全体</td><td class="num">${n}</td>`
+  +D.OPT.map((_,i)=>{const c=fd.filter(d=>d.o&(1<<i)).length;return `<td class="num">${n?pctn(c,n).toFixed(0)+"%":"—"}</td>`;}).join("")
+  +`<td class="num">${man(fd.reduce((a,b)=>a+b.fg+b.cg,0))}</td></tr></tfoot></table>`;
+}
+async function boot(){
+ const el=$("syncLbl");
+ try{
+  const r=await fetch("perf_latest.json?t="+Date.now(),{cache:"no-store"});
+  if(!r.ok) throw new Error("HTTP "+r.status);
+  D=await r.json();
+  el.className="sync";
+ }catch(e){
+  if(window.__D_FALLBACK){D=window.__D_FALLBACK;el.className="sync err";
+   el.textContent="同期できず・内蔵データ表示";}
+  else{document.querySelector(".wrap").innerHTML=
+   '<div class="empty">データを読み込めませんでした（'+e.message+'）<br>ネットワークを確認して再読み込みしてください。</div>';
+   el.className="sync err";el.textContent="読み込み失敗";return;}
+ }
+ hydrate(); render();
+ if(!el.classList.contains("err")) el.textContent="最終同期 "+(D.synced||D.gen||"—");
+}
+boot();
+</script></body></html>
