@@ -92,20 +92,56 @@ async function fetchCsvs(months, ID, PW) {
     await page.fill('input[name="passwordCd"]', PW);
     await Promise.all([page.waitForLoadState('load'), page.click('input[name="doLogin"], #sbtLogin')]);
     if (/ログイン/.test(await page.title()) || /\/login/.test(page.url())) throw new Error('C-MATCHにログインできませんでした（ID/PW、またはアクセス制限）');
-    // 窓口コードは画面から読む（インディオは 003。南自動車は違う可能性があるため固定しない）
+    // 窓口コードは画面から読む（インディオは 003）。会社単位のアカウントで店舗が別コードの場合があるので、
+    // 画面の値で0台なら 001〜009 も順に試し、物件が入っていたコードをすべて使う
     await page.goto(`${BASE}/counter/byVehicle/`, { waitUntil: 'load' });
     const madoguchi = await page.$eval('input[name="frmByVehicleDto.madoguchiCd"]', e => e.value).catch(() => '');
-    const shop = await page.$eval('body', b => (b.innerText.match(/^(.+?)\[/m) || [])[1] || '').catch(() => '');
-    console.log(`店舗: ${shop.trim()} / 窓口コード: ${madoguchi || '（空）'}`);
+    const info = await page.evaluate(() => {
+      const t = document.body.innerText;
+      const i = t.indexOf('対象店舗');
+      const opts = [...document.querySelectorAll('select, input[type=radio]')]
+        .filter(e => /madoguchi|tenpo|shop|store/i.test(e.name || ''))
+        .flatMap(e => e.tagName === 'SELECT' ? [...e.options].map(o => o.value) : [e.value]);
+      return { shop: (t.match(/^(.+?)\[/m) || [])[1] || '', area: i >= 0 ? t.slice(i, i + 80).replace(/\s+/g, ' ') : '',
+        total: (t.match(/全\s*([\d,]+)\s*台/) || [])[1] || '?', opts };
+    }).catch(() => ({ shop: '', area: '', total: '?', opts: [] }));
+    console.log(`店舗: ${info.shop.trim()} / 窓口コード: ${madoguchi || '（空）'} / 画面の台数: ${info.total}`);
+    console.log(`対象店舗欄: ${info.area}${info.opts.length ? ' / 選択肢: ' + info.opts.join(',') : ''}`);
+    const cands = [...new Set([madoguchi, ...info.opts, '001', '002', '003', '004', '005', '006', '007', '008', '009'].filter(Boolean))];
+
+    const get = async (ym, code) => {
+      const res = await ctx.request.get(csvUrl(ym, code));
+      if (!res.ok()) throw new Error(`CSV取得に失敗 ${ym} 窓口${code} HTTP ${res.status()}`);
+      const text = decodeSjis(await res.body());
+      if (!/期間指定：/.test(text.slice(0, 4000))) return null; // 権限のないコード等
+      return text;
+    };
+    // どの窓口コードに物件があるかを、最新の対象月で調べる
+    const probeYm = months[months.length - 1];
+    let codes = [];
+    for (const code of cands) {
+      const text = await get(probeYm, code).catch(e => { console.log(e.message); return null; });
+      if (!text) { console.log(`窓口${code}: 取得不可`); continue; }
+      const n = parseCsv(text).length;
+      const store = (text.match(/対象店舗：,([^\r\n]*)/) || [])[1] || '';
+      console.log(`窓口${code}: ${n}台 / 対象店舗: ${store}`);
+      if (n > 0) codes.push(code);
+      if (code === madoguchi && n > 0) break; // 画面の値で取れたらそれで確定
+    }
+    if (!codes.length) {
+      const t = await get(probeYm, madoguchi).catch(() => '');
+      console.log('どの窓口コードでも物件が0台でした。CSVの先頭:\n' + String(t || '').split(/\r?\n/).slice(0, 8).join('\n'));
+      codes = [madoguchi];
+    }
     const csvs = {};
     for (const ym of months) {
-      const res = await ctx.request.get(csvUrl(ym, madoguchi));
-      if (!res.ok()) throw new Error(`CSV取得に失敗 ${ym} HTTP ${res.status()}`);
-      const text = decodeSjis(await res.body());
-      if (!/期間指定：/.test(text.slice(0, 4000))) throw new Error(`CSVの形式が想定と違う ${ym}`);
-      const store = (text.match(/対象店舗：,([^\r\n]*)/) || [])[1] || '';
-      console.log(`CSV ${ym}: ${text.length} 文字 / 対象店舗: ${store}`);
-      csvs[ym] = text;
+      csvs[ym] = [];
+      for (const code of codes) {
+        const text = await get(ym, code);
+        if (!text) continue;
+        console.log(`CSV ${ym} 窓口${code}: ${text.length} 文字`);
+        csvs[ym].push(text);
+      }
     }
     return csvs;
   } finally { await browser.close(); }
@@ -127,7 +163,7 @@ async function main() {
   console.log('対象月:', months.join(', '));
   const csvs = await fetchCsvs(months, ID, PW);
   for (const ym of months) {
-    const rows = parseCsv(csvs[ym]);
+    const rows = csvs[ym].flatMap(t => parseCsv(t));
     if (!rows.length) { console.log(`${ym}: 物件0台のため送信しません`); continue; }
     const r = await postToGas(URL_, KEY, ym, rows);
     console.log(`${ym}: ${r.rows}台を送信（反響タブ合計 ${r.total}行）`);

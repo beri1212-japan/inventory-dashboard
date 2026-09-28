@@ -67,13 +67,16 @@ async function fetchAll(months, env) {
     const out = []; // [日付, 項目, 値]
     for (const ym of list) {
       for (const start of [1, 11, 21]) {
-        await page.evaluate(({ ym, start }) => {
-          for (const id of ['PeriodSpecification', 'TimeDesignated']) { const s = document.getElementById(id); if (s) s.value = ym; }
-          const u = document.getElementById('CountingUnit'); if (u) u.value = 'day';
-          setTimeout(() => window.stor_next_day(start, 'store_from'), 30);
-        }, { ym, start });
-        await page.waitForLoadState('load');
-        await page.waitForTimeout(1200);
+        // 画面の関数でページを送り直す。送信後の読み込みが終わるまで待ってから表を読む
+        await Promise.all([
+          page.waitForNavigation({ waitUntil: 'load', timeout: 60000 }),
+          page.evaluate(({ ym, start }) => {
+            for (const id of ['PeriodSpecification', 'TimeDesignated']) { const s = document.getElementById(id); if (s) s.value = ym; }
+            const u = document.getElementById('CountingUnit'); if (u) u.value = 'day';
+            setTimeout(() => window.stor_next_day(start, 'store_from'), 30);
+          }, { ym, start }),
+        ]);
+        await page.waitForTimeout(1500);
         const t = await readTable(page);
         if (!t) throw new Error(`日別の表が見つかりません ${ym} ${start}日～`);
         let n = 0;
