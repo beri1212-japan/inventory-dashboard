@@ -1,0 +1,29 @@
+name: 南自動車 グーネット（MOTORGATE）効果分析の更新
+on:
+  schedule:
+    - cron: '20 21 * * *'       # 毎日 06:20 JST（前月＋当月の日別）
+  workflow_dispatch:
+    inputs:
+      months:
+        description: '対象月（例 202609,202608）。all で画面で選べる月すべて（初回用）。空なら前月＋当月'
+        required: false
+concurrency: minami-goo
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - run: npm i --no-save playwright@1
+      - run: npx playwright install --with-deps chromium
+      - name: 取得して南自動車ダッシュボードへ送る
+        env:
+          MINAMI_MG_CLIENT_ID: ${{ secrets.MINAMI_MG_CLIENT_ID }}
+          MINAMI_MG_USER_ID: ${{ secrets.MINAMI_MG_USER_ID }}
+          MINAMI_MG_PW: ${{ secrets.MINAMI_MG_PW }}
+          MINAMI_GAS_URL: ${{ secrets.MINAMI_GAS_URL }}
+          MINAMI_GAS_KEY: ${{ secrets.MINAMI_GAS_KEY }}
+          GOO_YM: ${{ github.event.inputs.months }}
+        run: node scripts/minami_goo.mjs
