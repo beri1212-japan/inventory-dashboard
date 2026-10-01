@@ -80,6 +80,9 @@ export async function fetchCsvs(browser, months, ID, PW) {
     if (!res) throw new Error(`CSV取得に失敗 ${ym}: ${lastErr && lastErr.message ? lastErr.message.split('\n')[0] : lastErr}`);
     const text = decodeSjis(await res.body());
     if (!/期間指定：/.test(text.slice(0, 4000))) throw new Error(`CSVの形式が想定と違う ${ym}`);
+    // 月初などで閲覧がまだ全車0の月は取り込まない（ダッシュボードが空の月を開いてしまうのを防ぐ）
+    const hasViews = text.split('\n').some(l => { const c = l.split(','); return c[18] && c[18].includes('詳細閲覧数') && parseInt((c[19] || '').replace(/"/g, '')) > 0; });
+    if (!hasViews) { console.log(`CSV ${ym}: 閲覧がまだ無いので今回は見送り`); continue; }
     csvs[ym] = text;
     console.log(`CSV ${ym}: ${text.length} 文字`);
   }
