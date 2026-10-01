@@ -65,8 +65,19 @@ export async function fetchCsvs(browser, months, ID, PW) {
   }
   const csvs = {};
   for (const ym of months) {
-    const res = await ctx.request.get(csvUrl(ym));
-    if (!res.ok()) throw new Error(`CSV取得に失敗 ${ym} HTTP ${res.status()}`);
+    // C-MATCH は月初や朝方に応答が遅いことがある。120秒待ち・3回まで再試行
+    let res = null, lastErr = null;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        res = await ctx.request.get(csvUrl(ym), { timeout: 120000 });
+        if (res.ok()) break;
+        lastErr = new Error(`HTTP ${res.status()}`);
+      } catch (e) { lastErr = e; }
+      console.log(`CSV ${ym}: ${attempt}回目失敗（${lastErr && lastErr.message ? lastErr.message.split('\n')[0] : lastErr}）`);
+      res = null;
+      await new Promise(r => setTimeout(r, 15000 * attempt));
+    }
+    if (!res) throw new Error(`CSV取得に失敗 ${ym}: ${lastErr && lastErr.message ? lastErr.message.split('\n')[0] : lastErr}`);
     const text = decodeSjis(await res.body());
     if (!/期間指定：/.test(text.slice(0, 4000))) throw new Error(`CSVの形式が想定と違う ${ym}`);
     csvs[ym] = text;
