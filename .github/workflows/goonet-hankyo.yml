@@ -1,0 +1,38 @@
+name: グーネット（MOTORGATE）効果分析の更新
+on:
+  schedule:
+    - cron: '30 21 * * 0,3,5'   # 月・木・土 06:30 JST（当月分。JSTの1〜3日は前月分も）
+    - cron: '30 21 1 * *'       # 毎月2日 06:30 JST（前月分の締め）
+  workflow_dispatch:
+    inputs:
+      months:
+        description: '対象月（例 202609,202608）。all で画面で選べる月すべて（初回用）。空なら自動'
+        required: false
+permissions:
+  contents: write
+concurrency: goonet-hankyo
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - run: npm i --no-save playwright@1
+      - run: npx playwright install --with-deps chromium
+      - name: 取得して取り込む
+        env:
+          MG_CLIENT_ID: ${{ secrets.MG_CLIENT_ID }}
+          MG_USER_ID: ${{ secrets.MG_USER_ID }}
+          MG_PW: ${{ secrets.MG_PW }}
+          GOO_YM: ${{ github.event.inputs.months }}
+        run: node scripts/goonet_hankyo.mjs
+      - name: 変更があればコミット
+        run: |
+          if git diff --quiet -- goonet_latest.json && [ -z "$(git status --porcelain goonet_latest.json)" ]; then echo "変更なし"; exit 0; fi
+          git config user.name  "goonet-sync[bot]"
+          git config user.email "goonet-sync@users.noreply.github.com"
+          git add goonet_latest.json
+          git commit -m "グーネット反響データ更新（自動取込 $(TZ=Asia/Tokyo date '+%Y-%m-%d %H:%M')）"
+          git push
