@@ -1,8 +1,7 @@
 name: グーネット（MOTORGATE）効果分析の更新
 on:
   schedule:
-    - cron: '30 21 * * 0,3,5'   # 月・木・土 06:30 JST（当月分。JSTの1〜3日は前月分も）
-    - cron: '30 21 1 * *'       # 毎月2日 06:30 JST（前月分の締め）
+    - cron: '30 21 * * *'       # 毎日 06:30 JST（当月分。JSTの1〜3日は前月分も取り直す＝前月の締め）
   workflow_dispatch:
     inputs:
       months:
